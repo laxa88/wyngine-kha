@@ -8,15 +8,6 @@ import kha.math.FastMatrix3;
 import kha.graphics2.Graphics;
 import kha.graphics2.GraphicsExtension;
 
-enum WyDirection
-{
-	NONE;
-	LEFT;
-	RIGHT;
-	UP;
-	DOWN;
-}
-
 class WySprite extends WyObject
 {
 	// TODO

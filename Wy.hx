@@ -12,6 +12,7 @@ import kha.Framebuffer;
 import kha.audio1.Audio;
 import kha.input.Keyboard;
 import kha.math.FastMatrix3;
+import kha.StorageFile;
 
 class Wy
 {
@@ -82,8 +83,8 @@ class Wy
 		_input.update();
 
 		// collide objects
-		for (i in 0 ... _objects.length-1)
-			_objects[i].collide(_objects[i+1]);
+		// for (i in 0 ... _objects.length-1)
+		// 	_objects[i].collide(_objects[i+1]);
 
 		// sort sprites
 		sort(_objects);
