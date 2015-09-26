@@ -16,6 +16,7 @@ class WyBitmapText extends WyObject
 	public var _width:Int;
 	public var _height:Int;
 	private var _cacheText:String;
+	private var _cacheAlign:BitmapTextAlign;
 	private var _oriColor:Color;
 
 	public var text(get,set):String;
@@ -30,6 +31,19 @@ class WyBitmapText extends WyObject
 			return _cacheText;
 		}
 	}
+	public var align(get,set):BitmapTextAlign;
+	private inline function get_align():BitmapTextAlign { return _cacheAlign; }
+	private inline function set_align(a:BitmapTextAlign):BitmapTextAlign {
+		if (a == _cacheAlign)
+			return _cacheAlign;
+		else {
+			_cacheAlign = a;
+			_bm.align = a;
+			_bm.update();
+			return _cacheAlign;
+		}
+	}
+	
 
 
 
