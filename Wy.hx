@@ -17,7 +17,7 @@ import kha.StorageFile;
 class Wy
 {
 	// TODO
-	// framerate
+	// adding objects in layers
 	// debugger
 	// game states
 	// input pooling
@@ -32,23 +32,28 @@ class Wy
 	private var _screenH:Int;
 	private var _screenScale:Float;
 	private var _buffer:Image;
-	private var _objects:Array<WyObject>;
+	private var _layers:Map<String, Array<WyObject>>;
 	private var _input:WyInput;
 	private var _audio:WyAudio;
 	//private var _timeSinceStart:Float; // for recording total playtime, unused
-	private var _timeSinceLastFrame:Float;
+	private var _oldTime:Float;
+	private var _newTime:Float;
+	private var _fpsList:Array<Float> = [0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,];
+	public var _realFps:Int;
+	public var _elapsed:Float;
+	public var _paused:Bool;
 
 
 
 	public function new ()
 	{
 		log("new");
-		_objects = new Array<WyObject>();
+		_layers = new Map<String, Array<WyObject>>();
 		_input = new WyInput();
 		_audio = new WyAudio();
 
 		//_timeSinceStart = Scheduler.realTime();
-		_timeSinceLastFrame = Scheduler.realTime();
+		_newTime = Scheduler.realTime();
 	}
 	public function setScreenBySize (width:Int, height:Int)
 	{
@@ -74,24 +79,43 @@ class Wy
 		// but we're getting the value here for other uses like
 		// movement and animation.
 
-		// get delta time (elapsed)
-		var now:Float = Scheduler.realTime();
-		var elapsed:Float = now - _timeSinceLastFrame;
-		_timeSinceLastFrame = now;
+		// get fps and delta time (elapsed)
+		_oldTime = _newTime;
+		_newTime = Sys.getTime();
+		_elapsed = _newTime - _oldTime;
+		var fps:Float = 1.0 / _elapsed;
+		_fpsList.unshift(fps);
+		_fpsList.pop();
+		var total:Float = 0;	
+		for (i in 0 ... _fpsList.length)
+			total += _fpsList[i];
+		_realFps = Math.round(total/30.0);
 
 		// update managers
 		_input.update();
 
-		// collide objects
-		// for (i in 0 ... _objects.length-1)
-		// 	_objects[i].collide(_objects[i+1]);
+		// collide objects in each layer
+		for (objects in _layers)
+		{
+			// Update every objects in the layer first...
+			if (!_paused)
+			{
+				for (o in objects)
+					o.update(_elapsed);
+			}
 
-		// sort sprites
-		sort(_objects);
-
-		// update position and other logic
-		for (o in _objects)
-			o.update(elapsed);
+			// ... Then check for collision
+			// var objLen:Int = objects.length;
+			// for (j in 0 ... objLen)
+			// {
+			// 	// TODO: this logic is not optimised!
+			// 	for (k in 0 ... objLen)
+			// 	{
+			// 		if (j != k)
+			// 			objects[j].collide(objects[k]);
+			// 	}
+			// }
+		}
 	}
 	public function render (frame:Framebuffer)
 	{
@@ -107,9 +131,12 @@ class Wy
 		g.drawRect(0, 0, _screenW/2, _screenH/2);
 		g.drawRect(_screenW/2, _screenH/2, _screenW/2, _screenH/2);
 
-		// Draw sprites
-		for (o in _objects)
-			o.render(g);
+		// Draw objects
+		for (objects in _layers)
+		{
+			for (o in objects)
+				o.render(g);
+		}
 
 		g.end();
 
@@ -120,23 +147,43 @@ class Wy
 	}
 	public function destroy ()
 	{
-		for (item in _objects)
-			item.destroy();
+		for (objects in _layers)
+		{
+			for (o in objects)
+				o.destroy();
+		}
 		
 		_buffer = null;
-		_objects = null;
+		_layers = null;
 	}
 
 
 
-	public function add (o:WyObject)
+	public function addLayer (layer:String)
 	{
-		_objects.push(o);
+		if (!_layers.exists(layer))
+			_layers[layer] = new Array<WyObject>();
 	}
-	function sort(objects:Array<WyObject>)
+	public function add (layer:String, o:WyObject)
 	{
-		// TODO
-		// don't allow duplicate z-index
+		addLayer(layer);
+		_layers[layer].push(o);
+	}
+	public function remove (layer:String, o:WyObject)
+	{
+		if (!_layers.exists(layer))
+			throw "layer ["+layer+"] doesn't exist!";
+		else
+			_layers[layer].remove(o);
+	}
+	public function sortByZ(objects:Array<WyObject>)
+	{
+		// Use only when necessary?
+
+		// NOTE:
+		// This function doesn't care about duplicate z-indices.
+		// TODO: To counter that, have a separate method
+		// to sort based on y-position instead.
 
 		// Sorts sprites by z-index
 		if (objects.length == 0) return;

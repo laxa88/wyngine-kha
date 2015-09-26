@@ -35,6 +35,9 @@ class WyAnimator
 		// the current animation. The animation itself
 		// only stores data.
 
+		if (_currAnim == null)
+			return;
+
 		if (!_paused)
 		{
 			_frameElapsed += elapsed * _speedScale;
@@ -76,6 +79,9 @@ class WyAnimator
 	{
 		// NOTE:
 		// - for now, playing a new animation will always reset
+
+		if (_currAnim == null)
+			return;
 
 		if (_currAnim._name == name)
 		{
@@ -123,6 +129,6 @@ class WyAnimator
 	public function getFrameIndex ():Int
 	{
 		// Returns the current animation's frame index in the sprite sheet
-		return _currAnim.getFrameIndex(_frameIndex);
+		return (_currAnim != null) ? _currAnim.getFrameIndex(_frameIndex) : -1;
 	}
 }

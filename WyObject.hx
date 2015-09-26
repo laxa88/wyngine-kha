@@ -33,21 +33,20 @@ class WyObject
 
 
 
-	public function new (x:Int=0, y:Int=0, ?z:Int):Void
+	public function new (x:Float=0, y:Float=0, ?z:Int):Void
 	{
 		_id = ++ID_COUNTER;
 		_x = x;
 		_y = y;
 		_z = (z==null) ? _id : 0;
 		_collider = new Rectangle(0,0,0,0);
-		Wy.log("# New object : " + _id);
+		//Wy.log("# New object : " + _id);
 	}
-	public function init ():Void {}
 	public function destroy ():Void {}
 	public function update (elapsed:Float):Void {}
 	public function render (g:Graphics):Void
 	{
-		if (true)
+		if (false)
 		{
 			// Debug collider box
 			if (_hit)
@@ -92,7 +91,6 @@ class WyObject
 	}
 	function onCollide (other:WyObject)
 	{
-
-		Wy.log("collide : " + _id + " > " + other._id);
+		//Wy.log("collide : " + _id + " > " + other._id);
 	}
 }

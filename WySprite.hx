@@ -5,6 +5,7 @@ import kha.Image;
 import kha.Loader;
 import kha.Rectangle;
 import kha.math.FastMatrix3;
+import kha.math.FastVector2;
 import kha.graphics2.Graphics;
 import kha.graphics2.GraphicsExtension;
 
@@ -30,20 +31,19 @@ class WySprite extends WyObject
 	public var _image:Image;
 	public var _animator:WyAnimator;
 	private var _rightDirection:Float;
-	private var _face:Float;
+	private var _face:Float = 1;
 	public var _direction(get,set):Int;
 	private inline function get__direction():Int { return Std.int(_face); }
 	private inline function set__direction(val:Int):Int { if (val > 0) {_face = _rightDirection;} else {_face = -_rightDirection;} return Std.int(_face); }
 	//private var _active:Bool = true;
-	//private var _speedX:Float = 0.0;
-	//private var _speedY:Float = 0.0;
-	//private var _maxSpeedX:Float = 0.0;
-	//private var _maxSpeedY:Float = 0.0;
+	public var _velocity:FastVector2; // used for updating actual position
+	public var _acceleration:FastVector2; // used to modify velocity (e.g gravity)
 	//private var _originX:Float = 0.0;
 	//private var _originY:Float = 0.0;
 	//private var _flipX:Bool = false;
 	//private var _flipY:Bool = false;
 	// for spritesheets and animations
+	private var _animated:Bool = false;
 	private var _frameColumns:Int = 0;
 	private var _frameX:Int = 0;
 	private var _frameY:Int = 0;
@@ -55,43 +55,55 @@ class WySprite extends WyObject
 
 
 
-	public override function new (x:Int=0, y:Int=0, ?z:Int)
+	public override function new (x:Float=0, y:Float=0, ?z:Int)
 	{
 		super(x,y,z);
+
 		// NOTE:
 		// - w and h is the image size
 		// - collision box is independent of image size
 		// - on new(), collision boxes is same as image size
 
 		_animator = new WyAnimator(this);
-
-		init();
-	}
-	public override function init ()
-	{
+		_velocity = new FastVector2();
+		_acceleration = new FastVector2();
 	}
 	public override function destroy ()
 	{
+		super.destroy();
+
 		_image = null;
 		_animator = null;
 		_collider = null;
-		//_debugCollider = null;
 	}
 	public override function update (elapsed:Float)
 	{
-		// update animator
-		_animator.update(elapsed);
+		super.update(elapsed);
+
+		// update physics
+		_velocity.x += elapsed * _acceleration.x;
+		_velocity.y += elapsed * _acceleration.y;
+		_x += elapsed * _velocity.x;
+		_y += elapsed * _velocity.y;
 
 		// update collider position
 		updateCollider();
 
-		// update frame index
-		var frameIndex:Int = _animator.getFrameIndex();
-		_frameX = (frameIndex % _frameColumns) * _frameW;
-		_frameY = Std.int(frameIndex / _frameColumns) * _frameH;
+		// update animator
+		if (_animated)
+		{
+			_animator.update(elapsed);
+
+			// update frame index
+			var frameIndex:Int = _animator.getFrameIndex();
+			_frameX = (frameIndex % _frameColumns) * _frameW;
+			_frameY = Std.int(frameIndex / _frameColumns) * _frameH;
+		}
 	}
 	public override function render (g:Graphics)
 	{
+		super.render(g);
+
 		// Draw the image
 		g.color = Color.White;
 		if (_image != null && _visible)
@@ -111,9 +123,12 @@ class WySprite extends WyObject
 			g.popOpacity();
 			if (_angle != 0) g.popTransformation();
 
-			// Debug image box
-			g.color = Color.fromBytes(0, 255, 0);
-			g.drawRect(_x, _y, _frameW, _frameH);
+			if (false)
+			{
+				// Debug image box
+				g.color = Color.fromBytes(0, 255, 0);
+				g.drawRect(_x, _y, _frameW, _frameH);
+			}
 		}
 	}
 
@@ -124,6 +139,9 @@ class WySprite extends WyObject
 
 	public function loadImage (name:String, animated:Bool=false, frameWidth:Int=0, frameHeight:Int=0)
 	{
+		_animated = animated;
+		setDefaultFacingRight(true);
+
 		// Image name is set from project.kha
 		_image = Loader.the.getImage(name);
 
@@ -142,6 +160,6 @@ class WySprite extends WyObject
 		// thus _rightDirection will default to -1.0
 
 		_rightDirection = (isRight) ? 1.0 : -1.0;
-		_face = _rightDirection;
+		_direction = 1;
 	}
 }
