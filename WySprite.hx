@@ -65,8 +65,8 @@ class WySprite extends WyObject
 		// - on new(), collision boxes is same as image size
 
 		_animator = new WyAnimator(this);
-		_velocity = new FastVector2();
-		_acceleration = new FastVector2();
+		_velocity = new FastVector2(0,0);
+		_acceleration = new FastVector2(0,0);
 	}
 	public override function destroy ()
 	{

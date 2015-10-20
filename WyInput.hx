@@ -5,17 +5,29 @@ import kha.input.Keyboard;
 
 class WyInput
 {
-	public static function get():WyInput { return instance; }
-	private static var instance: WyInput;
+	/**
+		This class is modular and can be used stand-alone.
+		
+		Just instantiate a WyInput in your game, then call
+		the update() to keep track of the data. then call
+		the following static methods whenever you want:
+		- isKeyDown
+		- isKey
+		- isKeyUp
+	*/
 
-	private static var _keysPressed:Map<Key, Bool>;
-	private static var _charsPressed:Map<String, Bool>;
-	private static var _keysHeld:Map<Key, Bool>;
-	private static var _charsHeld:Map<String, Bool>;
-	private static var _keysReleased:Map<Key, Bool>;
-	private static var _charsReleased:Map<String, Bool>;
+	public static var instance:WyInput;
+	private var _keysPressed:Map<Key, Bool>;
+	private var _charsPressed:Map<String, Bool>;
+	private var _keysHeld:Map<Key, Bool>;
+	private var _charsHeld:Map<String, Bool>;
+	private var _keysReleased:Map<Key, Bool>;
+	private var _charsReleased:Map<String, Bool>;
 
-
+	/**
+	* These instance functions should never be used directly,
+	* because we use the static methods further below.
+	*/
 
 	public function new ()
 	{
@@ -27,9 +39,8 @@ class WyInput
 		_charsReleased = new Map<String, Bool>();
 
 		Keyboard.get().notify(onKeyDown, onKeyUp);
-
-		instance = this;
 	}
+
 	public function update ()
 	{
 		for (key in _keysPressed.keys())
@@ -70,6 +81,7 @@ class WyInput
 			}
 		}
 	}
+
 	public function destroy ()
 	{
 		_keysPressed = null;
@@ -80,33 +92,16 @@ class WyInput
 		_charsReleased = null;
 		Keyboard.get().remove(onKeyDown, onKeyUp);
 	}
-	public static function isKeyDown (key:Key, char:String=""):Bool
-	{
-		if (key == Key.CHAR)
-			return _charsPressed[char];
-		else
-			return _keysPressed[key];
-	}
-	public static function isKey (key:Key, char:String=""):Bool
-	{
-		if (key == Key.CHAR)
-			return _charsHeld[char];
-		else
-			return _keysHeld[key];
-	}
-	public static function isKeyUp (key:Key, char:String=""):Bool
-	{
-		if (key == Key.CHAR)
-			return _charsReleased[char];
-		else
-			return _keysReleased[key];
-	}
 
-
+	/**
+	* These are callbacks for kha.Keyboard keyDown and keyUp events.
+	* Callbacks will be processed, and stored into WyInput's 
+	* char or key's press/held/released boolean arrays.
+	*/
 
 	private function onKeyDown (key:Key, char:String):Void
 	{
-		// Wy.log("key down : " + key + " , " + char);
+		Wy.log("key down : " + key + " , " + char);
 		if (key == Key.CHAR)
 		{
 			_charsPressed[char] = true;
@@ -118,9 +113,10 @@ class WyInput
 			_keysReleased[key] = false;
 		}
 	}
+
 	private function onKeyUp (key:Key, char:String):Void
 	{
-		//Wy.log("key up : " + key + " , " + char);
+		Wy.log("key up : " + key + " , " + char);
 		if (key == Key.CHAR)
 		{
 			_charsPressed[char] = false;
@@ -131,5 +127,57 @@ class WyInput
 			_keysPressed[key] = false;
 			_keysReleased[key] = true;
 		}
+	}
+
+	/**
+	* These are instance methods, accessed from the static variable "instance"
+	*/
+
+	public function _isKeyDown (key:Key, char:String=""):Bool
+	{
+		if (key == Key.CHAR)
+			return _charsPressed[char];
+		else
+			return _keysPressed[key];
+	}
+
+	public function _isKey (key:Key, char:String=""):Bool
+	{
+		if (key == Key.CHAR)
+			return _charsHeld[char];
+		else
+			return _keysHeld[key];
+	}
+
+	public function _isKeyUp (key:Key, char:String=""):Bool
+	{
+		if (key == Key.CHAR)
+			return _charsReleased[char];
+		else
+			return _keysReleased[key];
+	}
+
+	/**
+	* Allows usage like WyInput.isKeyDown(...);
+	*/
+
+	public static function init ()
+	{
+		instance = new WyInput();
+	}
+
+	public static function isKeyDown (key:Key, char:String=""):Bool
+	{
+		return instance._isKeyDown(key, char);
+	}
+
+	public static function isKey (key:Key, char:String=""):Bool
+	{
+		return instance._isKey(key, char);
+	}
+
+	public static function isKeyUp (key:Key, char:String=""):Bool
+	{
+		return instance._isKeyUp(key, char);
 	}
 }

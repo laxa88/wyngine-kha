@@ -1,204 +1,212 @@
 package wy;
 
 import haxe.ds.ArraySort;
+import kha.Sys;
+import kha.Game;
 import kha.Color;
 import kha.Image;
 import kha.Loader;
 import kha.Scaler;
-import kha.Sys;
 import kha.Key;
 import kha.Scheduler;
 import kha.Framebuffer;
+import kha.ScreenRotation;
+import kha.ScreenCanvas;
 import kha.audio1.Audio;
 import kha.input.Keyboard;
 import kha.math.FastMatrix3;
+import kha.math.Random;
 import kha.StorageFile;
 
 class Wy
 {
-	// TODO
-	// adding objects in layers
-	// debugger
-	// game states
-	// input pooling
-	// camera list
-	// screen scale / modes
-	// collide / overlap / quadtrees
-	// openURL
+	/**
+		Wyngine's focus on simplicity and barebones. If it's fancy,
+		then we probably don't need it.
 
-	private var _canvasW:Int;
-	private var _canvasH:Int;
-	private var _screenW:Int;
-	private var _screenH:Int;
-	private var _screenScale:Float;
-	private var _buffer:Image;
-	private var _layers:Map<String, Array<WyObject>>;
-	private var _input:WyInput;
-	private var _audio:WyAudio;
-	//private var _timeSinceStart:Float; // for recording total playtime, unused
-	private var _oldTime:Float;
-	private var _newTime:Float;
-	private var _fpsList:Array<Float> = [0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0,];
+		NOTES:
+		* kha.math.Random is not seeded by default. Use this if needed:
+			Random.init(Std.int(Date.now().getTime()));
+
+		TODO
+			WyBitmapText
+			WyFile
+			WySprite - remove?
+
+			9-slice
+			object pool
+			camera shake
+			particle and emitter
+			quad-tree collision
+			tiled parser
+			tile generator
+			parallax background
+
+			input
+				gamepad
+				mouse
+				touch
+	*/
+
+	public static var DEBUG:Bool = true;
+	//public static var ELAPSED(get,null):Float;
+
+	var _screenW:Int;
+	var _screenH:Int;
+
+	// Game data
+	var _buffer:Image;
+	var _objects:Array<WyObject>;
+
+	// FPS
+	var _oldRealDt:Float;
+	var _oldDt:Float;
+	var _newRealDt:Float;
+	var _newDt:Float;
+	public var _realDt:Float;
+	public var _dt:Float;
+	var _fpsList:Array<Float> = [0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0];
 	public var _realFps:Int;
-	public var _elapsed:Float;
-	public var _paused:Bool;
 
 
 
 	public function new ()
 	{
-		log("new");
-		_layers = new Map<String, Array<WyObject>>();
-		_input = new WyInput();
-		_audio = new WyAudio();
+		// Init variables once
+		_objects = new Array<WyObject>();
+		WyInput.init();
+		WyAudio.init();
+		_oldRealDt = _newRealDt = Scheduler.realTime();
+		_oldDt = _newDt = Scheduler.time();
+	}
 
-		//_timeSinceStart = Scheduler.realTime();
-		_newTime = Scheduler.realTime();
-	}
-	public function setScreenBySize (width:Int, height:Int)
-	{
-		// Actual canvas size is set in project.kha file.
-		// The w and h here is the resolution of the canvas.
-		_buffer = Image.createRenderTarget(width, height);
-	}
-	public function setScreenByScale (scale:Float)
+	public function init (scale:Float=1.0)
 	{
 		// Actual canvas size is set in project.kha file.
 		// The scale based on window size, to ratio
-		_screenScale = scale;
-		_canvasW = kha.ScreenCanvas.the.width;
-		_canvasH = kha.ScreenCanvas.the.height;
-		_screenW = Std.int(_canvasW / _screenScale);
-		_screenH = Std.int(_canvasH / _screenScale);
-		log(_canvasW + " , " + _canvasH + " / " + _screenW + " , " + _screenH);
+
+		// this should be called between screens
+		WyAudio.reset();
+
+		//var canvasW:Float = ScreenCanvas.the.width;
+		//var canvasH:Float = ScreenCanvas.the.height;
+		var canvasW:Float = Game.the.width;
+		var canvasH:Float = Game.the.height;
+		_screenW = Std.int(canvasW / scale);
+		_screenH = Std.int(canvasH / scale);
 		_buffer = Image.createRenderTarget(_screenW, _screenH);
+
+		log("Wyngine init : " + canvasW + " , " + canvasH + " / " + _screenW + " , " + _screenH);
 	}
+
 	public function update ()
 	{
+		// This method calls every object's internal update method.
+		// It does NOT process any interaction -- that is left to
+		// you to code, e.g. collision via quadtrees.
+
 		// NOTE: Kha already updates at 60fps (0.166ms elapse rate)
 		// but we're getting the value here for other uses like
 		// movement and animation.
 
-		// get fps and delta time (elapsed)
-		_oldTime = _newTime;
-		_newTime = Sys.getTime();
-		_elapsed = _newTime - _oldTime;
-		var fps:Float = 1.0 / _elapsed;
-		_fpsList.unshift(fps);
-		_fpsList.pop();
-		var total:Float = 0;	
-		for (i in 0 ... _fpsList.length)
-			total += _fpsList[i];
-		_realFps = Math.round(total/30.0);
+		// Get elapsed time
+		_oldDt = _newDt;
+		_newDt = Scheduler.time();
+		_dt = (_newDt - _oldDt);
 
-		// update managers
-		_input.update();
-
-		// collide objects in each layer
-		for (objects in _layers)
+		// Get FPS
+		if (DEBUG)
 		{
-			// Update every objects in the layer first...
-			if (!_paused)
-			{
-				for (o in objects)
-					o.update(_elapsed);
-			}
+			// Only for showing fps when in debug.
+			_oldRealDt = _newRealDt;
+			_newRealDt = Scheduler.realTime();
+			_realDt = (_newRealDt - _oldRealDt);
 
-			// ... Then check for collision
-			// var objLen:Int = objects.length;
-			// for (j in 0 ... objLen)
-			// {
-			// 	// TODO: this logic is not optimised!
-			// 	for (k in 0 ... objLen)
-			// 	{
-			// 		if (j != k)
-			// 			objects[j].collide(objects[k]);
-			// 	}
-			// }
+			_fpsList.unshift(1.0 / _realDt);
+			_fpsList.pop();
+			var total:Float = 0;
+			for (i in 0 ... 20)
+				total += _fpsList[i];
+			_realFps = Math.round(total/20.0);
 		}
+
+		// update input events
+		WyInput.instance.update();
+
+		// TODO - update audio?
+
+		// update all the game objects
+		for (o in _objects)
+		{
+			if (o._active)
+				o.update(_dt);
+		}
+
+		// NOTE:
+		// for now, just do basic rect collision checks.
+		// in the future, use quad trees.
+		// var objLen:Int = _objects.length;
+		// for (j in 0 ... objLen)
+		// {
+		// 	// TODO: this logic is not optimised!
+		// 	for (k in 0 ... objLen)
+		// 	{
+		// 		if (j != k)
+		// 			objects[j].collide(objects[k]);
+		// 	}
+		// }
 	}
+
 	public function render (frame:Framebuffer)
 	{
+		// This method only handles rendering.
+		// TODO: shaders
+
+		// Draw on the buffer
 		var g = _buffer.g2;
+
 		g.begin();
-
-		// Clear screen
-		g.color = Color.White;
+		//g.color = Color.White;
+		g.color = Color.fromValue(0xff6495ed); // cornflower blue
 		g.transformation = FastMatrix3.identity();
-
-		// Draw debug line for halfscreen
-		g.color = Color.fromBytes(0, 255, 0);
-		g.drawRect(0, 0, _screenW/2, _screenH/2);
-		g.drawRect(_screenW/2, _screenH/2, _screenW/2, _screenH/2);
+		g.fillRect(0,0,_screenW,_screenH);
 
 		// Draw objects
-		for (objects in _layers)
+		for (o in _objects)
 		{
-			for (o in objects)
+			if (o._visible)
 				o.render(g);
 		}
 
 		g.end();
 
-		// Draw upscaled graphics
+		// Draw and upscale final frame
 		frame.g2.begin();
 		Scaler.scale(_buffer, frame, Sys.screenRotation);
 		frame.g2.end();
 	}
-	public function destroy ()
+
+	public function add (o:WyObject)
 	{
-		for (objects in _layers)
-		{
-			for (o in objects)
-				o.destroy();
-		}
-		
-		_buffer = null;
-		_layers = null;
+		_objects.push(o);
 	}
 
-
-
-	public function addLayer (layer:String)
+	public function remove (o:WyObject)
 	{
-		if (!_layers.exists(layer))
-			_layers[layer] = new Array<WyObject>();
-	}
-	public function add (layer:String, o:WyObject)
-	{
-		addLayer(layer);
-		_layers[layer].push(o);
-	}
-	public function remove (layer:String, o:WyObject)
-	{
-		if (!_layers.exists(layer))
-			throw "layer ["+layer+"] doesn't exist!";
-		else
-			_layers[layer].remove(o);
-	}
-	public function sortByZ(objects:Array<WyObject>)
-	{
-		// Use only when necessary?
-
-		// NOTE:
-		// This function doesn't care about duplicate z-indices.
-		// TODO: To counter that, have a separate method
-		// to sort based on y-position instead.
-
-		// Sorts sprites by z-index
-		if (objects.length == 0) return;
-		ArraySort.sort(objects, function(arg0: WyObject, arg1: WyObject)
-		{
-			if (arg0._z < arg1._z) return -1;
-			else if (arg0._z == arg1._z) return 0;
-			else return 1;
-		});
+		_objects.remove(o);
 	}
 
 
 
 	public static function log (str:String)
 	{
-		js.Browser.console.log(str);
+		if (DEBUG)
+		{
+			#if js
+			js.Browser.console.log(str);
+			#else
+			trace(str);
+			#end
+		}
 	}
 }
