@@ -25,12 +25,11 @@ class Wy
 		then we probably don't need it.
 
 		NOTES:
-		* kha.math.Random is not seeded by default. Use this if needed:
-			Random.init(Std.int(Date.now().getTime()));
+		* none
 
 		TODO
 			WyBitmapText
-			WyFile
+			WyFile - check if it still works
 			WySprite - remove?
 
 			9-slice
@@ -41,6 +40,7 @@ class Wy
 			tiled parser
 			tile generator
 			parallax background
+			fsm
 
 			input
 				gamepad
@@ -48,24 +48,25 @@ class Wy
 				touch
 	*/
 
-	public static var DEBUG:Bool = true;
-	//public static var ELAPSED(get,null):Float;
+	public static var DEBUG:Bool = false;
+	public static var G:Wy;
 
-	var _screenW:Int;
-	var _screenH:Int;
+	public var _screenW:Int;
+	public var _screenH:Int;
+	public var _bgColor:Color;
 
 	// Game data
 	var _buffer:Image;
 	var _objects:Array<WyObject>;
 
 	// FPS
+	var _fpsList:Array<Float> = [0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0];
 	var _oldRealDt:Float;
 	var _oldDt:Float;
 	var _newRealDt:Float;
 	var _newDt:Float;
 	public var _realDt:Float;
 	public var _dt:Float;
-	var _fpsList:Array<Float> = [0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0];
 	public var _realFps:Int;
 
 
@@ -78,12 +79,19 @@ class Wy
 		WyAudio.init();
 		_oldRealDt = _newRealDt = Scheduler.realTime();
 		_oldDt = _newDt = Scheduler.time();
+
+		// static reference to the engine
+		G = this;
 	}
 
 	public function init (scale:Float=1.0)
 	{
 		// Actual canvas size is set in project.kha file.
 		// The scale based on window size, to ratio
+
+		// By default, random numbers are seeded. Set
+		// a new seed after init if necessary.
+		Random.init(Std.int(Date.now().getTime()));
 
 		// this should be called between screens
 		WyAudio.reset();
@@ -95,8 +103,9 @@ class Wy
 		_screenW = Std.int(canvasW / scale);
 		_screenH = Std.int(canvasH / scale);
 		_buffer = Image.createRenderTarget(_screenW, _screenH);
+		_bgColor = Color.fromValue(0xff6495ed); // cornflower blue
 
-		log("Wyngine init : " + canvasW + " , " + canvasH + " / " + _screenW + " , " + _screenH);
+		log("Wyngine init : canvas[" + canvasW + "," + canvasH + "] , screen[" + _screenW + "," + _screenH + "]");
 	}
 
 	public function update ()
@@ -167,7 +176,7 @@ class Wy
 
 		g.begin();
 		//g.color = Color.White;
-		g.color = Color.fromValue(0xff6495ed); // cornflower blue
+		g.color = _bgColor;
 		g.transformation = FastMatrix3.identity();
 		g.fillRect(0,0,_screenW,_screenH);
 
@@ -186,6 +195,8 @@ class Wy
 		frame.g2.end();
 	}
 
+
+
 	public function add (o:WyObject)
 	{
 		_objects.push(o);
@@ -194,6 +205,17 @@ class Wy
 	public function remove (o:WyObject)
 	{
 		_objects.remove(o);
+	}
+
+	public function overlap (obj1:WyObject, obj2:WyObject, cb:WyObject->WyObject->Void) : Bool
+	{
+		if (obj1.collide(obj2))
+		{
+			cb(obj1, obj2);
+			return true;
+		}
+
+		return false;
 	}
 
 

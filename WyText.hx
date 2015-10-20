@@ -10,12 +10,11 @@ import kha.graphics2.Graphics;
 class WyText extends WyObject
 {
 	public var _font:Font;
-	public var _color:Color;
 	public var _text:String;
 
 
 
-	public function new (x:Int=0, y:Int=0, name:String, size:Int, w:Int=200, h:Int=100, bold:Bool=false, italic:Bool=false, underlined:Bool=false)
+	public function new (x:Float, y:Float, name:String, size:Int, w:Int=200, h:Int=100, bold:Bool=false, italic:Bool=false, underlined:Bool=false)
 	{
 		super(x,y);
 
@@ -23,7 +22,6 @@ class WyText extends WyObject
 		_frameH = h;
 
 		setFont(name, size, bold, italic, underlined);
-		_color = Color.White;
 		_text = "";
 		_image = Image.createRenderTarget(_frameW, _frameH);
 	}

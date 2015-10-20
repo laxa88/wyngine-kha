@@ -1,5 +1,7 @@
 package wy;
 
+import kha.math.FastVector2;
+
 class WyUtil
 {
 	/**
@@ -43,6 +45,7 @@ class WyUtil
 	{
 	    return 180 / Math.PI * rad;
 	}
+
 	/**
 	* Converts specified angle in degrees to radians.
 	* @return angle in radians (not normalized to 0...Math.PI*2)
@@ -51,6 +54,7 @@ class WyUtil
 	{
 	    return Math.PI / 180 * deg;
 	}
+
 	/**
 	* "Clamps" a value to boundaries [min, max].
 	* Example:
@@ -66,5 +70,25 @@ class WyUtil
 	        return max;
 	    else
 	        return value;
+	}
+
+	/**
+	* NOTE: make sure Random is init() with a seed before calling this!
+	* Returns a normalised x/y value within a circle
+	*/
+	public inline static function randomInCircle () : FastVector2
+	{
+		return new FastVector2(Math.random(), Math.random());
+	}
+
+	/**
+	* NOTE: make sure Random is init() with a seed before calling this!
+	* Returns a normalised x/y value, normalised to circumference of a circle
+	*/
+	public inline static function randomOnCircle () : FastVector2
+	{
+		var p:FastVector2 = new FastVector2(Math.random(), Math.random());
+		p.normalize();
+		return p;
 	}
 }

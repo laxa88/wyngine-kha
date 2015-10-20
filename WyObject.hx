@@ -20,12 +20,13 @@ class WyObject
 	public var _velocity:FastVector2;
 	public var _acceleration:FastVector2; // for gravity or car movement
 	public var _drag:FastVector2; // for slowing movement
-	public var _offset:FastVector2;
+	// public var _offset:FastVector2;
 	public var _alpha:Float;
 	public var _angle:Float;
 	public var _scale:Float;
 	public var _hitbox:Rectangle;
 	public var _image:Image;
+	public var _color:Color;
 	public var _animator:WyAnimator;
 	var _rightDirection:Float;
 	var _face:Float;
@@ -45,7 +46,7 @@ class WyObject
 
 
 
-	public function new (x:Int=0, y:Int=0)
+	public function new (x:Float=0, y:Float=0)
 	{
 		_id = ++ID_COUNTER;
 
@@ -57,18 +58,21 @@ class WyObject
 
 	public function init ()
 	{
+		// This method is usually called for object pooling
+
 		_active = true;
 		_visible = true;
 		_position = new FastVector2();
 		_velocity = new FastVector2();
 		_acceleration = new FastVector2();
 		_drag = new FastVector2();
-		_offset = new FastVector2();
+		// _offset = new FastVector2();
 		_alpha = 1.0;
 		_angle = 0.0;
 		_scale = 1.0;
 		_hitbox = new Rectangle(0.0, 0.0, 0.0, 0.0);
 		_image = null;
+		_color = Color.White;
 		_animator = new WyAnimator(this);
 		_rightDirection = 0.0;
 		_face = 0.0;
@@ -101,8 +105,8 @@ class WyObject
 		_position.y += dt * _velocity.y;
 
 		// update hitbox position
-		_hitbox.x = _position.x + _cx;
-		_hitbox.y = _position.y + _cy;
+		_hitbox.x = _position.x + _cx;// + _offset.x;
+		_hitbox.y = _position.y + _cy;// + _offset.y;
 		_hitbox.width = _cw;
 		_hitbox.height = _ch;
 
@@ -119,9 +123,16 @@ class WyObject
 
 	public function render (g:Graphics)
 	{
+		if (Wy.DEBUG)
+		{
+			// Debug image box
+			g.color = Color.Green;
+			g.drawRect(_position.x, _position.y, _frameW, _frameH);
+		}
+
 		if (_image != null && _visible)
 		{
-			g.color = Color.White;
+			g.color = _color;
 			var dx:Float = (_face < 0) ? _frameW * _scale : 0;
 
 			// Draw the rotated image, if any
@@ -161,10 +172,6 @@ class WyObject
 			// Debug hitbox
 			g.color = Color.Red;
 			g.drawRect(_hitbox.x, _hitbox.y, _hitbox.width, _hitbox.height);
-
-			// Debug image box
-			g.color = Color.Green;
-			g.drawRect(_position.x, _position.y, _frameW, _frameH);
 		}
 	}
 
@@ -188,6 +195,9 @@ class WyObject
 			_hit = false;
 		}
 
+		if (_hit)
+			Wy.log("collide ? : " + _hit);
+
 		return _hit;
 	}
 
@@ -196,8 +206,8 @@ class WyObject
 		_image = Image.createRenderTarget(frameW, frameH);
 
 		_image.g2.begin(true, Color.fromValue(0x00000000));
-		_image.g2.color = Color.fromValue(0x66ff0000); // transparent red
-		_image.g2.fillRect(0, 0, frameW/2, frameH/2);
+		_image.g2.color = color;
+		_image.g2.fillRect(0, 0, frameW, frameH);
 		// _image.g2.color = Color.fromValue(0xff00ff00);
 		// kha.graphics2.GraphicsExtension.fillCircle(_image.g2, frameW/2, frameH/2, frameW/2);
 		//_image.g2.fillRect(0, 0, frameW, frameH);
@@ -247,6 +257,20 @@ class WyObject
 		_rightDirection = (isRight) ? 1.0 : -1.0;
 		
 		_direction = 1;
+	}
+
+	public function setPosition (?x:Float, ?y:Float)
+	{
+		if (x != null)
+		{
+			_position.x = x;
+			_hitbox.x = _position.x + _cx;// + _offset.x;
+		}
+		if (y != null)
+		{
+			_position.y = y;
+			_hitbox.y = _position.y + _cy;// + _offset.y;
+		}
 	}
 
 
