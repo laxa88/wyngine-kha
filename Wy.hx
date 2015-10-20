@@ -20,34 +20,6 @@ import kha.StorageFile;
 
 class Wy
 {
-	/**
-		Wyngine's focus on simplicity and barebones. If it's fancy,
-		then we probably don't need it.
-
-		NOTES:
-		* none
-
-		TODO
-			WyBitmapText
-			WyFile - check if it still works
-			WySprite - remove?
-
-			9-slice
-			object pool
-			camera shake
-			particle and emitter
-			quad-tree collision
-			tiled parser
-			tile generator
-			parallax background
-			fsm
-
-			input
-				gamepad
-				mouse
-				touch
-	*/
-
 	public static var DEBUG:Bool = false;
 	public static var G:Wy;
 
