@@ -1,6 +1,5 @@
 package wy;
 
-import haxe.ds.ArraySort;
 import kha.Sys;
 import kha.Game;
 import kha.Color;
@@ -12,11 +11,8 @@ import kha.Scheduler;
 import kha.Framebuffer;
 import kha.ScreenRotation;
 import kha.ScreenCanvas;
-import kha.audio1.Audio;
-import kha.input.Keyboard;
 import kha.math.FastMatrix3;
 import kha.math.Random;
-import kha.StorageFile;
 
 class Wy
 {
@@ -149,7 +145,7 @@ class Wy
 		g.begin();
 		//g.color = Color.White;
 		g.color = _bgColor;
-		g.transformation = FastMatrix3.identity();
+		//g.transformation = FastMatrix3.identity();
 		g.fillRect(0,0,_screenW,_screenH);
 
 		// Draw objects
@@ -179,13 +175,16 @@ class Wy
 		_objects.remove(o);
 	}
 
-	public function overlap (obj1:WyObject, obj2:WyObject, cb:WyObject->WyObject->Void) : Bool
+	public function overlap (obj1:WyObject, obj2:WyObject, ?callback:Dynamic->Dynamic->Void) : Bool
 	{
-		if (obj1.collide(obj2))
-		{
-			cb(obj1, obj2);
+		if (!obj1._exists || !obj1._alive)
+			return false;
+
+		if (!obj2._exists || !obj2._alive)
+			return false;
+
+		if (obj1.collide(obj2, callback))
 			return true;
-		}
 
 		return false;
 	}

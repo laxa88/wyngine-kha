@@ -78,7 +78,10 @@ class WyUtil
 	*/
 	public inline static function randomInCircle () : FastVector2
 	{
-		return new FastVector2(Math.random(), Math.random());
+		var x = Math.random() * ((Math.random() > 0.5) ? -1 : 1);
+		var y = Math.random() * ((Math.random() > 0.5) ? -1 : 1);
+		var p:FastVector2 = new FastVector2(x, y);
+		return p;
 	}
 
 	/**
@@ -87,8 +90,23 @@ class WyUtil
 	*/
 	public inline static function randomOnCircle () : FastVector2
 	{
-		var p:FastVector2 = new FastVector2(Math.random(), Math.random());
+		var p:FastVector2 = randomInCircle();
 		p.normalize();
 		return p;
+	}
+
+	// NOTE this is not repo version
+	/**
+	* Remember:
+	* - zero angles is to the EAST (x=1,y=0)
+	* - negative-y is actually UP on the screen
+	*/
+	public inline static function radToVector (rad:Float) : FastVector2
+	{
+		return new FastVector2(Math.cos(rad), Math.sin(rad));
+	}
+	public inline static function degToVector (angle:Float) : FastVector2
+	{
+		return radToVector(degToRad(angle));
 	}
 }
