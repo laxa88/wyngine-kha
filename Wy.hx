@@ -4,14 +4,12 @@ import kha.Sys;
 import kha.Game;
 import kha.Color;
 import kha.Image;
-import kha.Loader;
 import kha.Scaler;
-import kha.Key;
 import kha.Scheduler;
 import kha.Framebuffer;
 import kha.ScreenRotation;
-import kha.ScreenCanvas;
-import kha.math.FastMatrix3;
+//import kha.ScreenCanvas;
+//import kha.math.FastMatrix3;
 import kha.math.Random;
 
 class Wy
@@ -25,7 +23,7 @@ class Wy
 
 	// Game data
 	var _buffer:Image;
-	var _objects:Array<WyObject>;
+	var _objects:WyPool<WyObject>;
 
 	// FPS
 	var _fpsList:Array<Float> = [0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0];
@@ -37,12 +35,16 @@ class Wy
 	public var _dt:Float;
 	public var _realFps:Int;
 
+	// quattree
+	var quadtree:WyQuadTree;
+	var active:Bool = true;
+
 
 
 	public function new ()
 	{
 		// Init variables once
-		_objects = new Array<WyObject>();
+		_objects = new WyPool<WyObject>();
 		WyInput.init();
 		WyAudio.init();
 		_oldRealDt = _newRealDt = Scheduler.realTime();
@@ -72,6 +74,9 @@ class Wy
 		_screenH = Std.int(canvasH / scale);
 		_buffer = Image.createRenderTarget(_screenW, _screenH);
 		_bgColor = Color.fromValue(0xff6495ed); // cornflower blue
+
+		// init quadtree
+		quadtree = new WyQuadTree(0, new kha.Rectangle(0, 0, _screenW, _screenH));
 
 		log("Wyngine init : canvas[" + canvasW + "," + canvasH + "] , screen[" + _screenW + "," + _screenH + "]");
 	}
@@ -113,25 +118,8 @@ class Wy
 		// TODO - update audio?
 
 		// update all the game objects
-		for (o in _objects)
-		{
-			if (o._active)
-				o.update(_dt);
-		}
-
-		// NOTE:
-		// for now, just do basic rect collision checks.
-		// in the future, use quad trees.
-		// var objLen:Int = _objects.length;
-		// for (j in 0 ... objLen)
-		// {
-		// 	// TODO: this logic is not optimised!
-		// 	for (k in 0 ... objLen)
-		// 	{
-		// 		if (j != k)
-		// 			objects[j].collide(objects[k]);
-		// 	}
-		// }
+		if (active)
+			_objects.update(_dt);
 	}
 
 	public function render (frame:Framebuffer)
@@ -142,18 +130,15 @@ class Wy
 		// Draw on the buffer
 		var g = _buffer.g2;
 
-		g.begin();
-		//g.color = Color.White;
+		g.begin(true, _bgColor);
 		g.color = _bgColor;
-		//g.transformation = FastMatrix3.identity();
 		g.fillRect(0,0,_screenW,_screenH);
 
+		// draw quad grids before anything else
+		quadtree.drawDebug(g);
+
 		// Draw objects
-		for (o in _objects)
-		{
-			if (o._visible)
-				o.render(g);
-		}
+		_objects.render(g);
 
 		g.end();
 
@@ -167,7 +152,7 @@ class Wy
 
 	public function add (o:WyObject)
 	{
-		_objects.push(o);
+		_objects.add(o);
 	}
 
 	public function remove (o:WyObject)
@@ -175,18 +160,73 @@ class Wy
 		_objects.remove(o);
 	}
 
-	public function overlap (obj1:WyObject, obj2:WyObject, ?callback:Dynamic->Dynamic->Void) : Bool
+	/**
+	 * TODO: follow HaxeFlixel method of checking for object1/object2 types
+	 * and handling each case properly
+	 *
+	 * Ideally this should work like HaxeFlixel's quadtree logic.
+	 * @param 	object1 	WyPool list of items
+	 * @param 	object2 	WyPool list of items
+	 * @param 	obj1 		callback when obj1 and obj2 collides
+	 * @return 	Boolean Whether one or more overlap happened
+	 */
+	public function overlap (?object1:WyObject, ?object2:WyObject, ?callback:Dynamic->Dynamic->Void) : Bool
 	{
-		if (!obj1._exists || !obj1._alive)
-			return false;
+		// Compare master list by default
+		if (object1 == null)
+			object1 = _objects;
 
-		if (!obj2._exists || !obj2._alive)
-			return false;
+		// Don't compare against self
+		if (object2 == object1)
+			object2 = null;
 
-		if (obj1.collide(obj2, callback))
-			return true;
+		// check object type
+		// NOTE: for now we assume that all groups are pools.
+		// in future, follow flixel format.
 
-		return false;
+		quadtree.clear();
+		addToQuadTree(object1);
+		addToQuadTree(object2);
+
+		// process the quadtree, magic!
+		var hit:Bool = false;
+		hit = quadtree.process(callback);
+
+		// clear the quadtree and list when we're done
+		// quadtree.clear();
+
+		return hit;
+	}
+
+	function addToQuadTree (object:WyObject)
+	{
+		if (object == null)
+			return;
+
+		var item:WyObject;
+
+		if (object.collisionType == WynCollisionType.GROUP)
+		{
+			// this is a group of objects
+			var pool:WyPool<WyObject> = cast object;
+			for (i in 0 ... pool.length)
+			{
+				item = pool._items[i];
+				if (item._exists)
+					quadtree.insert(item);
+			}
+		}
+		else
+		{
+			// this is a single object
+			if (object._exists)
+				quadtree.insert(object);
+		}
+	}
+
+	public function togglePause ()
+	{
+		active = !active;
 	}
 
 

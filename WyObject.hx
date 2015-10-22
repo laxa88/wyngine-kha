@@ -7,6 +7,7 @@ import kha.Rectangle;
 import kha.math.FastMatrix3;
 import kha.math.FastVector2;
 import kha.graphics2.Graphics;
+import kha.graphics2.GraphicsExtension;
 
 class WyObject
 {
@@ -23,6 +24,8 @@ class WyObject
 	public var _alive:Bool; // for WyPool - exists but can be dead or alive
 	public var _active:Bool; // flag for update
 	public var _visible:Bool; // flag for render
+	public var collisionType(default, null):WynCollisionType;
+
 	public var _position:FastVector2;
 	public var _velocity:FastVector2;
 	public var _acceleration:FastVector2; // for gravity or car movement
@@ -100,6 +103,7 @@ class WyObject
 		_cw = 0;
 		_ch = 0;
 		_hit = false;
+		collisionType = WynCollisionType.OBJECT;
 
 		setDefaultFacingRight(true); // default to right
 	}
@@ -130,11 +134,7 @@ class WyObject
 		_animator.update(dt);
 
 		// update frame index
-		var sheetIndex:Int = _animator.getSheetIndex();
-		_frameX = (sheetIndex % _frameColumns) * _frameW;
-		_frameY = Std.int(sheetIndex / _frameColumns) * _frameH;
-
-		//Wy.log("# frame : " + sheetIndex);
+		updateAnimator();
 	}
 
 	public function render (g:Graphics)
@@ -192,12 +192,12 @@ class WyObject
 	}
 
 	/**
-	* Kills this object
-	* Note: manually set _alive to false to ensure
-	* the object can exist while being marked "dead",
-	* for game purposes. E.g. Check all existing enemies
-	* that are "dead" within the room.
-	*/
+	 * Kills this object
+	 * Note: manually set _alive to false to ensure
+	 * the object can exist while being marked "dead",
+	 * for game purposes. E.g. Check all existing enemies
+	 * that are "dead" within the room.
+	 */
 	public function kill ()
 	{
 		// for WyPool.
@@ -219,14 +219,17 @@ class WyObject
 	}
 
 	/**
-	* TODO quad tree to solve 1-to-1, 1-to-many, and many-to-many collisions
-	*/
+	 * TODO quad tree to solve 1-to-1, 1-to-many, and many-to-many collisions
+	 */
 	public function collide (other:WyObject, ?callback:Dynamic->Dynamic->Void) : Bool
 	{
-		if (!_active || !_alive)
+		if (other == this)
 			return false;
 
-		if (!other._active || !other._alive)
+		if (!_active)
+			return false;
+
+		if (!other._active)
 			return false;
 
 		if (_hitbox.collision(other._hitbox))
@@ -244,26 +247,72 @@ class WyObject
 		return _hit;
 	}
 
-	public function setPlaceholderImage (color:Color, frameW:Int=50, frameH:Int=50)
+	/**
+	 * Used for creating empty images. Useful if you want to custom
+	 * placeholder images.
+	 */
+	public function setEmptyImage (width:Int=50, height:Int=50)
 	{
+		_image = Image.createRenderTarget(width, height);
+
 		_frameColumns = 1;
 		_frameX = 0;
 		_frameY = 0;
-		_frameW = frameW;
-		_frameH = frameH;
+		_frameW = width;
+		_frameH = height;
 
-		// draw a filled rectangle as placeholder
-		_image = Image.createRenderTarget(_frameW, _frameH);
-		_image.g2.begin(true, Color.fromValue(0x00000000));
-		_image.g2.color = color;
-		_image.g2.fillRect(0, 0, frameW, frameH);
-		// _image.g2.color = Color.fromValue(0xff00ff00);
-		// kha.graphics2.GraphicsExtension.fillCircle(_image.g2, frameW/2, frameH/2, frameW/2);
-		//_image.g2.fillRect(0, 0, frameW, frameH);
-		_image.g2.end();
+		setDefaultFacingRight(true);
 	}
 
-	public function setImage (name:String, frameW:Int=0, frameH:Int=0)
+	/**
+	 * Creates a placeholder image and draws a rect into it.
+	 * WARNING: this is an expensive method.
+	 * Use a loaded image or reuse other image  buffers if possible.
+	 */
+	public function setPlaceholderRect (color:Color, w:Int=50, h:Int=50, filled:Bool=false)
+	{
+		setEmptyImage(w, h);
+
+		// draw a filled rectangle as placeholder
+		_image = Image.createRenderTarget(w, h);
+		_image.g2.begin(true, Color.fromValue(0x00000000));
+		_image.g2.color = color;
+		if (filled)
+			_image.g2.fillRect(0, 0, w, h);
+		else
+			_image.g2.drawRect(0, 0, w, h);
+		_image.g2.end();
+
+		setDefaultFacingRight(true);
+	}
+
+	/**
+	 * Creates a placeholder image and draws a circle into it.
+	 * WARNING: this is an expensive method, because it uses drawLine repeatedly.
+	 * Use a loaded image or reuse other image buffers if possible.
+	 */
+	public function setPlaceholderCircle (color:Color, size:Int=50, filled:Bool=false)
+	{
+		setEmptyImage(size, size);
+
+		_image.g2.color = color;
+		if (filled)
+			GraphicsExtension.fillCircle(_image.g2, size/2, size/2, size/2);
+		else
+			GraphicsExtension.drawCircle(_image.g2, size/2, size/2, size/2);
+		_image.g2.end();
+
+		setDefaultFacingRight(true);
+	}
+
+	public function setImage (image:Image)
+	{
+		// not sure if this will not work on an already initialised image
+		// because in Khasteroids, the sizes do not reset.
+		_image = image;
+	}
+
+	public function loadImage (name:String, frameW:Int=0, frameH:Int=0)
 	{
 		setDefaultFacingRight(true);
 
@@ -300,6 +349,21 @@ class WyObject
 		_hitbox.height = _ch;
 	}
 
+	public function playAnim (name:String, reset:Bool=false)
+	{
+		_animator.play(name, reset);
+
+		// update the sheet
+		updateAnimator();
+	}
+
+	function updateAnimator ()
+	{
+		var sheetIndex:Int = _animator.getSheetIndex();
+		_frameX = (sheetIndex % _frameColumns) * _frameW;
+		_frameY = Std.int(sheetIndex / _frameColumns) * _frameH;
+	}
+
 	public function setDefaultFacingRight (isRight:Bool)
 	{
 		// If current sprite is facing right, then isRight is true,
@@ -324,9 +388,9 @@ class WyObject
 	}
 
 	/**
-	* Position by default is at TOP-LEFT, so this sets the
-	* object and offsets to the center instead.
-	*/
+	 * Position by default is at TOP-LEFT, so this sets the
+	 * object and offsets to the center instead.
+	 */
 	public function setCenterPos (x:Float, y:Float)
 	{
 		_position.x = x - _frameW/2;
@@ -336,9 +400,9 @@ class WyObject
 	}
 
 	/**
-	* Position by default is at TOP-LEFT, so this returns the
-	* center of the object for other cases.
-	*/
+	 * Position by default is at TOP-LEFT, so this returns the
+	 * center of the object for other cases.
+	 */
 	public function getCenterPos ():FastVector2
 	{
 		return new FastVector2(_position.x+_frameW/2, _position.y+_frameH/2);

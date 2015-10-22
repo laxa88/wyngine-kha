@@ -92,13 +92,18 @@ class WyAnimator
 		_currAnim = null;
 	}
 
+	/**
+	* Adds a new animation data. Animator doesn't know anything about
+	* the spritesheet, it just stores array data of the frame indices
+	* it should play when its name is called.
+	*
+	* NOTE:
+	* frames store the index for the animation
+	* e.g. frames = [0,3,5,4]
+	* this means the animation plays frames 0-3-5-4 in order.
+	*/
 	public function add (name:String, frames:Array<Int>, fps:Int=30, loop:Bool=true):Void
 	{
-		// NOTE:
-		// frames store the index for the animation
-		// e.g. frames = [0,3,5,4]
-		// this means the animation plays frames 0-3-5-4 in order.
-
 		var anim:WyAnimation = new WyAnimation(this, name, frames, fps, loop);
 		_animations[name] = anim;
 
@@ -137,14 +142,17 @@ class WyAnimator
 			}
 		}
 	}
+
 	public function pause ()
 	{
 		_paused = true;
 	}
+
 	public function resume ()
 	{
 		_paused = false;
 	}
+
 	public function getSheetIndex ():Int
 	{
 		// Returns the current animation's frame index in the sprite sheet

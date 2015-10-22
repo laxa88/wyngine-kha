@@ -20,14 +20,19 @@ class WyPool<T:WyObject> extends WyObject
 	*/
 
 	public var _items:Array<T>;
-	var _len:Int;
+	public var length(default,null):Int;
+	public var existCount(get,null):Int;
+	// public var aliveCount(get,null):Int;
+	// public var activeCount(get,null):Int;
+	// public var visibleount(get,null):Int;
 
 	public function new ()
 	{
 		super();
 		
 		_items = [];
-		_len = 0;
+		length = 0;
+		collisionType = WynCollisionType.GROUP;
 	}
 
 	/**
@@ -71,7 +76,7 @@ class WyPool<T:WyObject> extends WyObject
 		_items.push(o);
 
 		// never decrease, the pool should always increase to avoid GC... I think
-		_len++;
+		length++;
 
 		// return the object for further use, if needed		
 		return o;
@@ -128,8 +133,8 @@ class WyPool<T:WyObject> extends WyObject
 		}
 		else
 		{
-			Wy.log("single");
-
+			// TODO wypool collide with single objects
+			Wy.log("TODO");
 		}
 
 		return hit;
@@ -205,5 +210,16 @@ class WyPool<T:WyObject> extends WyObject
 		}
 
 		return null;
+	}
+
+	private inline function get_existCount () : Int
+	{
+		var count:Int = 0;
+		for (i in 0 ... length)
+		{
+			if (_items[i] != null && _items[i]._exists)
+				count++;
+		}
+		return count;
 	}
 }

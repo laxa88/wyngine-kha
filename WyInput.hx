@@ -101,7 +101,7 @@ class WyInput
 
 	private function onKeyDown (key:Key, char:String):Void
 	{
-		Wy.log("key down : " + key + " , " + char);
+		// Wy.log("key down : " + key + " , " + char);
 		if (key == Key.CHAR)
 		{
 			_charsPressed[char] = true;
@@ -116,7 +116,7 @@ class WyInput
 
 	private function onKeyUp (key:Key, char:String):Void
 	{
-		Wy.log("key up : " + key + " , " + char);
+		// Wy.log("key up : " + key + " , " + char);
 		if (key == Key.CHAR)
 		{
 			_charsPressed[char] = false;

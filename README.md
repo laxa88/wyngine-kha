@@ -8,6 +8,7 @@ The current philosphy I'm trying to follow for the engine is: "If it's fancy, th
 Games made with the engine so far:
 * [KhaPong](http://coinflipstudios.com/khapong) - [last working commit](https://github.com/laxa88/wyngine/commit/7cd34019ae85bb0e01accd81d680bcd5fd7d645b)
 * [Khasteroids](http://coinflipstudios.com/khasteroids) - [last working commit](https://github.com/laxa88/wyngine/commit/ca7718bc0fb3797fd2c14793394d6da1673f9127)
+* [KhaQuadTree](http://coinflipstudios.com/khaquadtree) - [last working commit]()
 
 # Current Available Features
 
@@ -16,6 +17,7 @@ Games made with the engine so far:
 * Audio
 * Simple Rectangle Collision
 * Object Pooling
+* Quad-tree collisions
 
 # TODO
 
@@ -27,7 +29,6 @@ Games made with the engine so far:
   * 9-slice
   * camera shake
   * particle and emitter
-  * quad-tree collision
   * tiled parser
   * tile generator
   * parallax background
