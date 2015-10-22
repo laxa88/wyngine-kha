@@ -6,7 +6,8 @@ This is intended as an experimental, learning experience for me. I'm building an
 The current philosphy I'm trying to follow for the engine is: "If it's fancy, then we probably don't need it (yet)."
 
 Games made with the engine so far:
-* [KhaPong](coinflipstudios.com/khapong)
+* [KhaPong](coinflipstudios.com/khapong) - [last working commit](https://github.com/laxa88/wyngine/commit/7cd34019ae85bb0e01accd81d680bcd5fd7d645b)
+* [Khasteroids](coinflipstudios.com/khasteroids) - [last working commit](https://github.com/laxa88/wyngine/commit/ca7718bc0fb3797fd2c14793394d6da1673f9127)
 
 # Current Available Features
 
