@@ -1,4 +1,4 @@
-package wy;
+package wyn;
 
 import kha.Image;
 import kha.Color;
@@ -7,7 +7,7 @@ import kha.Font;
 import kha.FontStyle;
 import kha.graphics2.Graphics;
 
-class WyText extends WyObject
+class WynText extends WynObject
 {
 	public var _font:Font;
 	public var _text:String;

@@ -1,4 +1,4 @@
-package wy;
+package wyn;
 
 import kha.Loader;
 import kha.Music;
@@ -7,9 +7,9 @@ import kha.audio1.Audio;
 import kha.audio1.MusicChannel;
 import kha.audio1.SoundChannel;
 
-class WyAudio
+class WynAudio
 {
-	public static var instance:WyAudio;
+	public static var instance:WynAudio;
 	private var _musics:Map<String, Music>;
 	private var _sounds:Map<String, Sound>;
 	private var _bgm:Map<String, MusicChannel>;
@@ -18,14 +18,23 @@ class WyAudio
 
 	public function new ()
 	{
-		_musics = new Map<String, Music>();
-		_sounds = new Map<String, Sound>();
-		_bgm = new Map<String, MusicChannel>();
-
-		instance = this;
+		if (instance == null)
+		{
+			_musics = new Map<String, Music>();
+			_sounds = new Map<String, Sound>();
+			_bgm = new Map<String, MusicChannel>();
+			instance = this;
+		}
+		else
+		{
+			_reset();
+		}
 	}
 
-
+	/**
+	 * These public functions should not be called manually,
+	 * use the static methods instead.
+	 */
 
 	public function _reset ()
 	{
@@ -94,38 +103,38 @@ class WyAudio
 		channel.volume = volume;
 	}
 
-
+	/**
+	 * These public static methods allow you to easily call the API, e.g.
+	 * 		WynAudio.init()
+	 * 		WynAudio.reset()
+	 * 		WynAudio.playMusic()
+	 * 		... and so on
+	 */
 
 	public static function init ()
 	{
-		instance = new WyAudio();
+		instance = new WynAudio();
 	}
-
 	public static function reset ()
 	{
 		instance._reset();
 	}
-
 	public static function playMusic (name:String, volume:Float=1.0, repeat:Bool=true)
 	{
 		instance._playMusic(name, volume, repeat);
 	}
-
 	public static function setMusicVolume (name:String, volume:Float)
 	{
 		instance._setMusicVolume(name, volume);
 	}
-
 	public static function pauseMusic (name:String)
 	{
 		instance._pauseMusic(name);
 	}
-
 	public static function stopMusic (name:String)
 	{
 		instance._stopMusic(name);
 	}
-
 	public static function playSound (name:String, volume:Float=1.0)
 	{
 		instance._playSound(name, volume);

@@ -1,10 +1,10 @@
-package wy;
+package wyn;
 
-class WyAnimator
+class WynAnimator
 {
-	public var _parent:WyObject;
-	public var _animations:Map<String, WyAnimation>;
-	public var _currAnim:WyAnimation;
+	public var _parent:WynObject;
+	public var _animations:Map<String, WynAnimation>;
+	public var _currAnim:WynAnimation;
 	public var _reverse:Bool;
 	public var _speed:Float;
 	public var _paused:Bool;
@@ -14,7 +14,7 @@ class WyAnimator
 
 
 
-	public function new (obj:WyObject)
+	public function new (obj:WynObject)
 	{
 		_parent = obj;
 
@@ -23,7 +23,7 @@ class WyAnimator
 
 	public function init ()
 	{
-		_animations = new Map<String, WyAnimation>();
+		_animations = new Map<String, WynAnimation>();
 		_currAnim = null;
 		_reverse = false;
 		_speed = 1.0;
@@ -92,14 +92,19 @@ class WyAnimator
 		_currAnim = null;
 	}
 
+	/**
+	* Adds a new animation data. Animator doesn't know anything about
+	* the spritesheet, it just stores array data of the frame indices
+	* it should play when its name is called.
+	*
+	* NOTE:
+	* frames store the index for the animation
+	* e.g. frames = [0,3,5,4]
+	* this means the animation plays frames 0-3-5-4 in order.
+	*/
 	public function add (name:String, frames:Array<Int>, fps:Int=30, loop:Bool=true):Void
 	{
-		// NOTE:
-		// frames store the index for the animation
-		// e.g. frames = [0,3,5,4]
-		// this means the animation plays frames 0-3-5-4 in order.
-
-		var anim:WyAnimation = new WyAnimation(this, name, frames, fps, loop);
+		var anim:WynAnimation = new WynAnimation(this, name, frames, fps, loop);
 		_animations[name] = anim;
 
 		if (_currAnim == null)
@@ -137,14 +142,17 @@ class WyAnimator
 			}
 		}
 	}
+
 	public function pause ()
 	{
 		_paused = true;
 	}
+
 	public function resume ()
 	{
 		_paused = false;
 	}
+
 	public function getSheetIndex ():Int
 	{
 		// Returns the current animation's frame index in the sprite sheet
