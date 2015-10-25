@@ -1,10 +1,10 @@
-package wy;
+package wyn;
 
 import kha.Image;
 
-class WyAnimation
+class WynAnimation
 {
-	public var _animator:WyAnimator;
+	public var _animator:WynAnimator;
 	public var _name:String;
 	public var _frames:Array<Int>;
 	public var _fps:Int = 6; // 6 frames per second
@@ -12,7 +12,7 @@ class WyAnimation
 
 
 
-	public function new (parent:WyAnimator, name:String, frames:Array<Int>, fps:Int, loop:Bool)
+	public function new (parent:WynAnimator, name:String, frames:Array<Int>, fps:Int, loop:Bool)
 	{
 		_animator = parent;
 		_name = name;

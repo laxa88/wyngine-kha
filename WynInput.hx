@@ -1,22 +1,11 @@
-package wy;
+package wyn;
 
 import kha.Key;
 import kha.input.Keyboard;
 
-class WyInput
+class WynInput
 {
-	/**
-		This class is modular and can be used stand-alone.
-		
-		Just instantiate a WyInput in your game, then call
-		the update() to keep track of the data. then call
-		the following static methods whenever you want:
-		- isKeyDown
-		- isKey
-		- isKeyUp
-	*/
-
-	public static var instance:WyInput;
+	public static var instance:WynInput;
 	private var _keysPressed:Map<Key, Bool>;
 	private var _charsPressed:Map<String, Bool>;
 	private var _keysHeld:Map<Key, Bool>;
@@ -25,9 +14,8 @@ class WyInput
 	private var _charsReleased:Map<String, Bool>;
 
 	/**
-	* These instance functions should never be used directly,
-	* because we use the static methods further below.
-	*/
+	 * These should be handled by Wyngine automatically.
+	 */
 
 	public function new ()
 	{
@@ -94,14 +82,13 @@ class WyInput
 	}
 
 	/**
-	* These are callbacks for kha.Keyboard keyDown and keyUp events.
-	* Callbacks will be processed, and stored into WyInput's 
-	* char or key's press/held/released boolean arrays.
-	*/
+	 * These are callbacks for kha.Keyboard keyDown and keyUp events.
+	 * Callbacks will be processed, and stored into WynInput's 
+	 * char or key's press/held/released boolean arrays.
+	 */
 
 	private function onKeyDown (key:Key, char:String):Void
 	{
-		// Wy.log("key down : " + key + " , " + char);
 		if (key == Key.CHAR)
 		{
 			_charsPressed[char] = true;
@@ -113,10 +100,8 @@ class WyInput
 			_keysReleased[key] = false;
 		}
 	}
-
 	private function onKeyUp (key:Key, char:String):Void
 	{
-		// Wy.log("key up : " + key + " , " + char);
 		if (key == Key.CHAR)
 		{
 			_charsPressed[char] = false;
@@ -130,8 +115,9 @@ class WyInput
 	}
 
 	/**
-	* These are instance methods, accessed from the static variable "instance"
-	*/
+	 * These public functions should not be called manually,
+	 * use the static methods instead.
+	 */
 
 	public function _isKeyDown (key:Key, char:String=""):Bool
 	{
@@ -140,7 +126,6 @@ class WyInput
 		else
 			return _keysPressed[key];
 	}
-
 	public function _isKey (key:Key, char:String=""):Bool
 	{
 		if (key == Key.CHAR)
@@ -148,7 +133,6 @@ class WyInput
 		else
 			return _keysHeld[key];
 	}
-
 	public function _isKeyUp (key:Key, char:String=""):Bool
 	{
 		if (key == Key.CHAR)
@@ -158,24 +142,24 @@ class WyInput
 	}
 
 	/**
-	* Allows usage like WyInput.isKeyDown(...);
-	*/
+	 * These public static methods allow you to easily call the API, e.g.
+	 * 		WynInput.init()
+	 * 		WynInput.isKeyDown()
+	 * 		... and so on
+	 */
 
 	public static function init ()
 	{
-		instance = new WyInput();
+		instance = new WynInput();
 	}
-
 	public static function isKeyDown (key:Key, char:String=""):Bool
 	{
 		return instance._isKeyDown(key, char);
 	}
-
 	public static function isKey (key:Key, char:String=""):Bool
 	{
 		return instance._isKey(key, char);
 	}
-
 	public static function isKeyUp (key:Key, char:String=""):Bool
 	{
 		return instance._isKeyUp(key, char);

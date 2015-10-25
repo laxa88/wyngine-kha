@@ -1,10 +1,10 @@
-package wy;
+package wyn;
 
-class WyAnimator
+class WynAnimator
 {
-	public var _parent:WyObject;
-	public var _animations:Map<String, WyAnimation>;
-	public var _currAnim:WyAnimation;
+	public var _parent:WynObject;
+	public var _animations:Map<String, WynAnimation>;
+	public var _currAnim:WynAnimation;
 	public var _reverse:Bool;
 	public var _speed:Float;
 	public var _paused:Bool;
@@ -14,7 +14,7 @@ class WyAnimator
 
 
 
-	public function new (obj:WyObject)
+	public function new (obj:WynObject)
 	{
 		_parent = obj;
 
@@ -23,7 +23,7 @@ class WyAnimator
 
 	public function init ()
 	{
-		_animations = new Map<String, WyAnimation>();
+		_animations = new Map<String, WynAnimation>();
 		_currAnim = null;
 		_reverse = false;
 		_speed = 1.0;
@@ -104,7 +104,7 @@ class WyAnimator
 	*/
 	public function add (name:String, frames:Array<Int>, fps:Int=30, loop:Bool=true):Void
 	{
-		var anim:WyAnimation = new WyAnimation(this, name, frames, fps, loop);
+		var anim:WynAnimation = new WynAnimation(this, name, frames, fps, loop);
 		_animations[name] = anim;
 
 		if (_currAnim == null)
