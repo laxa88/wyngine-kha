@@ -9,7 +9,7 @@ class WynGroup<T:WynObject> extends WynObject
 	 * as an object pooler.
 	 */
 
-	public var members(default, null):Array<T>;
+	public var members(default, null):Array<T> = [];
 	public var length(default, null):Int = 0;
 
 
@@ -18,7 +18,6 @@ class WynGroup<T:WynObject> extends WynObject
 	{
 		super();
 
-		members = [];
 		objectType = WynObjectType.GROUP;
 	}
 

@@ -19,11 +19,11 @@ class WynScreen extends WynGroup<WynObject>
 	public function new ()
 	{
 		super();
-	}
 
-	override public function init ()
-	{
-		super.init();
+		x = 0;
+		y = 0;
+		width = Wyngine.G.gameWidth;
+		height = Wyngine.G.gameHeight;
 	}
 
 	override public function update (dt:Float)

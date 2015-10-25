@@ -12,11 +12,11 @@ class WynObject
 	private static var ID_COUNTER:Int = 0;
 
 	public var id:Int = -1;
-	public var exists:Bool;
-	public var alive:Bool;
-	public var active:Bool;
-	public var visible:Bool;
-	public var objectType(default, null):WynObjectType;
+	public var exists:Bool = true;
+	public var alive:Bool = true;
+	public var active:Bool = true;
+	public var visible:Bool = true;
+	public var objectType(default, null):WynObjectType = WynObjectType.NONE;
 
 	public var x:Float = 0; // Note: position origin is at top-left corner.
 	public var y:Float = 0;
@@ -24,10 +24,10 @@ class WynObject
 	public var height:Float = 0;
 
 	public var angle:Float = 0; // Note: Rotations are costly, especially on flash!
-	public var velocity(default, null):FastVector2;
-	public var acceleration(default, null):FastVector2;
-	public var drag(default, null):FastVector2;
-	public var maxVelocity(default, null):FastVector2;
+	public var velocity(default, null):FastVector2 = new FastVector2();
+	public var acceleration(default, null):FastVector2 = new FastVector2();
+	public var drag(default, null):FastVector2 = new FastVector2();
+	public var maxVelocity(default, null):FastVector2 = new FastVector2();
 	public var angularVelocity:Float = 0;
 	public var angularAcceleration:Float = 0; // acceleration for angle
 	public var angularDrag:Float = 0;
@@ -46,19 +46,7 @@ class WynObject
 		this.width = w;
 		this.height = h;
 
-		velocity = new FastVector2();
-		acceleration = new FastVector2();
-		drag = new FastVector2();
-		maxVelocity = new FastVector2();
-
 		objectType = WynObjectType.OBJECT;
-
-		init();
-	}
-
-	public function init ()
-	{
-		// To be overridden by derived classes
 	}
 
 	public function update (dt:Float)
@@ -77,6 +65,7 @@ class WynObject
 	public function render (g:Graphics)
 	{
 		// By default, empty objects don't have image.
+		// Do rendering logic in WynSprite instead.
 	}
 
 	public function destroy ()
@@ -88,5 +77,36 @@ class WynObject
 		acceleration = null;
 		drag = null;
 		maxVelocity = null;
+	}
+
+	/**
+	 * When you don't need fancy quadtrees, you can
+	 * use this for single checks.
+	 */
+	public function collide (other:WynObject) : Bool
+	{
+		var hitHoriz:Bool;
+		var hitVert:Bool;
+
+		if (x < other.x)
+			hitHoriz = other.x < (x + width);
+		else
+			hitHoriz = x < (other.x + other.width);
+
+		if (y < other.y)
+			hitVert = other.y < (y + height);
+		else
+			hitVert = y < (other.y + other.height);
+
+		return (hitHoriz && hitVert);
+	}
+
+	/**
+	 * Useful for resetting position quickly in one line
+	 */
+	public function setPosition (x:Float, y:Float)
+	{
+		this.x = x;
+		this.y = y;
 	}
 }

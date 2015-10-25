@@ -4,6 +4,7 @@ import kha.Sys;
 import kha.Game;
 import kha.Color;
 import kha.Image;
+import kha.Loader;
 import kha.Scheduler;
 import kha.Framebuffer;
 import kha.Scaler;
@@ -12,17 +13,17 @@ import kha.math.Random;
 
 /**
  * Kha's screens are kha.Game classes.
- * To change screens, you need to do this:
- * 		Configuration.setScreen(new GameScreen());
- *
- * As a starting point for code entry, all screens
- * and subscreens will be handled via WynScreen.
+ * Wyngine abstracts everything away, now handling all the
+ * core update/render logic. It's now very much like
+ * HaxeFlixel -- create a new WynScreen and start writing
+ * your game in it.
  */
 
 class Wyngine extends Game
 {
-	public static var DEBUG:Bool = true;
+	public static var DEBUG:Bool = false; // Flag true to see image/collider/quadtree boxes
 	public static var G:Wyngine; // static reference
+
 	public var zoom(default, null):Float;
 	public var startScreen:Class<WynScreen>;
 	public var currentScreen:WynScreen; // current game screen
@@ -31,12 +32,13 @@ class Wyngine extends Game
 	public var gameWidth(default, null):Int; // Game's scaled resolution size
 	public var gameHeight(default, null):Int;
 	public var scale(default, null):Int;
+	public var loadPercentage(get, null):Float;
 
 	// Cameras are basically one or more image buffers
 	// rendered onto the main Framebuffer.
 	// TODO multiple cameras
 	public var camera(default, null):Image;
-	public var bgColor:Color;
+	public var bgColor(default, set):Color;
 	public var input:WynInput;
 
 	// Have one reusable quadtree container so we don't
@@ -71,25 +73,21 @@ class Wyngine extends Game
 
 	override public function init ()
 	{
-		// If startScreen is null, use default WynScreen
-		if (startScreen == null)
-			startScreen = WynScreen;
+		// Set reference first thing first.
+		G = this;
 
-		// Create an instance of type startScreen, cast it as WynScreen,
-		// so that we can store it into currentScreen.
-		currentScreen = cast (Type.createInstance(startScreen, []));
+		// By default, random numbers are seeded. Set
+		// a new seed after init if necessary.
+		Random.init(Std.int(Date.now().getTime()));
 
-		// Set the starting screen sizes
+		// Set the starting screen sizes, which will be used when
+		// screens are instanced, etc.
 		windowWidth = ScreenCanvas.the.width;
 		windowHeight = ScreenCanvas.the.height;
 		gameWidth = Std.int(windowWidth / zoom);
 		gameHeight = Std.int(windowHeight / zoom);
 		camera = Image.createRenderTarget(gameWidth, gameHeight);
-		bgColor = Color.fromValue(0xff6495ed); // default: cornflower blue
-
-		// By default, random numbers are seeded. Set
-		// a new seed after init if necessary.
-		Random.init(Std.int(Date.now().getTime()));
+		bgColor = null;
 
 		// Initialise engine variables
 		WynInput.init();
@@ -98,7 +96,13 @@ class Wyngine extends Game
 		// quick reference
 		input = WynInput.instance;
 
-		G = this;
+		// If startScreen is null, use default WynScreen
+		if (startScreen == null)
+			startScreen = WynScreen;
+
+		// Create an instance of type startScreen, cast it as WynScreen,
+		// so that we can store it into currentScreen.
+		switchScreen(startScreen);
 	}
 
 	override public function update ()
@@ -113,8 +117,7 @@ class Wyngine extends Game
 		dt = (_newDt - _oldDt);
 
 		// Get FPS
-		if (DEBUG)
-			updateFps();
+		if (DEBUG) updateFps();
 
 		// Update input
 		input.update();
@@ -218,7 +221,7 @@ class Wyngine extends Game
 		// Add the object or groups into two list. If o2 is null,
 		// then o1 compares to itself. Otherwise, it should auto-check
 		// between o1 and o2.
-		_quadtree.load(o1, o2, onOverlap);
+		_quadtree.load(o1, o2, callback);
 
 		// Process the quadtree and do call backs for each object collided.
 		var hit:Bool = _quadtree.execute();
@@ -230,11 +233,54 @@ class Wyngine extends Game
 		return hit;
 	}
 
-	function onOverlap (o1:WynObject, o2:WynObject)
+	/**
+	 * Change screens. There's no fade logic -- Do it inside the
+	 * screen manually before calling this method. NOTE:
+	 * Switching a screen will destroy the previous screen.
+	 */
+	public function switchScreen (targetScreen:Class<WynScreen>, ?loadingScreen:Class<WynScreen>)
 	{
-		log("OVERLAP");
+		// Transition out the current screen
+		if (G.currentScreen != null)
+			G.currentScreen.destroy();
+
+		// Create new screen and set it up
+		if (loadingScreen != null)
+			G.currentScreen = cast (Type.createInstance(loadingScreen, [targetScreen]));
+		else
+			G.currentScreen = cast (Type.createInstance(targetScreen, []));
 	}
 
+	/**
+	 * This is just a method that abstracts away kha's method,
+	 * for convenience sake.
+	 */
+	public function loadAssets (name:String, callback:Void->Void)
+	{
+		Loader.the.loadRoom(name, callback);
+	}
+
+
+
+	private function get_loadPercentage () : Float
+	{
+		return Loader.the.getLoadPercentage();
+	}
+
+	private function set_bgColor (val:Color) : Color
+	{
+		// Allow setting to null:
+		// Defaults to cornflower blue (good old days of XNA)
+		if (val == null)
+			val = Color.fromValue(0xff6495ed);
+		return (bgColor = val);
+	}
+
+	/**
+	 * Wyngine-level debug method. Right now it's tested only
+	 * on HTML5, but if there's a need for special logs in other
+	 * platforms, I'll add them here.
+	 */
 	public static function log (str:String)
 	{
 		if (DEBUG)

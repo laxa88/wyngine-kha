@@ -69,6 +69,7 @@ class WynQuadTree
 		this.active = true;
 
 		_level = level;
+		_nodes = [null, null, null, null];
 		_quadLeft = x;
 		_quadTop = y;
 		_quadRight = x + w;
@@ -102,11 +103,12 @@ class WynQuadTree
 		_nodes = [null, null, null, null];
 		_listA = [];
 		_listB = [];
-		_useBothLists = false;
-		_callback = null;
 
 		// Clear static variables.
+		_useBothLists = false;
 		_object = null;
+		_listI = null;
+		_callback = null;
 	}
 
 	/**
