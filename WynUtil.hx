@@ -109,4 +109,14 @@ class WynUtil
 	{
 		return radToVector(degToRad(angle));
 	}
+
+	// public inline static function vectorToRad (v:FastVector2) : Float
+	// {
+	// 	// does this affect v directly?
+	// }
+
+	// public inline static function vectorToDeg (v:FastVector2) : Float
+	// {
+
+	// }
 }

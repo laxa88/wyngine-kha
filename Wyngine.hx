@@ -21,17 +21,19 @@ import kha.math.Random;
 
 class Wyngine extends Game
 {
-	public static var DEBUG:Bool = false; // Flag true to see image/collider/quadtree boxes
+	public static var DEBUG:Bool = true; // Flag true to see image/collider/quadtree boxes
 	public static var G:Wyngine; // static reference
 
 	public var zoom(default, null):Float;
-	public var startScreen:Class<WynScreen>;
-	public var currentScreen:WynScreen; // current game screen
+	var thisScreen:Class<WynScreen>; // curr screen, checks against nextScreen
+	var nextScreen:Class<WynScreen>; // next screen. If different from currScreen, will transition.
+	var nextScreenParams:Array<Dynamic>;
+	var currentScreen:WynScreen; // current game screen
+
 	public var windowWidth(default, null):Int; // Actual window size
 	public var windowHeight(default, null):Int;
 	public var gameWidth(default, null):Int; // Game's scaled resolution size
 	public var gameHeight(default, null):Int;
-	public var scale(default, null):Int;
 	public var loadPercentage(get, null):Float;
 
 	// Cameras are basically one or more image buffers
@@ -67,15 +69,20 @@ class Wyngine extends Game
 	{
 		super("Wyngine");
 
-		this.startScreen = startScreen;
+		// Set reference first thing first.
+		G = this;
+
 		this.zoom = zoom;
+
+		if (startScreen == null)
+			startScreen = WynScreen;
+
+		// Switch to screen after we're done
+		switchScreen(startScreen);
 	}
 
 	override public function init ()
 	{
-		// Set reference first thing first.
-		G = this;
-
 		// By default, random numbers are seeded. Set
 		// a new seed after init if necessary.
 		Random.init(Std.int(Date.now().getTime()));
@@ -95,14 +102,6 @@ class Wyngine extends Game
 
 		// quick reference
 		input = WynInput.instance;
-
-		// If startScreen is null, use default WynScreen
-		if (startScreen == null)
-			startScreen = WynScreen;
-
-		// Create an instance of type startScreen, cast it as WynScreen,
-		// so that we can store it into currentScreen.
-		switchScreen(startScreen);
 	}
 
 	override public function update ()
@@ -110,6 +109,20 @@ class Wyngine extends Game
 		// NOTE: Kha already updates at 60fps (0.166ms elapse rate)
 		// but we're getting the value here for other uses like
 		// movement and animation.
+
+		// Switch to the new screen in this cycle
+		if (thisScreen != nextScreen)
+		{
+			thisScreen = nextScreen;
+
+			if (currentScreen != null)
+				currentScreen.destroy();
+
+			// Initialise some stuff that shouldn't carry over between screens
+			WynAudio.reset();
+
+			currentScreen = cast (Type.createInstance(nextScreen, nextScreenParams));
+		}
 
 		// Get elapsed time
 		_oldDt = _newDt;
@@ -238,17 +251,17 @@ class Wyngine extends Game
 	 * screen manually before calling this method. NOTE:
 	 * Switching a screen will destroy the previous screen.
 	 */
-	public function switchScreen (targetScreen:Class<WynScreen>, ?loadingScreen:Class<WynScreen>)
+	public function switchScreen (targetScreen:Class<WynScreen>, ?params:Array<Dynamic>)
 	{
-		// Transition out the current screen
-		if (G.currentScreen != null)
-			G.currentScreen.destroy();
+		// Don't immediately switch screen. Instead, flag the next screen, so
+		// we can switch in the next frame. This prevents situations where a
+		// new screen may immediately call switchScreen(), causing problems.
 
-		// Create new screen and set it up
-		if (loadingScreen != null)
-			G.currentScreen = cast (Type.createInstance(loadingScreen, [targetScreen]));
-		else
-			G.currentScreen = cast (Type.createInstance(targetScreen, []));
+		if (params == null)
+			params = [];
+
+		nextScreen = targetScreen;
+		nextScreenParams = params;
 	}
 
 	/**

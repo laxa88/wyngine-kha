@@ -22,6 +22,7 @@ class WynObject
 	public var y:Float = 0;
 	public var width:Float = 0; // By default, hitbox size is same as image size
 	public var height:Float = 0;
+	//public var center(get,set):{x:}
 
 	public var angle:Float = 0; // Note: Rotations are costly, especially on flash!
 	public var velocity(default, null):FastVector2 = new FastVector2();
@@ -77,7 +78,29 @@ class WynObject
 		acceleration = null;
 		drag = null;
 		maxVelocity = null;
+
+		exists = false;
 	}
+
+	/**
+	 * This flags the object for pooling.
+	 */
+	public function kill ()
+	{
+		alive = false;
+		exists = false;
+	}
+
+	/**
+	 * This flags the object for pooling.
+	 */
+	public function revive ()
+	{
+		alive = true;
+		exists = true;
+	}
+
+
 
 	/**
 	 * When you don't need fancy quadtrees, you can
@@ -108,5 +131,20 @@ class WynObject
 	{
 		this.x = x;
 		this.y = y;
+	}
+
+	/**
+	 * Useful for resetting position quickly in one line.
+	 * Instead of top-left, this offsets to the center of the object.
+	 */
+	public function setCenterPosition (x:Float, y:Float)
+	{
+		this.x = x - width/2;
+		this.y = y - height/2;
+	}
+
+	public function getCenterPosition () : FastVector2
+	{
+		return new FastVector2(x-width/2, y-height/2);
 	}
 }
