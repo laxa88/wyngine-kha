@@ -11,7 +11,8 @@ class WynObject
 
 	private static var ID_COUNTER:Int = 0;
 
-	public var id:Int = -1;
+	public var id:Int = -1; // unique identifier for objects. Currently unused internally.
+	public var name:String = ""; // non-unique identifier for your custom usage.
 	public var exists:Bool = true;
 	public var alive:Bool = true;
 	public var active:Bool = true;
@@ -49,8 +50,6 @@ class WynObject
 
 		id = ID_COUNTER++;
 		objectType = WynObjectType.OBJECT;
-
-		Wyngine.log("new : " + id);
 	}
 
 	public function update (dt:Float)

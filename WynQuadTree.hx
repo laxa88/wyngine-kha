@@ -363,9 +363,13 @@ class WynQuadTree
 	{
 		// Add object to this quad's list
 		if (_list == LIST_A)
+		{
 			_listA.push(_object);
+		}
 		else if (_list == LIST_B)
+		{
 			_listB.push(_object);
+		}
 
 		// If we called this method WHILE the quad has children anyway,
 		// it probably means the object overlaps the quad completely; Thus
@@ -388,7 +392,7 @@ class WynQuadTree
 		var len1:Int;
 
 		// If this quadtree has items, check for collisions.
-		if (_listA.length > 1)
+		if (_listA.length > 0)
 		{
 			len1 = _listA.length;
 
@@ -403,7 +407,7 @@ class WynQuadTree
 				// Do we compare listA to listA, or listA to listB?
 				if (_useBothLists)
 				{
-					_listI = _listB;
+					_listI = _listB.slice(0);
 				}
 				else
 				{
