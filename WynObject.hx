@@ -141,8 +141,8 @@ class WynObject
 	 */
 	public function setCenterPosition (x:Float, y:Float)
 	{
-		this.x = x - width/2;
-		this.y = y - height/2;
+		this.x = x + width/2;
+		this.y = y + height/2;
 	}
 
 	public function getCenterPosition () : FastVector2

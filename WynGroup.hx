@@ -261,6 +261,80 @@ class WynGroup<T:WynObject> extends WynObject
 	}
 
 	/**
+	 * Helper function to iterate something through all the members.
+	 * This includes ALL members regardless active or not. Great for
+	 * using at the beginning of a game reset.
+	 * Similar to HaxeFlixel.
+	 */
+	public function forEach (func:T->Void)
+	{
+		for (o in members)
+		{
+			if (o != null)
+				func(cast o);
+		}
+	}
+
+	/**
+	 * Helper function to iterate something through all the members.
+	 * Same as forEach, but checks whether the member is explicitly
+	 * of a certain type.
+	 */
+	public function forEachOfType<K> (objectClass:Class<K>, func:K->Void)
+	{
+		for (o in members)
+		{
+			if (o != null && Std.is(o, objectClass))
+				func(cast o);
+		}
+	}
+
+	/**
+	 * Helper function to iterate something through all the members.
+	 * Similar to HaxeFlixel.
+	 */
+	public function forEachExists (func:T->Void)
+	{
+		for (o in members)
+		{
+			if (o != null && o.exists)
+				func(cast o);
+		}
+	}
+	public function forEachAlive (func:T->Void)
+	{
+		for (o in members)
+		{
+			if (o != null && o.alive)
+				func(cast o);
+		}
+	}
+	public function forEachDead (func:T->Void)
+	{
+		for (o in members)
+		{
+			if (o != null && !o.alive)
+				func(cast o);
+		}
+	}
+	public function forEachActive (func:T->Void)
+	{
+		for (o in members)
+		{
+			if (o != null && o.active)
+				func(cast o);
+		}
+	}
+	public function forEachVisible (func:T->Void)
+	{
+		for (o in members)
+		{
+			if (o != null && o.visible)
+				func(cast o);
+		}
+	}
+
+	/**
 	 * This is used by quadtrees (or anything else relevant in Wyngine).
 	 * Returns a group if the objectType is a group, otherwise null.
 	 * TODO handle tiles

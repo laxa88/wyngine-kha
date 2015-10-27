@@ -316,12 +316,6 @@ class WynSprite extends WynObject
 		height = h;
 	}
 
-	// override function setCenterPosition (x:Float, y:Float)
-	// {
-	// 	this.x = x - width/2;
-	// 	this.y = y - height/2;
-	// }
-
 
 
 	/**
