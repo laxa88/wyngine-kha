@@ -21,14 +21,22 @@ import kha.math.Random;
 
 class Wyngine extends Game
 {
-	public static var DEBUG:Bool = true; // Flag true to see image/collider/quadtree boxes
+	public static var DEBUG:Bool = false; // Flag true to see image/collider/quadtree boxes
+	public static var DEBUG_DRAW:Bool = false; // Flag true to see image/collider/quadtree boxes
 	public static var G:Wyngine; // static reference
+
+	// Don't draw too many debug squares -- it'll freeze the game.
+	// Keep track of draw count every render() and stop drawing if
+	// it breaks a threshold.
+	public static inline var DRAW_COUNT_MAX:Int = 500;
+	public static var DRAW_COUNT:Int;
 
 	public var zoom(default, null):Float;
 	var thisScreen:Class<WynScreen>; // curr screen, checks against nextScreen
 	var nextScreen:Class<WynScreen>; // next screen. If different from currScreen, will transition.
 	var nextScreenParams:Array<Dynamic>;
 	var currentScreen:WynScreen; // current game screen
+	var paused:Bool = false;
 
 	public var windowWidth(default, null):Int; // Actual window size
 	public var windowHeight(default, null):Int;
@@ -136,7 +144,7 @@ class Wyngine extends Game
 		input.update();
 
 		// Main game update goes here
-		currentScreen.update(dt);
+		currentScreen.update( dt * ((paused) ? 0 : 1) );
 	}
 
 	function updateFps ()
@@ -166,9 +174,30 @@ class Wyngine extends Game
 		g.color = bgColor;
 		g.fillRect(0, 0, gameWidth, gameHeight);
 
+		// debug
+		if (WynQuadTree.DEBUG)
+		{
+			if (_quadtree != null)
+				_quadtree.drawTrees(g);
+		}
+
+		// debug
+		if (DEBUG_DRAW)
+		{
+			// g.color = Color.Yellow;
+			// g.drawRect(0, 0, gameWidth/2, gameHeight/2);
+			// g.drawRect(gameWidth/2, gameHeight/2, gameWidth/2, gameHeight/2);
+		}
+
 		// Main game render goes here
 		g.color = Color.White;
 		currentScreen.render(g);
+
+		if (DEBUG_DRAW)
+		{
+			// g.color = Color.Pink;
+			// g.drawRect(gameWidth/4, gameHeight/4, gameWidth/2, gameHeight/2);
+		}
 
 		g.end();
 
@@ -176,6 +205,9 @@ class Wyngine extends Game
 		frame.g2.begin();
 		Scaler.scale(camera, frame, Sys.screenRotation);
 		frame.g2.end();
+
+		// Reset at end of every cycle
+		DRAW_COUNT = 0;
 	}
 
 	override public function onForeground():Void
@@ -229,6 +261,9 @@ class Wyngine extends Game
 		// Note: For now, getting a new quad tree will reset its
 		// bounds to the current screen size. Haxeflixel actually
 		// allows you to set manual bounds here instead... TODO?
+		if (_quadtree != null)
+			_quadtree.destroy();
+
 		_quadtree = WynQuadTree.recycle(0, 0, 0, gameWidth, gameHeight);
 
 		// Add the object or groups into two list. If o2 is null,
@@ -240,7 +275,7 @@ class Wyngine extends Game
 		var hit:Bool = _quadtree.execute();
 
 		// Destroy it after we're done.
-		_quadtree.destroy();
+		// _quadtree.destroy();
 
 		// Return bool whether at least ONE object overlaps in quadtree.
 		return hit;
@@ -271,6 +306,11 @@ class Wyngine extends Game
 	public function loadAssets (name:String, callback:Void->Void)
 	{
 		Loader.the.loadRoom(name, callback);
+	}
+
+	public function togglePause ()
+	{
+		paused = !paused;
 	}
 
 

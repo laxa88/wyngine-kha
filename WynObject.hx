@@ -47,7 +47,10 @@ class WynObject
 		this.width = w;
 		this.height = h;
 
+		id = ID_COUNTER++;
 		objectType = WynObjectType.OBJECT;
+
+		Wyngine.log("new : " + id);
 	}
 
 	public function update (dt:Float)
@@ -145,6 +148,6 @@ class WynObject
 
 	public function getCenterPosition () : FastVector2
 	{
-		return new FastVector2(x-width/2, y-height/2);
+		return new FastVector2(x+width/2, y+height/2);
 	}
 }

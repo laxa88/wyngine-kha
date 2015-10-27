@@ -35,7 +35,6 @@ class WynText extends WynSprite
 
 		g.color = Color.White;
 		g.font = font;
-		g.drawString(text, x, y);
 	}
 
 	public function setFont (name:String, size:Int, bold:Bool=false, italic:Bool=false, underlined:Bool=false)
@@ -46,13 +45,18 @@ class WynText extends WynSprite
 
 	public function setText (t:String)
 	{
-		text = t;
+		// Only update the text if something changed.
+		// We can save on unnecessarily drawing text this way.
+		if (text != t)
+		{
+			text = t;
 
-		// Update the text once
-		image.g2.begin(true, Color.fromValue(0x00000000));
-		image.g2.font = font;
-		image.g2.color = color; // white
-		image.g2.drawString(text, 0, 0);
-		image.g2.end();
+			// Update the text once
+			image.g2.begin(true, Color.fromValue(0x00000000));
+			image.g2.font = font;
+			image.g2.color = color; // white
+			image.g2.drawString(text, 0, 0);
+			image.g2.end();
+		}
 	}
 }

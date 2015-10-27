@@ -11,6 +11,10 @@ class WynGroup<T:WynObject> extends WynObject
 
 	public var members(default, null):Array<T> = [];
 	public var length(default, null):Int = 0;
+	public var existCount(get, null):Int;
+	public var aliveCount(get, null):Int;
+	public var activeCount(get, null):Int;
+	public var visibleCount(get, null):Int;
 
 
 
@@ -59,6 +63,10 @@ class WynGroup<T:WynObject> extends WynObject
 		}
 	}
 
+	/**
+	 * Like HaxeFlixel - only use this if you want to delete
+	 * this completely. If you just want to disable, use kill();
+	 */
 	override public function destroy ()
 	{
 		super.destroy();
@@ -81,6 +89,20 @@ class WynGroup<T:WynObject> extends WynObject
 			// cleanup
 			members = null;
 		}
+	}
+
+	/**
+	 * Handle for all child members before handling self.
+	 * Note: There is no custom revive() code, because
+	 * reviving this group should not automatically
+	 * revive its child members. Do that manually.
+	 */
+	override public function kill ()
+	{
+		for (m in members)
+			m.kill();
+
+		super.kill();
 	}
 
 	/**
@@ -141,6 +163,26 @@ class WynGroup<T:WynObject> extends WynObject
 
 		// Return for chaining; You can destroy it from here.
 		return o;
+	}
+
+	/**
+	 * Use this method to get an available object from pool
+	 * to be reused. This should be the most commonly used.
+	 *
+	 * TODO - provide a class parameter like FlxTypedGroup to create
+	 * new instances when the pool has been exhausted.
+	 *
+	 * TODO - cater for
+	 */
+	public function recycle () : T
+	{
+		var member:WynObject = cast getFirstAvailable();
+
+		// Automatically revive for reuse
+		if (member != null)
+			member.revive();
+
+		return cast member;
 	}
 
 	/**
@@ -231,5 +273,51 @@ class WynGroup<T:WynObject> extends WynObject
 			group = cast objectOrGroup;
 
 		return group;
+	}
+
+
+
+	private function get_existCount () : Int
+	{
+		var count:Int = 0;
+		for (i in 0 ... length)
+		{
+			if (members[i].exists)
+				count++;
+		}
+		return count;
+	}
+
+	private function get_aliveCount () : Int
+	{
+		var count:Int = 0;
+		for (i in 0 ... length)
+		{
+			if (members[i].alive)
+				count++;
+		}
+		return count;
+	}
+
+	private function get_activeCount () : Int
+	{
+		var count:Int = 0;
+		for (i in 0 ... length)
+		{
+			if (members[i].active)
+				count++;
+		}
+		return count;
+	}
+
+	private function get_visibleCount () : Int
+	{
+		var count:Int = 0;
+		for (i in 0 ... length)
+		{
+			if (members[i].visible)
+				count++;
+		}
+		return count;
 	}
 }

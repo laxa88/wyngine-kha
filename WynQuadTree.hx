@@ -17,11 +17,11 @@ import kha.graphics2.Graphics;
 
 class WynQuadTree
 {
-	public static inline var DEBUG:Bool = false;
+	public static var DEBUG:Bool = false;
 	public static inline var LIST_A:Int = 0;
 	public static inline var LIST_B:Int = 1;
 	public static inline var MAX_OBJECTS:Int = 10;
-	public static inline var MAX_LEVELS:Int = 6;
+	public static inline var MAX_LEVELS:Int = 5;
 
 	public var active:Bool;
 
@@ -29,6 +29,7 @@ class WynQuadTree
 	var _level:Int;
 	var _listA:Array<WynObject>;
 	var _listB:Array<WynObject>;
+	var _quadLeft:Float;
 	var _quadTop:Float;
 	var _quadRight:Float;
 	var _quadBottom:Float;
@@ -37,17 +38,29 @@ class WynQuadTree
 	var _quadMidX:Float;
 	var _quadMidY:Float;
 
+	// For collision checks, considering with offsets
+	private static var o1X:Float = 0;
+	private static var o1Y:Float = 0;
+	private static var o1W:Float = 0;
+	private static var o1H:Float = 0;
+	private static var o2X:Float = 0;
+	private static var o2Y:Float = 0;
+	private static var o2W:Float = 0;
+	private static var o2H:Float = 0;
+
 	// Reusable variables across all quadtrees.
 	private static var _qtPool:Array<WynQuadTree>;
 	private static var _list:Int;
 	private static var _useBothLists:Bool;
 	private static var _callback:WynObject->WynObject->Void;
 	private static var _object:WynObject;
+	private static var _sprite:WynSprite; // same as _object, but to access WynSprite variables
+	// private static var _object2:WynObject; // For overlap checks
+	// private static var _sprite2:WynSprite;
 	private static var _objectLeft:Float;
 	private static var _objectTop:Float;
 	private static var _objectRight:Float;
 	private static var _objectBottom:Float;
-	private static var _quadLeft:Float;
 	private static var _listI:Array<WynObject>; // reusable for execute() purposes only
 
 
@@ -70,6 +83,8 @@ class WynQuadTree
 
 		_level = level;
 		_nodes = [null, null, null, null];
+		_listA = [];
+		_listB = [];
 		_quadLeft = x;
 		_quadTop = y;
 		_quadRight = x + w;
@@ -202,15 +217,30 @@ class WynQuadTree
 				{
 					// Finally, this is a single object, so add it to the quadtree's list.
 
-					// Explicitly cast this member as a WynObject, because we
-					// don't care for other types such as WynSprite or WynText.
-					_object = cast (member, WynObject);
-					if (_object.exists)
+					// Cast member as WynObject or WynSprite accordingly,
+					// because other types don't matter.
+
+					if (member.exists)
 					{
-						_objectLeft = _object.x;
-						_objectTop = _object.y;
-						_objectRight = _object.x + _object.width;
-						_objectBottom = _object.y + _object.height;
+						_object = cast (member, WynObject);
+
+						if (Std.is(member, WynSprite))
+						{
+							_sprite = cast (member, WynSprite);
+
+							_objectLeft = _sprite.x + _sprite.offset.x;
+							_objectTop = _sprite.y + _sprite.offset.y;
+							_objectRight = _objectLeft + _sprite.width;
+							_objectBottom = _objectTop + _sprite.height;
+						}
+						else
+						{
+							_objectLeft = _object.x;
+							_objectTop = _object.y;
+							_objectRight = _objectLeft + _object.width;
+							_objectBottom = _objectTop + _object.height;
+						}
+
 						addObject();
 					}
 				}
@@ -341,10 +371,7 @@ class WynQuadTree
 		var hit:Bool = false;
 
 		// Reusable variables for comparing
-		// var list1:Array<WynObject>;
-		// var list2:Array<WynObject>;
 		var len1:Int;
-		// var len2:Int;
 
 		// If this quadtree has items, check for collisions.
 		if (_listA.length > 1)
@@ -375,6 +402,21 @@ class WynQuadTree
 				// checking.
 				if (_object != null && _object.exists)
 				{
+					if (Std.is(_listA[index1], WynSprite))
+					{
+						_sprite = cast (_listA[index1], WynSprite);
+						o1X = _sprite.x + _sprite.offset.x;
+						o1Y = _sprite.y + _sprite.offset.y;
+					}
+					else
+					{
+						o1X = _object.x;
+						o1Y = _object.y;
+					}
+
+					o1W = _object.width;
+					o1H = _object.height;
+
 					// Let another function handle the interaction
 					// between _object and _listI
 					if (overlapNode())
@@ -410,39 +452,80 @@ class WynQuadTree
 	 */
 	function overlapNode () : Bool
 	{
+		// If this is null, that means there's nothing
+		// else to compare with.
+		if (_listI == null)
+			return false;
+
 		var hit:Bool = false;
 		var len2:Int = _listI.length;
-		var o2:WynObject;
 
 		for (i in 0 ... len2)
 		{
-			o2 = _listI[i];
+			var _object2:WynObject = _listI[i];
+			var _sprite2:WynSprite = null;
 
-			// Don't compare to self
-			if (_object == o2)
-				continue;
+			if (_object2 != null && _object2.exists)
+			{
+				if (Std.is(_listI[i], WynSprite))
+				{
+					_sprite2 = cast (_listI[i], WynSprite);
+					o2X = _sprite2.x + _sprite2.offset.x;
+					o2Y = _sprite2.y + _sprite2.offset.y;
+				}
+				else
+				{
+					o2X = _object2.x;
+					o2Y = _object2.y;
+				}
 
-			// Don't compare with others that don't exist
-			if (!o2.exists)
-				continue;
+				o2W = _object2.width;
+				o2H = _object2.height;
 
-			// Compare now (copied from kha.Rectangle)
-			var hitHoriz:Bool;
-			var hitVert:Bool;
+				// The actual collision logic between o1 and o2 happens here
+				// Compare now (copied from kha.Rectangle)
+				var hitHoriz:Bool;
+				var hitVert:Bool;
 
-			if (_object.x < o2.x)
-				hitHoriz = o2.x < (_object.x + _object.width);
-			else
-				hitHoriz = _object.x < (o2.x + o2.width);
+				if (o1X < o2X)
+					hitHoriz = o2X < (o1X + o1W);
+				else
+					hitHoriz = o1X < (o2X + o2W);
 
-			if (_object.y < o2.y)
-				hitVert = o2.y < (_object.y + _object.height);
-			else
-				hitVert = _object.y < (o2.y + o2.height);
+				if (o1Y < o2Y)
+					hitVert = o2Y < (o1Y + o1H);
+				else
+					hitVert = o1Y < (o2Y + o2H);
 
-			hit = hitHoriz && hitVert;
+				if (hitHoriz && hitVert)
+				{
+					if (_callback != null)
+						_callback(_object, _object2);
+				}
+
+				hit = hitHoriz && hitVert;
+			}
 		}
 
 		return hit;
+	}
+
+	/**
+	 * Visually draw the quadtree. In normal cases, you'll use
+	 * quadtree.execute() then quadtree.destroy() after you're done.
+	 * To make sure that this appears, you'll need to swap the two
+	 * method call's order so that the quadtree's quad data is retained
+	 * for render() to be able to draw the trees.
+	 */
+	public function drawTrees (g:kha.graphics2.Graphics)
+	{
+		g.color = Color.Pink;
+		g.drawRect(_quadLeft, _quadTop, _quadHalfWidth*2, _quadHalfHeight*2);
+
+		for (i in 0 ... 4)
+		{
+			if (_nodes[i] != null)
+				_nodes[i].drawTrees(g);
+		}
 	}
 }
