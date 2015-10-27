@@ -27,8 +27,8 @@ class WynQuadTree
 
 	var _nodes:Array<WynQuadTree>;
 	var _level:Int;
-	var _listA:Array<WynObject>;
-	var _listB:Array<WynObject>;
+	public var _listA:Array<WynObject>;
+	public var _listB:Array<WynObject>;
 	var _quadLeft:Float;
 	var _quadTop:Float;
 	var _quadRight:Float;
@@ -68,16 +68,40 @@ class WynQuadTree
 	/**
 	 * Let reset() do the rest.
 	 */
-	public function new (level:Int, x:Float, y:Float, w:Float, h:Float)
+	public function new (level:Int, x:Float, y:Float, w:Float, h:Float, ?parent:WynQuadTree)
 	{
 		// Reset variables once
-		reset(level, x, y, w, h);
+		reset(level, x, y, w, h, parent);
+	}
+
+	/**
+	 * Step 1 of using quadtrees - get an available quadtree.
+	 */
+	public static function recycle (level:Int, x:Float, y:Float, w:Float, h:Float, ?parent:WynQuadTree) : WynQuadTree
+	{
+		if (_qtPool == null)
+			_qtPool = [];
+
+		// Use pooled quadtrees
+		for (i in 0 ... _qtPool.length)
+		{
+			if (!_qtPool[i].active)
+			{
+				_qtPool[i].reset(level, x, y, w, h, parent);
+				return _qtPool[i];
+			}
+		}
+
+		// If none available, create new ones
+		var quadtree = new WynQuadTree(level, x, y, w, h, parent);
+		_qtPool.push(quadtree);
+		return quadtree;
 	}
 
 	/**
 	 * Entry point for a new pooled quadtree
 	 */
-	public function reset (level:Int, x:Float, y:Float, w:Float, h:Float)
+	public function reset (level:Int, x:Float, y:Float, w:Float, h:Float, ?parent:WynQuadTree)
 	{
 		this.active = true;
 
@@ -93,6 +117,23 @@ class WynQuadTree
 		_quadHalfHeight = h/2;
 		_quadMidX = _quadLeft + _quadHalfWidth;
 		_quadMidY = _quadTop + _quadHalfHeight;
+
+		// Copy the parent quadtree's children, if there's any.
+		// This ensures that objects previously added in the parent
+		// quadtree is is carried down to the children.
+		// Cases where this may happen are when an object is too large
+		// and added to the parent quadrant without going another level
+		// deeper.
+
+		if (parent != null)
+		{
+			// Shallow copy the parrent list's objects
+			if (parent._listA != null)
+				_listA = parent._listA.slice(0);
+
+			if (parent._listB != null)
+				_listB = parent._listB.slice(0);
+		}
 	}
 
 	/**
@@ -124,30 +165,6 @@ class WynQuadTree
 		_object = null;
 		_listI = null;
 		_callback = null;
-	}
-
-	/**
-	 * Step 1 of using quadtrees - get an available quadtree.
-	 */
-	public static function recycle (level:Int, x:Float, y:Float, w:Float, h:Float) : WynQuadTree
-	{
-		if (_qtPool == null)
-			_qtPool = [];
-
-		// Use pooled quadtrees
-		for (i in 0 ... _qtPool.length)
-		{
-			if (!_qtPool[i].active)
-			{
-				_qtPool[i].reset(level, x, y, w, h);
-				return _qtPool[i];
-			}
-		}
-
-		// If none available, create new ones
-		var quadtree = new WynQuadTree(level, x, y, w, h);
-		_qtPool.push(quadtree);
-		return quadtree;
 	}
 
 	/**
@@ -206,44 +223,41 @@ class WynQuadTree
 
 			for (member in members)
 			{
-				group = WynGroup.resolveGroup(member);
-				if (group != null)
+				// Filter out by only processing only necessary members
+				if (member.exists)
+					add(member, list);
+			}
+		}
+		else
+		{
+			// Finally, this is a single object, so add it to the quadtree's list.
+			// Make sure we only check for objects that exist!
+
+			if (objectOrGroup.exists)
+			{
+				// Cast member as WynObject or WynSprite accordingly,
+				// because other types don't matter.
+
+				_object = cast (objectOrGroup, WynObject);
+
+				if (Std.is(objectOrGroup, WynSprite))
 				{
-					// If this object's members are also groups, then
-					// call this recursively until we reach single objects
-					add(group, list);
+					_sprite = cast (objectOrGroup, WynSprite);
+
+					_objectLeft = _sprite.x + _sprite.offset.x;
+					_objectTop = _sprite.y + _sprite.offset.y;
+					_objectRight = _objectLeft + _sprite.width;
+					_objectBottom = _objectTop + _sprite.height;
 				}
 				else
 				{
-					// Finally, this is a single object, so add it to the quadtree's list.
-
-					// Cast member as WynObject or WynSprite accordingly,
-					// because other types don't matter.
-
-					if (member.exists)
-					{
-						_object = cast (member, WynObject);
-
-						if (Std.is(member, WynSprite))
-						{
-							_sprite = cast (member, WynSprite);
-
-							_objectLeft = _sprite.x + _sprite.offset.x;
-							_objectTop = _sprite.y + _sprite.offset.y;
-							_objectRight = _objectLeft + _sprite.width;
-							_objectBottom = _objectTop + _sprite.height;
-						}
-						else
-						{
-							_objectLeft = _object.x;
-							_objectTop = _object.y;
-							_objectRight = _objectLeft + _object.width;
-							_objectBottom = _objectTop + _object.height;
-						}
-
-						addObject();
-					}
+					_objectLeft = _object.x;
+					_objectTop = _object.y;
+					_objectRight = _objectLeft + _object.width;
+					_objectBottom = _objectTop + _object.height;
 				}
+
+				addObject();
 			}
 		}
 	}
@@ -278,28 +292,28 @@ class WynQuadTree
 		if (topQuad && rightQuad)
 		{
 			if (_nodes[0] == null)
-				_nodes[0] = recycle(_level+1, _quadMidX, _quadTop, _quadHalfWidth, _quadHalfHeight);
+				_nodes[0] = WynQuadTree.recycle(_level+1, _quadMidX, _quadTop, _quadHalfWidth, _quadHalfHeight, this);
 			_nodes[0].addObject();
 			return;
 		}
 		if (topQuad && leftQuad)
 		{
 			if (_nodes[1] == null)
-				_nodes[1] = recycle(_level+1, _quadLeft, _quadTop, _quadHalfWidth, _quadHalfHeight);
+				_nodes[1] = WynQuadTree.recycle(_level+1, _quadLeft, _quadTop, _quadHalfWidth, _quadHalfHeight, this);
 			_nodes[1].addObject();
 			return;
 		}
 		if (botQuad && leftQuad)
 		{
 			if (_nodes[2] == null)
-				_nodes[2] = recycle(_level+1, _quadLeft, _quadMidY, _quadHalfWidth, _quadHalfHeight);
+				_nodes[2] = WynQuadTree.recycle(_level+1, _quadLeft, _quadMidY, _quadHalfWidth, _quadHalfHeight, this);
 			_nodes[2].addObject();
 			return;
 		}
 		if (botQuad && rightQuad)
 		{
 			if (_nodes[3] == null)
-				_nodes[3] = recycle(_level+1, _quadMidX, _quadMidY, _quadHalfWidth, _quadHalfHeight);
+				_nodes[3] = WynQuadTree.recycle(_level+1, _quadMidX, _quadMidY, _quadHalfWidth, _quadHalfHeight, this);
 			_nodes[3].addObject();
 			return;
 		}
@@ -316,27 +330,27 @@ class WynQuadTree
 		if (overlapsTop && overlapsLeft)
 		{
 			if (_nodes[1] == null)
-				_nodes[1] = recycle(_level+1, _quadLeft, _quadTop, _quadHalfWidth, _quadHalfHeight);
+				_nodes[1] = WynQuadTree.recycle(_level+1, _quadLeft, _quadTop, _quadHalfWidth, _quadHalfHeight, this);
 			_nodes[1].addObject();
 		}
 		if (overlapsTop && overlapsRight)
 		{
 			// object exists in top-right
 			if (_nodes[0] == null)
-				_nodes[0] = recycle(_level+1, _quadMidX, _quadTop, _quadHalfWidth, _quadHalfHeight);
+				_nodes[0] = WynQuadTree.recycle(_level+1, _quadMidX, _quadTop, _quadHalfWidth, _quadHalfHeight, this);
 			_nodes[0].addObject();
 		}
 		if (overlapsBottom && overlapsLeft)
 		{
 			// object exists in bottom-right
 			if (_nodes[2] == null)
-				_nodes[2] = recycle(_level+1, _quadLeft, _quadMidY, _quadHalfWidth, _quadHalfHeight);
+				_nodes[2] = WynQuadTree.recycle(_level+1, _quadLeft, _quadMidY, _quadHalfWidth, _quadHalfHeight, this);
 			_nodes[2].addObject();
 		}
 		if (overlapsBottom && overlapsRight)
 		{
 			if (_nodes[3] == null)
-				_nodes[3] = recycle(_level+1, _quadMidX, _quadMidY, _quadHalfWidth, _quadHalfHeight);
+				_nodes[3] = WynQuadTree.recycle(_level+1, _quadMidX, _quadMidY, _quadHalfWidth, _quadHalfHeight, this);
 			_nodes[3].addObject();
 		}
 	}

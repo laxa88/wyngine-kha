@@ -138,7 +138,7 @@ class Wyngine extends Game
 		dt = (_newDt - _oldDt);
 
 		// Get FPS
-		if (DEBUG) updateFps();
+		updateFps();
 
 		// Update input
 		input.update();

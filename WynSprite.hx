@@ -171,7 +171,7 @@ class WynSprite extends WynObject
 		{
 			var sprite = cast (other, WynSprite);
 			otherx = sprite.x + sprite.offset.x;
-			othery = sprite.x + sprite.offset.y;
+			othery = sprite.y + sprite.offset.y;
 		}
 		else
 		{
