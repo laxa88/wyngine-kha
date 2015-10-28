@@ -22,21 +22,16 @@ Games made with the engine so far:
 * Object Pooling
 * Quad-tree collisions
 * Screen states
+* Default Kha texts
+* Bitmap texts
 
 # TODO
 
-* Classes
-  * WynBitmapText
-  * WynFile
-
-* Features
-  * camera shake
-  * particle and emitter
-  * tiled parser
-  * tile generator
-  * parallax background
-  * FSM
-  * shaders
-  * input
-    * gamepad
-    * touch
+* input
+  * gamepad
+  * touch
+* camera shake
+* particle and emitter
+* file loader
+* tiled maps (parser + generator)
+* shaders
