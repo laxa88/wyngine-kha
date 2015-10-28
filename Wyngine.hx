@@ -23,8 +23,9 @@ class Wyngine extends Game
 {
 	public static var DEBUG:Bool = false; // Flag true to see image/collider/quadtree boxes
 	public static var DEBUG_DRAW:Bool = false; // Flag true to see image/collider/quadtree boxes
+
 	public static var G:Wyngine; // static reference
-	public static var totalMemory (get, null):Int;
+	public static var totalMemory(get, null):Int;
 
 	// Don't draw too many debug squares -- it'll freeze the game.
 	// Keep track of draw count every render() and stop drawing if

@@ -223,6 +223,9 @@ class WynBitmapText extends WynSprite
 		// Wrap and break the lines by width.
 		var lines = processText();
 
+		// Reset cursor position
+		_cursor = new FastVector2();
+
 		image.g2.begin(true, Color.fromValue(0x00000000));
 		image.g2.color = color;
 
@@ -558,7 +561,8 @@ class WynBitmapText extends WynSprite
 	{
 		super.destroy();
 
-		// TODO
+		font = null;
+		_cursor = null;
 	}
 
 
