@@ -24,6 +24,7 @@ class Wyngine extends Game
 	public static var DEBUG:Bool = false; // Flag true to see image/collider/quadtree boxes
 	public static var DEBUG_DRAW:Bool = false; // Flag true to see image/collider/quadtree boxes
 	public static var G:Wyngine; // static reference
+	public static var totalMemory (get, null):Int;
 
 	// Don't draw too many debug squares -- it'll freeze the game.
 	// Keep track of draw count every render() and stop drawing if
@@ -77,6 +78,8 @@ class Wyngine extends Game
 	{
 		super("Wyngine");
 
+		Wyngine.log("Wyngine new");
+
 		// Set reference first thing first.
 		G = this;
 
@@ -91,6 +94,8 @@ class Wyngine extends Game
 
 	override public function init ()
 	{
+		Wyngine.log("Wyngine init");
+
 		// By default, random numbers are seeded. Set
 		// a new seed after init if necessary.
 		Random.init(Std.int(Date.now().getTime()));
@@ -102,7 +107,7 @@ class Wyngine extends Game
 		gameWidth = Std.int(windowWidth / zoom);
 		gameHeight = Std.int(windowHeight / zoom);
 		camera = Image.createRenderTarget(gameWidth, gameHeight);
-		bgColor = null;
+		bgColor = Color.White;
 
 		// Initialise engine variables
 		WynInput.init();
@@ -324,9 +329,31 @@ class Wyngine extends Game
 	{
 		// Allow setting to null:
 		// Defaults to cornflower blue (good old days of XNA)
-		if (val == null)
-			val = Color.fromValue(0xff6495ed);
+
+		// Works on dynamic platforms, not static platforms.
+		// http://haxe.org/manual/types-nullability.html
+		// if (val == null)
+		// 	val = Color.fromValue(0xff6495ed);
+
 		return (bgColor = val);
+	}
+
+	/**
+	 * Refer to:
+	 * https://github.com/openfl/openfl/blob/master/openfl/system/System.hx
+	 * https://developer.mozilla.org/en-US/docs/Web/API/Window/performance
+	 */
+	@:noCompletion private static function get_totalMemory () : Int
+	{
+		// NOTE:
+		// For now, HTML5 doesn't give the value we want.
+		// I don't know how to get memory for other platforms.
+
+		#if flash
+		return flash.system.System.totalMemory;
+		#else
+		return -1;
+		#end
 	}
 
 	/**

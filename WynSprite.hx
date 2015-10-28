@@ -31,6 +31,7 @@ class WynSprite extends WynObject
 	public var offset:FastVector2 = new FastVector2();
 	public var color:Color = Color.White; // tint, default is white
 	public var alpha:Float = 1.0; // Opacity - 0.0 to 1.0
+	public var scale:Float = 1.0;
 	public var flipX:Bool = false;
 	public var flipY:Bool = false;
 	public var facing(default, set):Int;
@@ -102,8 +103,8 @@ class WynSprite extends WynObject
 				// the target position
 				x + (dx+frameWidth/2) - (frameWidth/2),
 				y + (dy+frameHeight/2) - (frameHeight/2),
-				frameWidth * fx,
-				frameHeight * fy);
+				frameWidth * fx * scale,
+				frameHeight * fy * scale);
 
 			// Finalise opacity
 			if (alpha != 1) g.popOpacity();

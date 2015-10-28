@@ -14,7 +14,7 @@ class WynText extends WynSprite
 
 
 
-	public function new (t:String, x:Float, y:Float, name:String, size:Int, w:Int=200, h:Int=100, bold:Bool=false, italic:Bool=false, underlined:Bool=false)
+	public function new (t:String, name:String, size:Int, x:Float=0, y:Float=0, w:Int=200, h:Int=100, bold:Bool=false, italic:Bool=false, underlined:Bool=false)
 	{
 		super(x, y, w, h);
 
