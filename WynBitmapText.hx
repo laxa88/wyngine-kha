@@ -47,9 +47,6 @@ class WynBitmapText extends WynSprite
 	// Based on RafaelOliveira's BitmapText for kha:
 	// https://github.com/RafaelOliveira/BitmapText/blob/master/lib/bitmapText/BitmapText.hx
 
-	// TODO
-	// cater for newlines - \n and \r characters
-
 	// compile-time variables
 	public static inline var ALIGN_LEFT:Int = 0;
 	public static inline var ALIGN_MIDDLE:Int = 1;
@@ -68,7 +65,8 @@ class WynBitmapText extends WynSprite
 	public var size(default, null):Int;
 	public var lineHeight(get, set):Int;
 	public var align:Int = ALIGN_LEFT;
-	public var trim:Bool = true; // trims trailing space characters
+	public var trimEnds:Bool = true; // trims trailing space characters
+	public var trimAll:Bool = true; // trims ALL space characters (including mid-sentence)
 
 
 
@@ -321,10 +319,24 @@ class WynBitmapText extends WynSprite
 		// Array of lines that will be returned.
 		var linesArray = new Array<Line>();
 
+		// Test the regex here: https://regex101.com/
+		var trim1 = ~/^ +| +$/g; // removes all spaces at beginning and end
+		var trim2 = ~/ +/g; // merges all spaces into one space
+		var fullText = text;
+		if (trimAll)
+		{
+			fullText = trim1.replace(fullText, ""); // remove trailing spaces first
+			fullText = trim2.replace(fullText, " "); // merge all spaces into one
+		}
+		else if (trimEnds)
+		{
+			fullText = trim1.replace(fullText, "");
+		}
+
 		// split words by spaces
 		// E.g. "This is a word"
 		// becomes ["this", "is", "a", "sentence"]
-		var words = text.split(' ');
+		var words = fullText.split(' ');
 		var wordsLen = words.length;
 		var j = 1;
 
@@ -348,24 +360,47 @@ class WynBitmapText extends WynSprite
 		var currLineWidth = 0;
 		var currWord = "";
 		var currWordWidth = 0;
-		var isBreakLine = false;
+		var isBreakFirst = false;
+		var isBreakLater = false;
 		var isLastWord = false;
+		var reg = ~/[\n\r]/; // gets first occurence of line breaks
+		var i = 0;
+		var len = words.length;
 
-		// Update the length of the words (inclusive of spaces)
-		// E.g. ["this", " ", "is", " ", "a", " ", "sentence"] = 7
-		wordsLen = words.length;
-
-		for (i in 0 ... wordsLen)
+		while (i < words.length)
 		{
-			// If we reached the last word, flag it.
-			if (i == (wordsLen-1))
-				isLastWord = true;
+			var thisWord = words[i];
 
-			// If this is a proper word, process it. Otherwise,
-			// just add the values and move on.
-			if (words[i] != " ")
+			// If newline character exists, split the word for further
+			// checking in the subsequent loops.
+			if (reg.match(thisWord))
 			{
-				var thisWord = words[i];
+				var splitIndex = reg.matchedPos();
+				var splitWords = reg.split(thisWord);
+				var firstWord = splitWords[0];
+				var remainder = splitWords[1];
+
+				// Replace current word with the splitted word
+				words[i] = thisWord = firstWord;
+
+				// Insert the remainder of the word into next index
+				// and we'll check it again later.
+				words.insert(i+1, remainder);
+
+				// Flag to break AFTER we process this word.
+				isBreakLater = true;
+			}
+			else if (i == words.length-1)
+			{
+				// If the word need not be split, then check if this
+				// is the last word. If yes, then we can finalise this
+				// line at the end.
+				isLastWord = true;
+			}
+
+			// If this is a non-space word, let's process it.
+			if (thisWord != " ")
+			{
 				for (charIndex in 0 ... thisWord.length)
 				{
 					char = thisWord.charAt(charIndex);
@@ -387,16 +422,15 @@ class WynBitmapText extends WynSprite
 			}
 			else
 			{
-				// For space characters, since they have no width,
+				// For space characters, usually they have no width,
 				// we have to manually add the .spaceWidth value.
 				currWord = " ";
 				currWordWidth = font.spaceWidth;
 			}
 
-			// Check if the total width of the character needs to be wrapped.
-			// If it's not a new line break, then add current word to
-			// the line and move on. Otherwise, we'll use the current word
-			// in the next line.
+			// After adding current word to the line, did it pass
+			// the text width? If yes, flag to break. Otherwise,
+			// just update the current line.
 			if (currLineWidth + currWordWidth < image.width)
 			{
 				currLineText += currWord; // Add the word to the full line
@@ -404,20 +438,22 @@ class WynBitmapText extends WynSprite
 			}
 			else
 			{
-				isBreakLine = true;
+				isBreakFirst = true;
 			}
 
-			// If we reached the last word or reached a line break,
-			// finalize current line and add it to the linesArray array.
-			if (isBreakLine || isLastWord)
+			// If we need to break the line first, add the
+			// current line to the array first, then add the
+			// current word to the next line.
+			if (isBreakFirst || isLastWord)
 			{
-				// Add current line to the final array.
+				// Add current line (sans current word) to array
 				linesArray.push({
 					text: currLineText,
 					width: currLineWidth
 				});
 
-				// If this is NOT the last word, but it's a line break:
+				// If this isn't the last word, then begin the next
+				// line with the current word.
 				if (!isLastWord)
 				{
 					// If current word is a proper word:
@@ -429,34 +465,51 @@ class WynBitmapText extends WynSprite
 					}
 					else
 					{
-						// Ignore the space; Reset the current
-						// word and move to next line.
+						// Ignore spaces; Reset the next line.
 						currLineText = "";
 						currLineWidth = 0;
 					}
 
-					// Trim the end of current line
-					if (trim) trimLastLine(linesArray);
-
-					isBreakLine = false;
+					isBreakFirst = false;
 				}
-				else if (isBreakLine)
+				else if (isBreakFirst)
 				{
-					// If this is the last word and is a line break, then
-					// add the last word to the next line, then finalise.
-
-					if (trim) trimLastLine(linesArray);
-
+					// If this is the last word, then just push it
+					// to the next line and finish up.
 					linesArray.push({
 						text: currWord,
 						width: currWordWidth
 					});
 				}
+
+				// trim the text at start and end of the last line
+				if (trimAll) trim1.replace(linesArray[linesArray.length-1].text, "");
+			}
+
+			// If we need to break the line AFTER adding the current word
+			// to the current line, do it here.
+			if (isBreakLater)
+			{
+				// add current line to array, whether it has already
+				// previously been broken to new line or not.
+				linesArray.push({
+					text: currLineText,
+					width: currLineWidth
+				});
+
+				// Start next line afresh.
+				currLineText = "";
+				currLineWidth = 0;
+
+				isBreakLater = false;
 			}
 
 			// move to next word
 			currWord = "";
 			currWordWidth = 0;
+
+			// Move to next iterator.
+			i++;
 		}
 
 		return linesArray;
