@@ -17,6 +17,7 @@ Games made with the engine so far:
 
 * Spritesheet Animation
 * Keyboard input
+* Touch input (untested)
 * Audio
 * Simple collision check
 * Object Pooling
@@ -28,8 +29,8 @@ Games made with the engine so far:
 # TODO
 
 * input
+  * mouse
   * gamepad
-  * touch
 * camera shake
 * particle and emitter
 * file loader

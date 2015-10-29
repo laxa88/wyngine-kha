@@ -78,6 +78,7 @@ class WynInput
 		_charsHeld = null;
 		_keysReleased = null;
 		_charsReleased = null;
+		
 		Keyboard.get().remove(onKeyDown, onKeyUp);
 	}
 
