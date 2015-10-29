@@ -10,6 +10,10 @@ class WynObject
 	 */
 
 	private static var ID_COUNTER:Int = 0;
+	public static inline var NONE:Int = 0;
+	public static inline var OBJECT:Int = 1;
+	public static inline var GROUP:Int = 2;
+	public static inline var TILE:Int = 3;
 
 	public var id:Int = -1; // unique identifier for objects. Currently unused internally.
 	public var name:String = ""; // non-unique identifier for your custom usage.
@@ -17,7 +21,7 @@ class WynObject
 	public var alive:Bool = true;
 	public var active:Bool = true;
 	public var visible:Bool = true;
-	public var objectType(default, null):WynObjectType = WynObjectType.NONE;
+	public var objectType(default, null):Int = WynObject.NONE;
 
 	public var x:Float = 0; // Note: position origin is at top-left corner.
 	public var y:Float = 0;
@@ -49,7 +53,7 @@ class WynObject
 		this.height = h;
 
 		id = ID_COUNTER++;
-		objectType = WynObjectType.OBJECT;
+		objectType = WynObject.OBJECT;
 	}
 
 	public function update (dt:Float)

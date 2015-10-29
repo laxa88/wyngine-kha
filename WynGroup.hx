@@ -22,7 +22,7 @@ class WynGroup<T:WynObject> extends WynObject
 	{
 		super();
 
-		objectType = WynObjectType.GROUP;
+		objectType = WynObject.GROUP;
 	}
 
 	override public function update (dt:Float)
@@ -343,7 +343,7 @@ class WynGroup<T:WynObject> extends WynObject
 	{
 		var group:WynGroup<WynObject> = null;
 
-		if (objectOrGroup.objectType == WynObjectType.GROUP)
+		if (objectOrGroup.objectType == WynObject.GROUP)
 			group = cast objectOrGroup;
 
 		return group;
