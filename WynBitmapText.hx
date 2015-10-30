@@ -369,10 +369,12 @@ class WynBitmapText extends WynSprite
 		var reg = ~/[\n\r]/; // gets first occurence of line breaks
 		var i = 0;
 		var len = words.length;
+		var lastLetterPadding = 0;
 
 		while (i < words.length)
 		{
 			var thisWord = words[i];
+			lastLetterPadding = 0;
 
 			// If newline character exists, split the word for further
 			// checking in the subsequent loops.
@@ -420,6 +422,10 @@ class WynBitmapText extends WynSprite
 					{
 						currWord += char;
 						currWordWidth += letter.xadvance;
+
+						// If this is the last letter for the line, remember
+						// the padding so that we can add to the currLineWidth later.
+						lastLetterPadding = letter.width - letter.xadvance;
 					}
 				}
 			}
@@ -449,6 +455,9 @@ class WynBitmapText extends WynSprite
 			// current word to the next line.
 			if (isBreakFirst || isLastWord)
 			{
+				// Add padding so the last letter doesn't get chopped off
+				currLineWidth += lastLetterPadding;
+
 				// Add current line (sans current word) to array
 				linesArray.push({
 					text: currLineText,
@@ -493,8 +502,12 @@ class WynBitmapText extends WynSprite
 			// to the current line, do it here.
 			if (isBreakLater)
 			{
+				// Add padding so the last letter doesn't get chopped off
+				currLineWidth += lastLetterPadding;
+
 				// add current line to array, whether it has already
 				// previously been broken to new line or not.
+
 				linesArray.push({
 					text: currLineText,
 					width: currLineWidth
