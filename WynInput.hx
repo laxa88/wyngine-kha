@@ -6,6 +6,7 @@ import kha.input.Keyboard;
 class WynInput
 {
 	public static var instance:WynInput;
+
 	private var _keysPressed:Map<Key, Bool>;
 	private var _charsPressed:Map<String, Bool>;
 	private var _keysHeld:Map<Key, Bool>;

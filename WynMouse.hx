@@ -5,19 +5,19 @@ import kha.input.Mouse;
 class WynMouse
 {
 	/**
-	 kha.input.Mouse already does everything out of the box.
-	 This class is just a wrapper to handle Bool states for
-	 mouseDown, mouseHeld and mouseRelease.
+		kha.input.Mouse already does everything out of the box.
+		This class is just a wrapper to handle Bool states for
+		mouseDown, mouseHeld and mouseRelease.
 
-	 For other stuff, use kha.Mouse as well, such as:
-	 	notify
-	 	remove
-	 	lock
-	 	unlock
-	 	canLock
-	 	isLocked
-	 	notifyOfLockChange
-	 	removeFromLockChange
+		For other stuff, use kha.Mouse as well, such as:
+		 	notify
+		 	remove
+		 	lock
+		 	unlock
+		 	canLock
+		 	isLocked
+		 	notifyOfLockChange
+		 	removeFromLockChange
 	 */
 
 	public static inline var BEGIN:Int = 0;
@@ -49,10 +49,12 @@ class WynMouse
 
 	public function update ()
 	{
-		// NOTE: The DOWN and UP states sometimes happen in the
-		// same update cycle, and sometimes in not (for mac trackpad),
-		// so sometimes the "held" key will not trigger if both
-		// DOWN and UP states happen in the same frame.
+		/**
+			NOTE: The DOWN and UP states sometimes happen in the
+			same update cycle, and sometimes in not (for mac trackpad),
+			so sometimes the "held" key will not trigger if both
+			DOWN and UP states happen in the same frame.
+		 */
 
 		for (key in _mousePressed.keys())
 		{
