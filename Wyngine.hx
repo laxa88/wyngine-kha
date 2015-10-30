@@ -51,8 +51,9 @@ class Wyngine extends Game
 	// TODO multiple cameras
 	public var camera(default, null):Image;
 	public var bgColor(default, set):Color;
-	public var input:WynInput;
-	public var touch:WynTouch;
+	var input:WynInput;
+	var touch:WynTouch;
+	var mouse:WynMouse;
 
 	// Have one reusable quadtree container so we don't
 	// end up creating new variable every update.
@@ -114,11 +115,13 @@ class Wyngine extends Game
 		// Initialise engine variables
 		WynInput.init();
 		WynTouch.init();
+		WynMouse.init();
 		WynAudio.init();
 
 		// quick reference
 		input = WynInput.instance;
 		touch = WynTouch.instance;
+		mouse = WynMouse.instance;
 	}
 
 	override public function update ()
@@ -152,6 +155,7 @@ class Wyngine extends Game
 		// Update inputs
 		input.update();
 		touch.update();
+		mouse.update();
 
 		// Main game update goes here
 		currentScreen.update( dt * ((paused) ? 0 : 1) );

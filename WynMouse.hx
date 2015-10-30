@@ -1,66 +1,84 @@
 package wyn;
 
-import kha.input.Sensor;
-import kha.input.Surface;
-import kha.input.SensorType;
+import kha.input.Mouse;
 
-typedef TouchData = {
-	var index:Int;
-	var x:Int;
-	var y:Int;
-	var on:Bool;
-}
-
-class WynTouch
+class WynMouse
 {
-	// TODO
-	// Gyro and accelerometer
+	/**
+	 kha.input.Mouse already does everything out of the box.
+	 This class is just a wrapper to handle Bool states for
+	 mouseDown, mouseHeld and mouseRelease.
 
-	public static var instance:WynTouch;
-	private var _touchPressed:Map<Int, TouchData>;
-	private var _touchHeld:Map<Int, TouchData>;
-	private var _touchReleased:Map<Int, TouchData>;
+	 For other stuff, use kha.Mouse as well, such as:
+	 	notify
+	 	remove
+	 	lock
+	 	unlock
+	 	canLock
+	 	isLocked
+	 	notifyOfLockChange
+	 	removeFromLockChange
+	 */
+
+	public static inline var BEGIN:Int = 0;
+	public static inline var ACTIVE:Int = 1;
+	public static inline var END:Int = 2;
+
+	public static var instance:WynMouse;
+	public static var x(default, null):Int = 0;
+	public static var y(default, null):Int = 0;
+
+	private var _mousePressed:Map<Int, Int>;
+	private var _mouseHeld:Map<Int, Int>;
+	private var _mouseReleased:Map<Int, Int>;
+	private var _mouseMoveListeners:Array<Int->Int->Int->Int->Void>;
 
 
 
 	public function new ()
 	{
-		// NOTE: Only mobile devices would have this.
-		// var accel = Sensor.get(SensorType.Accelerometer);
-		// if (accel != null)
-		// 	accel.notify(onAcceleroUpdate);
+		// Internal listeners to get mouse states only.
+		// To handle mouse events manually, do
+		Mouse.get().notify(onMouseStart, onMouseEnd, onMouseMove, onMouseWheel);
 
-		// var gyro = Sensor.get(SensorType.Gyroscope);
-		// if (gyro != null)
-		// 	gyro.notify(onGyroUpdate);
-
-		Surface.get().notify(onTouchStart, onTouchEnd, onTouchMove);
-
-		_touchPressed = new Map<Int, TouchData>();
-		_touchHeld = new Map<Int, TouchData>();
-		_touchReleased = new Map<Int, TouchData>();
+		_mousePressed = new Map<Int, Int>();
+		_mouseHeld = new Map<Int, Int>();
+		_mouseReleased = new Map<Int, Int>();
+		_mouseMoveListeners = new Array<Int->Int->Int->Int->Void>();
 	}
 
 	public function update ()
 	{
-		// NOTE: Similar to WynInput
-		for (key in _touchPressed.keys())
+		// NOTE: The DOWN and UP states sometimes happen in the
+		// same update cycle, and sometimes in not (for mac trackpad),
+		// so sometimes the "held" key will not trigger if both
+		// DOWN and UP states happen in the same frame.
+
+		for (key in _mousePressed.keys())
 		{
-			if (_touchPressed[key].on)
+			// When mouse is down, held state is also assumed to be down.
+			if (_mousePressed[key] == BEGIN)
 			{
-				if (_touchHeld[key].on)
-					_touchPressed[key].on = false;
-				else
-					_touchHeld[key].on = true;
+				_mousePressed[key] = ACTIVE;
+				_mouseHeld[key] = BEGIN;
+			}
+			else
+			{
+				_mousePressed[key] = END;
 			}
 
-			if (_touchReleased[key].on)
+			// When mouse is held, activate it for isMouse() to trigger
+			if (_mouseHeld[key] == BEGIN)
+				_mouseHeld[key] = ACTIVE;
+
+			// When mouse is released, held state is also assumed to be released
+			if (_mouseReleased[key] == BEGIN)
 			{
-				if (_touchHeld[key].on)
-					_touchHeld[key].on = false;
-				else
-					_touchReleased[key].on = false;
+				_mouseHeld[key] = END;
+				_mouseReleased[key] = ACTIVE;
 			}
+			else
+				_mouseReleased[key] = END;
 		}
 	}
 
@@ -68,98 +86,107 @@ class WynTouch
 	{
 		// NOTE: there's no remove() for Sensor listeners
 
-		_touchPressed = null;
-		_touchHeld = null;
-		_touchReleased = null;
+		_mousePressed = null;
+		_mouseHeld = null;
+		_mouseReleased = null;
+		_mouseMoveListeners = [];
 
-		Surface.get().remove(onTouchStart, onTouchEnd, onTouchMove);
+		Mouse.get().remove(onMouseStart, onMouseEnd, onMouseMove, onMouseWheel);
 	}
 
 	public static function init ()
 	{
-		instance = new WynTouch();
+		instance = new WynMouse();
 	}
 
-	// function onGyroUpdate (x:Float, y:Float, z:Float)
-	// {
-	// 	trace("onGyroUpdate : " +x+","+y+","+z);
-	// }
-
-	// function onAcceleroUpdate (x:Float, y:Float, z:Float)
-	// {
-	// 	trace("onAcceleroUpdate : " +x+","+y+","+z);
-	// }
+	/**
+	 * Listen for mouse movement within the game
+	 */
+	public static function notifyMove (listener:Int->Int->Int->Int->Void)
+	{
+		if (instance._mouseMoveListeners.indexOf(listener) == -1)
+			instance._mouseMoveListeners.push(listener);
+	}
+	public static function removeMove (listener:Int->Int->Int->Int->Void)
+	{
+		instance._mouseMoveListeners.remove(listener);
+	}
 
 	/**
 	 * These public functions should not be called manually,
 	 * use the static methods instead.
 	 */
 
-	public function _isTouchDown (index:Int) : TouchData
+	public function _isMouseDown (index:Int) : Bool
 	{
-		if (_touchPressed.exists(index) && _touchPressed[index].on)
-			return _touchPressed[index];
-		else
-			return null;
+		if (_mousePressed.exists(index) && _mousePressed[index] == ACTIVE)
+				return true;
+
+		return false;
 	}
-	public function _isTouch (index:Int) : TouchData
+	public function _isMouse (index:Int) : Bool
 	{
-		if (_touchHeld.exists(index) && _touchHeld[index].on)
-			return _touchHeld[index];
-		else
-			return null;
+		if (_mouseHeld.exists(index) && _mouseHeld[index] == ACTIVE)
+				return true;
+
+		return false;
 	}
-	public function _isTouchUp (index:Int) : TouchData
+	public function _isMouseUp (index:Int) : Bool
 	{
-		if (_touchReleased.exists(index) && _touchReleased[index].on)
-			return _touchReleased[index];
-		return null;
+		if (_mouseReleased.exists(index) && _mouseReleased[index] == ACTIVE)
+			return true;
+
+		return false;
 	}
 
 	/**
 	 * Similar to WynInput
 	 */
 
-	public static function isTouchDown (index:Int) : TouchData
+	public static function isMouseDown (index:Int) : Bool
 	{
-		return instance._isTouchDown(index);
+		return instance._isMouseDown(index);
 	}
-	public static function isTouch (index:Int) : TouchData
+	public static function isMouse (index:Int) : Bool
 	{
-		return instance._isTouch(index);
+		return instance._isMouse(index);
 	}
-	public static function isTouchUp (index:Int) : TouchData
+	public static function isMouseUp (index:Int) : Bool
 	{
-		return instance._isTouchUp(index);
-	}
-
-
-
-	function onTouchStart (index:Int, x:Int, y:Int)
-	{
-		trace("onTouchStart : " +index+","+x+","+y);
-
-		_touchPressed.set(index, { index:index, x:x, y:y, on:true });
-		_touchHeld.set(index, { index:index, x:x, y:y, on:false });
-		_touchReleased.set(index, { index:index, x:x, y:y, on:false });
+		return instance._isMouseUp(index);
 	}
 
-	function onTouchMove (index:Int, x:Int, y:Int)
-	{
-		trace("onTouchMove : " +index+","+x+","+y);
 
-		// Update the held position
-		_touchHeld[index].x = x;
-		_touchHeld[index].y = x;
-		_touchHeld[index].on = true;
+
+	function onMouseStart (index:Int, x:Int, y:Int)
+	{
+		_mousePressed[index] = BEGIN;
+		_mouseHeld[index] = BEGIN;
+
+		WynMouse.x = x;
+		WynMouse.y = y;
 	}
 
-	function onTouchEnd (index:Int, x:Int, y:Int)
+	function onMouseMove (x:Int, y:Int, dx:Int, dy:Int)
 	{
-		trace("onTouchEnd : " +index+","+x+","+y);
+		// Only callback for mousemove if we manually listen for it.
+		for (listener in _mouseMoveListeners)
+			listener(x,y,dx,dy);
 
-		// Note: let the _touchRelease toggle the _touchMove in update() naturally.
-		_touchPressed.set(index, { index:index, x:x, y:y, on:false });
-		_touchReleased.set(index, { index:index, x:x, y:y, on:true });
+		WynMouse.x = x;
+		WynMouse.y = y;
+	}
+
+	function onMouseEnd (index:Int, x:Int, y:Int)
+	{
+		_mouseReleased[index] = BEGIN;
+
+		WynMouse.x = x;
+		WynMouse.y = y;
+	}
+
+	function onMouseWheel (delta:Int)
+	{
+		trace("### onMouseWheel : " +delta);
 	}
 }
