@@ -169,11 +169,13 @@ class WynMouse
 		WynMouse.y = y;
 	}
 
-	function onMouseMove (x:Int, y:Int, dx:Int, dy:Int)
+	function onMouseMove (x:Int, y:Int, dx:Int, dy:Int) // github latest
+	// function onMouseMove (x:Int, y:Int) // haxelib 15.10
 	{
 		// Only callback for mousemove if we manually listen for it.
 		for (listener in _mouseMoveListeners)
-			listener(x,y,dx,dy);
+			listener(x,y,0,0);
+			//listener(x,y,dx,dy);
 
 		WynMouse.x = x;
 		WynMouse.y = y;

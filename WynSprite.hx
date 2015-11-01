@@ -6,7 +6,6 @@ import kha.Rectangle;
 import kha.Loader;
 import kha.math.FastMatrix3;
 import kha.math.FastVector2;
-import kha.graphics2.Graphics;
 import kha.graphics2.GraphicsExtension;
 
 class WynSprite extends WynObject
@@ -57,14 +56,25 @@ class WynSprite extends WynObject
 		updateAnimator();
 	}
 
-	override public function render (g:Graphics)
+	override public function render (c:WynCamera)
 	{
-		super.render(g);
+		super.render(c);
+
+		var g = c.buffer.g2;
+
+		// Get the position in relation to camera's scroll position
+		var ox = x - c.scrollX;
+		var oy = y - c.scrollY;
+
+		// Rather than rendering onto the final buffer directly, we
+		// render into each available camera, and offset based on the
+		// camera's scrollX/scrollY. The cameras' images are then
+		// rendered onto the final buffer.
 
 		if (Wyngine.DEBUG_DRAW && Wyngine.DRAW_COUNT < Wyngine.DRAW_COUNT_MAX)
 		{
 			g.color = Color.Green;
-			g.drawRect(x, y, frameWidth, frameHeight);
+			g.drawRect(ox, oy, frameWidth, frameHeight);
 
 			Wyngine.DRAW_COUNT++;
 		}
@@ -85,11 +95,11 @@ class WynSprite extends WynObject
 				var rad = WynUtil.degToRad(angle);
 				g.pushTransformation(g.transformation
 					// offset toward top-left, to center image on pivot point
-					.multmat(FastMatrix3.translation(x + frameWidth/2, y + frameHeight/2))
+					.multmat(FastMatrix3.translation(ox + frameWidth/2, oy + frameHeight/2))
 					// rotate at pivot point
 					.multmat(FastMatrix3.rotation(rad))
 					// reverse offset
-					.multmat(FastMatrix3.translation(-x - frameWidth/2, -y - frameHeight/2)));
+					.multmat(FastMatrix3.translation(-ox - frameWidth/2, -oy - frameHeight/2)));
 			}
 
 			// Add opacity if any
@@ -101,8 +111,8 @@ class WynSprite extends WynObject
 				// the spritesheet's frame to extract from
 				frameX, frameY, frameWidth, frameHeight, 
 				// the target position
-				x + (dx+frameWidth/2) - (frameWidth/2),
-				y + (dy+frameHeight/2) - (frameHeight/2),
+				ox + (dx+frameWidth/2) - (frameWidth/2),
+				oy + (dy+frameHeight/2) - (frameHeight/2),
 				frameWidth * fx * scale,
 				frameHeight * fy * scale);
 
@@ -117,7 +127,7 @@ class WynSprite extends WynObject
 		{
 			// Debug hitbox
 			g.color = Color.Red;
-			g.drawRect(x + offset.x, y + offset.y, width, height);
+			g.drawRect(ox + offset.x, oy + offset.y, width, height);
 
 			Wyngine.DRAW_COUNT++;
 		}

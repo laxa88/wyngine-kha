@@ -11,6 +11,7 @@ class WynText extends WynSprite
 {
 	public var font:Font;
 	public var text:String = "";
+	var _prevText:String = "";
 
 
 
@@ -21,20 +22,27 @@ class WynText extends WynSprite
 		setFont(name, size, bold, italic, underlined);
 		createEmptyImage(w, h);
 
-		setText(t);
+		text = t;
 	}
 
 	public override function update (dt:Float)
 	{
 		super.update(dt);
+
+		// Only redraw the text if the text changed,
+		// to save on draw calls.
+		if (text != _prevText)
+		{
+			updateText();
+			_prevText = text;
+		}
 	}
 
-	public override function render (g:Graphics)
+	public override function render (c:WynCamera)
 	{
-		super.render(g);
+		c.buffer.g2.font = font;
 
-		g.color = Color.White;
-		g.font = font;
+		super.render(c);
 	}
 
 	public function setFont (name:String, size:Int, bold:Bool=false, italic:Bool=false, underlined:Bool=false)
@@ -43,20 +51,15 @@ class WynText extends WynSprite
 		font = Loader.the.loadFont(name, new FontStyle(bold, italic, underlined), size);
 	}
 
-	public function setText (t:String)
+	function updateText ()
 	{
 		// Only update the text if something changed.
 		// We can save on unnecessarily drawing text this way.
-		if (text != t)
-		{
-			text = t;
-
-			// Update the text once
-			image.g2.begin(true, Color.fromValue(0x00000000));
-			image.g2.font = font;
-			image.g2.color = color; // white
-			image.g2.drawString(text, 0, 0);
-			image.g2.end();
-		}
+		// Update the text once
+		image.g2.begin(true, Color.fromValue(0x00000000));
+		image.g2.font = font;
+		image.g2.color = color; // white
+		image.g2.drawString(text, 0, 0);
+		image.g2.end();
 	}
 }

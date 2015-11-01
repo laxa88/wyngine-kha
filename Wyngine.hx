@@ -10,6 +10,7 @@ import kha.Framebuffer;
 import kha.Scaler;
 import kha.ScreenCanvas;
 import kha.math.Random;
+import kha.graphics2.Graphics;
 
 /**
  * Kha's screens are kha.Game classes.
@@ -49,8 +50,9 @@ class Wyngine extends Game
 	// Cameras are basically one or more image buffers
 	// rendered onto the main Framebuffer.
 	// TODO multiple cameras
-	public var camera(default, null):Image;
+	public var buffer(default, null):Image;
 	public var bgColor(default, set):Color;
+	public var cameras(default, null):Array<WynCamera>;
 	var input:WynInput;
 	var touch:WynTouch;
 	var mouse:WynMouse;
@@ -109,8 +111,12 @@ class Wyngine extends Game
 		windowHeight = ScreenCanvas.the.height;
 		gameWidth = Std.int(windowWidth / zoom);
 		gameHeight = Std.int(windowHeight / zoom);
-		camera = Image.createRenderTarget(gameWidth, gameHeight);
-		bgColor = Color.White;
+		buffer = Image.createRenderTarget(gameWidth, gameHeight);
+		bgColor = Color.fromValue(0xff6495ed); // cornflower blue default
+		cameras = [];
+
+		// Initialise the default main camera
+		cameras.push(new WynCamera(0, 0, gameWidth, gameHeight, Color.Black));
 
 		// Initialise engine variables
 		WynInput.init();
@@ -180,44 +186,53 @@ class Wyngine extends Game
 	{
 		// TODO: shaders
 
-		// Start draw on the buffer
-		var g = camera.g2;
-		g.begin();
+		var g:Graphics;
+		var cam:WynCamera;
 
-		// Clear screen with bgColor
-		g.color = bgColor;
-		g.fillRect(0, 0, gameWidth, gameHeight);
-
-		// debug
-		if (WynQuadTree.DEBUG)
+		for (i in 0 ... cameras.length)
 		{
-			if (_quadtree != null)
-				_quadtree.drawTrees(g);
+			cam = cameras[i];
+
+			// For every camera, render the current screen onto their buffers.
+			g = cam.buffer.g2;
+
+			// Clear screen with bgColor
+			g.begin(true, cam.bgColor);
+
+			// Draw quadtree if you want
+			if (WynQuadTree.DEBUG)
+			{
+				if (_quadtree != null)
+					_quadtree.drawTrees(cam);
+			}
+
+			// Draw each object onto current camera
+			g.color = Color.White;
+			currentScreen.render(cam);
+
+			g.end();
 		}
 
-		// debug
-		if (DEBUG_DRAW)
-		{
-			// g.color = Color.Yellow;
-			// g.drawRect(0, 0, gameWidth/2, gameHeight/2);
-			// g.drawRect(gameWidth/2, gameHeight/2, gameWidth/2, gameHeight/2);
-		}
+		// Draw the cameras onto the buffer
+		g = buffer.g2;
 
-		// Main game render goes here
+		// Clear main screen before drawing cameras in
+		g.begin(true, bgColor);
+
+		// Reset to white when rendering camera, otherwise
+		// we end up tinting color to all the cameras
 		g.color = Color.White;
-		currentScreen.render(g);
 
-		if (DEBUG_DRAW)
+		for (i in 0 ... cameras.length)
 		{
-			// g.color = Color.Pink;
-			// g.drawRect(gameWidth/4, gameHeight/4, gameWidth/2, gameHeight/2);
+			cam = cameras[i];
+			g.drawScaledImage(cam.buffer, cam.x, cam.y, cam.width, cam.height);
 		}
-
 		g.end();
 
-		// Draw and upscale onto final buffer
+		// Once we're done, draw and upscale the buffer onto screen
 		frame.g2.begin();
-		Scaler.scale(camera, frame, Sys.screenRotation);
+		Scaler.scale(buffer, frame, Sys.screenRotation);
 		frame.g2.end();
 
 		// Reset at end of every cycle
@@ -327,6 +342,30 @@ class Wyngine extends Game
 		paused = !paused;
 	}
 
+	/**
+	 * Sets a new camera to the index. Returns true if success.
+	 */
+	public function setCamera (index:Int, camera:WynCamera) : Bool
+	{
+		if (index < 0 || index >= cameras.length)
+			return false;
+		
+		cameras[index] = camera;
+		return true;
+	}
+
+	/**
+	 * Adds a new camera to the camera list.
+	 */
+	public function addCamera (camera:WynCamera)
+	{
+		// Don't add duplicates
+		if (cameras.indexOf(camera) != -1)
+			return;
+
+		cameras.push(camera);
+	}
+
 
 
 	private function get_loadPercentage () : Float
@@ -336,10 +375,8 @@ class Wyngine extends Game
 
 	private function set_bgColor (val:Color) : Color
 	{
-		// Allow setting to null:
-		// Defaults to cornflower blue (good old days of XNA)
-
-		// Works on dynamic platforms, not static platforms.
+		// NOTE:
+		// Works on dynamic platforms, but not static platforms.
 		// http://haxe.org/manual/types-nullability.html
 		// if (val == null)
 		// 	val = Color.fromValue(0xff6495ed);

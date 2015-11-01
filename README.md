@@ -26,13 +26,17 @@ Games made with the engine so far:
 * Screen states
 * Default Kha texts
 * Bitmap texts
+* Camera system (multiple cameras, scrolling)
 
 # TODO
 
-* input
-  * gamepad
-* camera shake
+* button
+* camera
+	* shake
+* tweening
 * particle and emitter
 * file loader
 * tiled maps (parser + generator)
+* input
+  * gamepad
 * shaders

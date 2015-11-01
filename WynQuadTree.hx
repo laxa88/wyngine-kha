@@ -2,7 +2,6 @@ package wyn;
 
 import kha.Color;
 import kha.Rectangle;
-import kha.graphics2.Graphics;
 
 /**
  * v1: Taken from here:
@@ -535,15 +534,17 @@ class WynQuadTree
 	 * method call's order so that the quadtree's quad data is retained
 	 * for render() to be able to draw the trees.
 	 */
-	public function drawTrees (g:kha.graphics2.Graphics)
+	public function drawTrees (c:WynCamera)
 	{
+		var g = c.buffer.g2;
+		
 		g.color = Color.Pink;
 		g.drawRect(_quadLeft, _quadTop, _quadHalfWidth*2, _quadHalfHeight*2);
 
 		for (i in 0 ... 4)
 		{
 			if (_nodes[i] != null)
-				_nodes[i].drawTrees(g);
+				_nodes[i].drawTrees(c);
 		}
 	}
 }

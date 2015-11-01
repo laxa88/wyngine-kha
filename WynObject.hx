@@ -1,7 +1,6 @@
 package wyn;
 
 import kha.math.FastVector2;
-import kha.graphics2.Graphics;
 
 class WynObject
 {
@@ -69,7 +68,7 @@ class WynObject
 		angle += dt * angularVelocity;
 	}
 
-	public function render (g:Graphics)
+	public function render (c:WynCamera)
 	{
 		// By default, empty objects don't have image.
 		// Do rendering logic in WynSprite instead.

@@ -1,7 +1,5 @@
 package wyn;
 
-import kha.graphics2.Graphics;
-
 class WynGroup<T:WynObject> extends WynObject
 {
 	/**
@@ -44,9 +42,9 @@ class WynGroup<T:WynObject> extends WynObject
 		}
 	}
 
-	override public function render (g:Graphics)
+	override public function render (c:WynCamera)
 	{
-		super.render(g);
+		super.render(c);
 
 		// Instead of doing "for (o in members)", we use a single
 		// storage variable for looping, to keep things casted to
@@ -59,7 +57,7 @@ class WynGroup<T:WynObject> extends WynObject
 			o = members[i++];
 
 			if (o != null && o.exists && o.visible)
-				o.render(g);
+				o.render(c);
 		}
 	}
 

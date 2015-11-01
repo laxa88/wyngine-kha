@@ -1,7 +1,6 @@
 package wyn;
 
 import kha.Color;
-import kha.graphics2.Graphics;
 
 class WynScreen extends WynGroup<WynObject>
 {
@@ -31,9 +30,9 @@ class WynScreen extends WynGroup<WynObject>
 		super.update(dt);
 	}
 
-	override public function render (g:Graphics)
+	override public function render (c:WynCamera)
 	{
-		super.render(g);
+		super.render(c);
 	}
 
 	override public function destroy ()

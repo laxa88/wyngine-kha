@@ -1,6 +1,5 @@
 package wyn;
 
-import kha.graphics2.Graphics;
 import kha.Image;
 import kha.Color;
 import kha.Loader;
@@ -95,7 +94,7 @@ class WynBitmapText extends WynSprite
 			{
 				font = fontCache.get(fontName);
 				size = font.size;
-				image = Image.createRenderTarget(w, h);
+				createEmptyImage(w, h);
 			}
 			else
 			{
@@ -213,7 +212,6 @@ class WynBitmapText extends WynSprite
 		if (text != _prevText)
 		{
 			updateText();
-
 			_prevText = text;
 		}
 	}
@@ -300,6 +298,10 @@ class WynBitmapText extends WynSprite
 						// without rendering anything.
 						_cursor.x += font.spaceWidth * scale;
 					}
+				}
+				else
+				{
+					Wyngine.log("letter data doesn't exist");
 				}
 
 				// Don't render anything if the letter data doesn't exist.
@@ -565,9 +567,9 @@ class WynBitmapText extends WynSprite
 		}
 	}
 
-	override public function render (g:Graphics)
+	override public function render (c:WynCamera)
 	{
-		super.render(g);
+		super.render(c);
 	}
 
 	override public function destroy ()
