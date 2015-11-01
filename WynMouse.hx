@@ -165,44 +165,15 @@ class WynMouse
 		_mousePressed[index] = BEGIN;
 		_mouseHeld[index] = BEGIN;
 
-		// For each camera, trigger the update the mouse coordinates
-		// accordingly:
-		// worldX / worldY = position in camera relative to scrollX / scrollY, scaled
-		// cameraX / cameraY = position relative to top-left origin of camera, unscaled
-		// screenX / screenY = position relative to top-left origin of screen
-
 		// These are screenX/screenY
 		WynMouse.x = x;
 		WynMouse.y = y;
 
-		// WIP
+		// For each camera, trigger the update the mouse coordinates accordingly.
 		for (camera in Wyngine.G.cameras)
 		{
-			// screen = {width:640, height:480}
-			// camera = {x:50, y:50, width:320, height:240, scrollX:150, scrollY:150}
-			// AND mouse clicked in screen = {x:340, y:220}
-			// THEN screenX/Y = {x:340, 220}
-			// THEN cameraX/Y = {x:200, 110}
-			// THEN worldX/Y = {x:350, 260}
-
-			// cameraX/Y = screenX/screenY within the camera.
-			var cameraX = x - camera.x;
-			var cameraY = y - camera.y;
-
-			// worldX/Y = screenX/screenY + camera's scrollX/scrollY
-			var worldX = x - camera.scrollX;
-			var worldY = y - camera.scrollY;
-
-			
-
-			camera.onMouseStart(
-				0, // worldX
-				0, // worldY
-				0, // cameraX
-				0, // cameraY
-				0, // screenX
-				0 // screenY
-			);
+			var mouseData = getMousePositions(camera, x, y);
+			camera.onMouseStart(mouseData);
 		}
 	}
 
@@ -211,22 +182,16 @@ class WynMouse
 	{
 		// Only callback for mousemove if we manually listen for it.
 		for (listener in _mouseMoveListeners)
-			listener(x,y,0,0);
-			//listener(x,y,dx,dy);
+			listener(x,y,dx,dy);
 
 		WynMouse.x = x;
 		WynMouse.y = y;
 
+		// For each camera, trigger the update the mouse coordinates accordingly.
 		for (camera in Wyngine.G.cameras)
 		{
-			camera.onMouseMove(
-				0, // worldX
-				0, // worldY
-				0, // cameraX
-				0, // cameraY
-				0, // screenX
-				0 // screenY
-			);
+			var mouseData = getMousePositions(camera, x, y);
+			camera.onMouseMove(mouseData);
 		}
 	}
 
@@ -237,21 +202,53 @@ class WynMouse
 		WynMouse.x = x;
 		WynMouse.y = y;
 
+		// For each camera, trigger the update the mouse coordinates accordingly.
 		for (camera in Wyngine.G.cameras)
 		{
-			camera.onMouseEnd(
-				0, // worldX
-				0, // worldY
-				0, // cameraX
-				0, // cameraY
-				0, // screenX
-				0 // screenY
-			);
+			var mouseData = getMousePositions(camera, x, y);
+			camera.onMouseEnd(mouseData);
 		}
+	}
+
+	inline function getMousePositions (camera:WynCamera, x:Int, y:Int) : WynCamera.MouseData
+	{
+		// TODO
+		// cameraX/Y (position relative to top-left origin of camera)
+
+		// windowX/Y (raw window mouse position)
+		// screenX/Y (scaled window mouse position)
+		// camWindowX/Y (raw camera mouse position)
+		// camScreenX/Y (scaled camera mouse position)
+		// worldX/Y (mouse position in game world, based on current camera, offset by camera scroll)
+
+		// Example:
+		// game = {width:640, height:480, zoom:2}
+		// camera = {x:200, y:100, width:320, height:240, scrollX:50, scrollY:70}
+		// AND mouse clicked in screen = {x:350, y:300}
+		// THEN:
+		// window x,y = {350, 300} (original value)
+		// screen x,y = {175, 150} (window / camera.zoom)
+		// camWindow x,y = {150, 200} (window - camera.pos)
+		// camScreen x,y = {75, 100} (screen - (camera.pos / camera.zoom))
+		// world x,y (camera) = {125, 170} (camScreen + scroll)
+
+		return {
+			windowX : Math.round(x),
+			windowY : Math.round(y),
+			screenX : Math.round(x / camera.zoom),
+			screenY : Math.round(y / camera.zoom),
+			camWindowX : Math.round(x - camera.x),
+			camWindowY : Math.round(y - camera.y),
+			camScreenX : Math.round((x - camera.x) / camera.zoom),
+			camScreenY : Math.round((y - camera.y) / camera.zoom),
+			worldX : Math.round(((x - camera.x) / camera.zoom) + camera.scrollX),
+			worldY : Math.round(((y - camera.y) / camera.zoom) + camera.scrollY)
+		};
 	}
 
 	function onMouseWheel (delta:Int)
 	{
+		// Not working, based on last kha commit I checked
 		trace("### onMouseWheel : " +delta);
 	}
 }

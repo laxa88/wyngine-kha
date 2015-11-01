@@ -5,14 +5,19 @@ import kha.graphics2.Graphics;
 import kha.Image;
 import kha.Color;
 
+// Refer to WynMouse.onMouseStart for explanation
 typedef MouseData =
 {
-	var worldX:Int;
-	var worldY:Int;
-	var cameraX:Int;
-	var cameraY:Int;
+	var windowX:Int;
+	var windowY:Int;
 	var screenX:Int;
 	var screenY:Int;
+	var camWindowX:Int;
+	var camWindowY:Int;
+	var camScreenX:Int;
+	var camScreenY:Int;
+	var worldX:Int;
+	var worldY:Int;
 }
 
 class WynCamera
@@ -113,49 +118,22 @@ class WynCamera
 	 * These methods are called by WynMouse accordingly.
 	 */
 
-	public function onMouseStart (worldX:Int, worldY:Int, cameraX:Int, cameraY:Int, screenX:Int, screenY:Int)
+	public function onMouseStart (data:MouseData)
 	{
 		for (listener in downListeners)
-		{
-			listener({
-				worldX : worldX,
-				worldY : worldY,
-				cameraX : cameraX,
-				cameraY : cameraY,
-				screenX : screenX,
-				screenY : screenY
-			});
-		}
+			listener(data);
 	}
 
-	public function onMouseMove (worldX:Int, worldY:Int, cameraX:Int, cameraY:Int, screenX:Int, screenY:Int)
+	public function onMouseMove (data:MouseData)
 	{
 		for (listener in moveListeners)
-		{
-			listener({
-				worldX : worldX,
-				worldY : worldY,
-				cameraX : cameraX,
-				cameraY : cameraY,
-				screenX : screenX,
-				screenY : screenY
-			});
-		}
+			listener(data);
 	}
 
-	public function onMouseEnd (worldX:Int, worldY:Int, cameraX:Int, cameraY:Int, screenX:Int, screenY:Int)
+	public function onMouseEnd (data:MouseData)
 	{
 		for (listener in upListeners)
-		{
-			listener({
-				worldX : worldX,
-				worldY : worldY,
-				cameraX : cameraX,
-				cameraY : cameraY,
-				screenX : screenX,
-				screenY : screenY
-			});
-		}
+			listener(data);
 	}
 
 	private function set_zoom (val:Float) : Float
