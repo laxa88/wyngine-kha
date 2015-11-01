@@ -226,7 +226,15 @@ class Wyngine extends Game
 		for (i in 0 ... cameras.length)
 		{
 			cam = cameras[i];
-			g.drawScaledImage(cam.buffer, cam.x, cam.y, cam.width, cam.height);
+			g.drawScaledSubImage(cam.buffer,
+				0, // frame origin (like WynSprite)
+				0,
+				cam.width / cam.zoom, // frame size (like WynSprite.)
+				cam.height / cam.zoom,
+				cam.x,
+				cam.y,
+				cam.width, // the actual camera size on screen
+				cam.height);
 		}
 		g.end();
 
@@ -340,6 +348,63 @@ class Wyngine extends Game
 	public function togglePause ()
 	{
 		paused = !paused;
+	}
+
+
+
+	/**
+	 * Instead of setting camera zoom, you can set the screen's zoom,
+	 * to create true pixel resolution screens. This also updates all
+	 * cameras to match the new game's zoom.
+	 */
+	public function setGameZoom (zoom:Float, affectCameras:Bool=true)
+	{
+		var oldZoom = this.zoom; // e.g. 2
+		this.zoom = zoom; // e.g. 1
+
+		// e.g. 2 / 1 = 2
+		// This means all existing cameras need to be upscaled x2.
+		var ratio = zoom / oldZoom;
+
+		// update game resolution
+		gameWidth = Std.int(windowWidth / zoom);
+		gameHeight = Std.int(windowHeight / zoom);
+
+		// Update buffer size
+		buffer = Image.createRenderTarget(gameWidth, gameHeight);
+
+		// By default, camera sizes are resized according to resolution.
+		if (affectCameras)
+		{
+			// Update all existing cameras. This should intelligently
+			// scale the camera's x/y/width/height/scrollX/scrollY.
+			for (cam in cameras)
+			{
+				// NOTE:
+				// zoom is not updated, because... not sure if it's necessary.
+				cam.x /= ratio;
+				cam.y /= ratio;
+				cam.width /= ratio;
+				cam.height /= ratio;
+
+				// Update the camera buffer size
+				cam.buffer = Image.createRenderTarget(cast cam.width, cast cam.height);
+			}
+		}
+	}
+
+	/**
+	 * Replaces all the current cameras with this new list of cameras
+	 */
+	public function initCameras (newCameras:Array<WynCamera>)
+	{
+		cameras = [];
+		for (cam in newCameras)
+		{
+			// Just double-check and don't insert duplicate cams
+			if (cameras.indexOf(cam) == -1)
+				cameras.push(cam);
+		}
 	}
 
 	/**

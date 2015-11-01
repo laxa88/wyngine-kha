@@ -34,7 +34,9 @@ class WynTouch
 		// if (gyro != null)
 		// 	gyro.notify(onGyroUpdate);
 
-		Surface.get().notify(onTouchStart, onTouchEnd, onTouchMove);
+		var surface = Surface.get();
+		if (surface != null)
+			surface.notify(onTouchStart, onTouchEnd, onTouchMove);
 
 		_touchPressed = new Map<Int, TouchData>();
 		_touchHeld = new Map<Int, TouchData>();
@@ -113,7 +115,8 @@ class WynTouch
 	{
 		if (_touchReleased.exists(index) && _touchReleased[index].on)
 			return _touchReleased[index];
-		return null;
+		else
+			return null;
 	}
 
 	/**

@@ -26,16 +26,23 @@ Games made with the engine so far:
 * Screen states
 * Default Kha texts
 * Bitmap texts
-* Camera system (multiple cameras, scrolling)
+* Camera system (multiple cameras, scrolling, zooming)
 
 # TODO
 
 * button
+	* button up, hover, down
+	* 9-slice image
+	* 9-slice button up, hover, down
 * camera
+	* zoom
 	* shake
+	* fade-in, fade-out, flash
 * tweening
 * particle and emitter
-* file loader
+* file system
+	* read from text file
+	* write to text file
 * tiled maps (parser + generator)
 * input
   * gamepad
