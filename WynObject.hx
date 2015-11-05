@@ -22,8 +22,8 @@ class WynObject
 	public var visible:Bool = true;
 	public var objectType(default, null):Int = WynObject.NONE;
 
-	public var x:Float = 0; // Note: position origin is at top-left corner.
-	public var y:Float = 0;
+	public var x(default, set):Float = 0; // Note: position origin is at top-left corner.
+	public var y(default, set):Float = 0;
 	public var width:Float = 0; // By default, hitbox size is same as image size
 	public var height:Float = 0;
 
@@ -150,5 +150,15 @@ class WynObject
 	public function getCenterPosition () : FastVector2
 	{
 		return new FastVector2(x+width/2, y+height/2);
+	}
+
+	private function set_x (val:Float) : Float
+	{
+		return x = val;
+	}
+
+	private function set_y (val:Float) : Float
+	{
+		return y = val;
 	}
 }

@@ -392,4 +392,34 @@ class WynGroup<T:WynObject> extends WynObject
 		}
 		return count;
 	}
+
+	override private function set_x (val:Float) : Float
+	{
+		if (x == val)
+			return val;
+		else
+		{
+			// offset all members
+			var offset = val - x;
+			for (i in 0 ... length)
+				members[i].x += offset;
+
+			return x = val;
+		}
+	}
+
+	override private function set_y (val:Float) : Float
+	{
+		if (y == val)
+			return val;
+		else
+		{
+			// offset all members
+			var offset = val - y;
+			for (i in 0 ... length)
+				members[i].y += offset;
+
+			return y = val;
+		}
+	}
 }
