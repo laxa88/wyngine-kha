@@ -22,6 +22,9 @@ class WynObject
 	public var visible:Bool = true;
 	public var objectType(default, null):Int = WynObject.NONE;
 
+	public var parent:WynObject; // used with WynGroup to identify this object's parent
+	public var localx(get, set):Float; // relative to parent
+	public var localy(get, set):Float;
 	public var x(default, set):Float = 0; // Note: position origin is at top-left corner.
 	public var y(default, set):Float = 0;
 	public var width:Float = 0; // By default, hitbox size is same as image size
@@ -160,5 +163,37 @@ class WynObject
 	private function set_y (val:Float) : Float
 	{
 		return y = val;
+	}
+
+	private function get_localx () : Float
+	{
+		if (parent != null)
+			return x - parent.x;
+		else
+			return 0;
+	}
+
+	private function get_localy () : Float
+	{
+		if (parent != null)
+			return y - parent.y;
+		else
+			return 0;
+	}
+
+	private function set_localx (val:Float) : Float
+	{
+		if (parent != null)
+			return x = parent.x + val;
+		else
+			return 0;
+	}
+
+	private function set_localy (val:Float) : Float
+	{
+		if (parent != null)
+			return y = parent.y + val;
+		else
+			return 0;
 	}
 }

@@ -137,6 +137,10 @@ class WynGroup<T:WynObject> extends WynObject
 		members.push(o);
 		length++;
 
+		// Let child know who the parent is, so
+		// we can get localx/localy position
+		o.parent = this;
+
 		// Return for chaining
 		return o;
 	}
