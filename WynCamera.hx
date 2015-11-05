@@ -44,7 +44,8 @@ class WynCamera
 	// this camera.
 	public var scrollX:Float = 0;
 	public var scrollY:Float = 0;
-	public var isShaking:Bool = false;
+	public var shakeHorizontal:Bool = false;
+	public var shakeVertical:Bool = false;
 	public var intensity:Float = 0;
 	public var weakenRate:Float = 0;
 	public var shakeX:Float = 0;
@@ -96,8 +97,8 @@ class WynCamera
 		if (intensity > 0)
 		{
 			var point:FastVector2 = WynUtil.randomInCircle().mult(intensity);
-			shakeX = point.x;
-			shakeY = point.y;
+			shakeX = (shakeHorizontal) ? point.x : 0;
+			shakeY = (shakeVertical) ? point.y : 0;
 			intensity -= dt * weakenRate;
 
 			if (intensity <= 0)
@@ -114,13 +115,30 @@ class WynCamera
 	 */
 	public function render ()
 	{
+		// TODO
 	}
 
-	public function shake (intensity:Float, weakenRate:Float)
+	public function shake (intensity:Float, weakenRate:Float, horizontal:Bool=true, vertical:Bool=true)
 	{
 		this.intensity = intensity;
 		this.weakenRate = weakenRate;
-		isShaking = true;
+		shakeHorizontal = horizontal;
+		shakeVertical = vertical;
+	}
+
+	public function flash (color:Color, duration:Float)
+	{
+
+	}
+
+	public function fadeIn (color:Color, duration:Float, callback:Void->Void)
+	{
+		
+	}
+
+	public function fadeOut (color:Color, duration:Float, callback:Void->Void)
+	{
+		
 	}
 
 	/**
