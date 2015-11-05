@@ -163,6 +163,15 @@ class Wyngine extends Game
 		touch.update();
 		mouse.update();
 
+		// Update each camera if they have effects, such as
+		// shake, flash, fade...
+		var cam:WynCamera;
+		for (i in 0 ... cameras.length)
+		{
+			cam = cameras[i];
+			cam.update( dt * ((paused) ? 0 : 1) );
+		}
+
 		// Main game update goes here
 		currentScreen.update( dt * ((paused) ? 0 : 1) );
 	}

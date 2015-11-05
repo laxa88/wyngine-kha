@@ -232,6 +232,8 @@ class WynMouse
 		// camScreen x,y = {75, 100} (screen - (camera.pos / camera.zoom))
 		// world x,y (camera) = {125, 170} (camScreen + scroll)
 
+
+		// NOTE: doesn't include camera shake!
 		return {
 			windowX : Math.round(x),
 			windowY : Math.round(y),

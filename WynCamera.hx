@@ -44,6 +44,11 @@ class WynCamera
 	// this camera.
 	public var scrollX:Float = 0;
 	public var scrollY:Float = 0;
+	public var isShaking:Bool = false;
+	public var intensity:Float = 0;
+	public var weakenRate:Float = 0;
+	public var shakeX:Float = 0;
+	public var shakeY:Float = 0;
 
 	// This is the physical size of the camera that will be
 	// rendered onto the screen.
@@ -80,6 +85,42 @@ class WynCamera
 		upListeners = [];
 
 		buffer = Image.createRenderTarget(width, height);
+	}
+
+	/**
+	 * This is called from Wyngine to update animations, such as
+	 * camera shake, flash, etc.
+	 */
+	public function update (dt:Float)
+	{
+		if (intensity > 0)
+		{
+			var point:FastVector2 = WynUtil.randomInCircle().mult(intensity);
+			shakeX = point.x;
+			shakeY = point.y;
+			intensity -= dt * weakenRate;
+
+			if (intensity <= 0)
+			{
+				shakeX = 0;
+				shakeY = 0;
+			}
+		}
+	}
+
+	/**
+	 * This is called to render extra stuff on the cameraa fter
+	 * updates, such as camera flashes.
+	 */
+	public function render ()
+	{
+	}
+
+	public function shake (intensity:Float, weakenRate:Float)
+	{
+		this.intensity = intensity;
+		this.weakenRate = weakenRate;
+		isShaking = true;
 	}
 
 	/**

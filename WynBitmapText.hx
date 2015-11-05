@@ -339,7 +339,7 @@ class WynBitmapText extends WynSprite
 		}
 
 		// split words by spaces
-		// E.g. "This is a word"
+		// E.g. "This is a sentence"
 		// becomes ["this", "is", "a", "sentence"]
 		var words = fullText.split(' ');
 		var wordsLen = words.length;

@@ -63,8 +63,8 @@ class WynSprite extends WynObject
 		var g = c.buffer.g2;
 
 		// Get the position in relation to camera's scroll position
-		var ox = x - c.scrollX;
-		var oy = y - c.scrollY;
+		var ox = x - c.scrollX - c.shakeX;
+		var oy = y - c.scrollY - c.shakeY;
 
 		// Rather than rendering onto the final buffer directly, we
 		// render into each available camera, and offset based on the

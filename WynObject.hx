@@ -26,7 +26,6 @@ class WynObject
 	public var y:Float = 0;
 	public var width:Float = 0; // By default, hitbox size is same as image size
 	public var height:Float = 0;
-	//public var center(get,set):{x:}
 
 	public var angle:Float = 0; // Note: Rotations are costly, especially on flash!
 	public var velocity(default, null):FastVector2 = new FastVector2();
