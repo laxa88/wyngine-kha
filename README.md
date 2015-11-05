@@ -11,7 +11,8 @@ Games made with the engine so far:
 * [KhaPong](http://coinflipstudios.com/khapong) - [last working commit](https://github.com/laxa88/wyngine/commit/7cd34019ae85bb0e01accd81d680bcd5fd7d645b)
 * [Khasteroids](http://coinflipstudios.com/khasteroids) - [last working commit](https://github.com/laxa88/wyngine/commit/ca7718bc0fb3797fd2c14793394d6da1673f9127)
 * [KhaQuadTree](http://coinflipstudios.com/khaquadtree) - [last working commit](https://github.com/laxa88/wyngine/commit/0a576c11ad29611b7aa507452fddf5e5468e96db)
-* [KhaMenu](http://coinflipstudios.com/khamenu) [last working commit](https://github.com/laxa88/wyngine/commit/eff998996195f419a062e26055c9885cc840e5b2)
+* [KhaMenu](http://coinflipstudios.com/khamenu) - [last working commit](https://github.com/laxa88/wyngine/commit/eff998996195f419a062e26055c9885cc840e5b2)
+* [KhaCamera](http://coinflipstudios.com/khacamera) - [last working commit](https://github.com/laxa88/wyngine/commit/e533d9fbaf09d868666d32b306956872c44775fa)
 
 # Current Available Features
 
