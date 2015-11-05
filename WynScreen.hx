@@ -33,6 +33,10 @@ class WynScreen extends WynGroup<WynObject>
 	override public function render (c:WynCamera)
 	{
 		super.render(c);
+
+		// After we're done rendering this screen and all its objects,
+		// try to render the camera's flash/fade stuff
+		c.render();
 	}
 
 	override public function destroy ()

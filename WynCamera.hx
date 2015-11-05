@@ -51,6 +51,14 @@ class WynCamera
 	public var shakeX:Float = 0;
 	public var shakeY:Float = 0;
 
+	var isFading:Bool = false;
+	var curtainImage:Image;
+	var curtainColor:Color;
+	var curtainFadeDirection:Float = 0;
+	var curtainAlpha:Float = 0;
+	var curtainDuration:Float = 0;
+	var curtainCallback:Void->Void;
+
 	// This is the physical size of the camera that will be
 	// rendered onto the screen.
 	// E.g. {x:50, y:50} means the camera position is offset
@@ -86,6 +94,12 @@ class WynCamera
 		upListeners = [];
 
 		buffer = Image.createRenderTarget(width, height);
+
+		curtainImage = Image.createRenderTarget(1, 1); // we only need to upscale to the screen size
+		curtainImage.g2.begin();
+		curtainImage.g2.color = Color.White;
+		curtainImage.g2.fillRect(0, 0, 1, 1);
+		curtainImage.g2.end();
 	}
 
 	/**
@@ -94,6 +108,7 @@ class WynCamera
 	 */
 	public function update (dt:Float)
 	{
+		// Handle camera shake logic
 		if (intensity > 0)
 		{
 			var point:FastVector2 = WynUtil.randomInCircle().mult(intensity);
@@ -107,6 +122,24 @@ class WynCamera
 				shakeY = 0;
 			}
 		}
+
+		// Handle flash, fadein, fadeout logic
+		if (isFading || curtainDuration > 0)
+		{
+			curtainDuration -= dt;
+			curtainAlpha += (curtainFadeDirection * (dt / curtainDuration)); // fade forward or back
+
+			if (curtainDuration <= 0)
+			{
+				if (curtainCallback != null)
+					curtainCallback();
+
+				curtainCallback = null;
+				curtainDuration = 0;
+				curtainAlpha = (curtainFadeDirection < 0) ? 0 : 1;
+				isFading = false;
+			}
+		}
 	}
 
 	/**
@@ -115,7 +148,18 @@ class WynCamera
 	 */
 	public function render ()
 	{
-		// TODO
+		// As long as the curtain isn't invisible, we draw the curtain.
+		if (curtainAlpha != 0)
+		{
+			var g = buffer.g2;
+			var oldOpacity = g.opacity;
+			var oldColor = g.color;
+			g.color = Color.White;
+			g.opacity = curtainAlpha;
+			g.drawScaledImage(curtainImage, 0, 0, width, height);
+			g.opacity = oldOpacity;
+			g.color = oldColor;
+		}
 	}
 
 	public function shake (intensity:Float, weakenRate:Float, horizontal:Bool=true, vertical:Bool=true)
@@ -126,19 +170,37 @@ class WynCamera
 		shakeVertical = vertical;
 	}
 
+	public function fill (color:Color)
+	{
+		// This is literally a fadeOut() without a duration.
+		fadeOut(color, 0, null);
+	}
+
 	public function flash (color:Color, duration:Float)
 	{
-
+		// This is the same as fadeIn(). The only difference is
+		// the more intuitive name and the lack of callback.
+		fadeIn(color, duration, null);
 	}
 
 	public function fadeIn (color:Color, duration:Float, callback:Void->Void)
 	{
-		
+		curtainColor = color;
+		curtainAlpha = 1;
+		curtainDuration = duration;
+		curtainCallback = callback;
+		curtainFadeDirection = -1; // from alpha 1 to 0
+		isFading = true;
 	}
 
 	public function fadeOut (color:Color, duration:Float, callback:Void->Void)
 	{
-		
+		curtainColor = color;
+		curtainAlpha = 0;
+		curtainDuration = duration;
+		curtainCallback = callback;
+		curtainFadeDirection = 1; // from alpha 0 to 1
+		isFading = true;
 	}
 
 	/**
