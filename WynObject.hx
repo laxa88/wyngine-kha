@@ -27,8 +27,8 @@ class WynObject
 	public var localy(get, set):Float;
 	public var x(default, set):Float = 0; // Note: position origin is at top-left corner.
 	public var y(default, set):Float = 0;
-	public var width:Float = 0; // By default, hitbox size is same as image size
-	public var height:Float = 0;
+	public var width(default, set):Float = 0; // By default, hitbox size is same as image size
+	public var height(default, set):Float = 0;
 
 	public var angle:Float = 0; // Note: Rotations are costly, especially on flash!
 	public var velocity(default, null):FastVector2 = new FastVector2();
@@ -163,6 +163,16 @@ class WynObject
 	private function set_y (val:Float) : Float
 	{
 		return y = val;
+	}
+
+	private function set_width (val:Float) : Float
+	{
+		return width = val;
+	}
+
+	private function set_height (val:Float) : Float
+	{
+		return height = val;
 	}
 
 	private function get_localx () : Float
