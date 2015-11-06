@@ -29,6 +29,7 @@ Games made with the engine so far:
 * Default Kha texts
 * Bitmap texts
 * Camera system (multiple cameras, scrolling, zooming)
+* 9-slice images
 
 # TODO
 

@@ -318,8 +318,11 @@ class WynSprite extends WynObject
 		var w:Int = cast width;
 		var h:Int = cast height;
 
-		// The target image is the size as defined in new()
-		image = Image.createRenderTarget(w, h);
+		// Rather than create an image that fits width/height exactly,
+		// We create a full-screen image as the "max size" for the 9-slice.
+		// That way, we can resize via frameW/frameH without directly
+		// doing a createRenderTarget each time.
+		image = Image.createRenderTarget(Wyngine.G.gameWidth, Wyngine.G.gameHeight);
 
 		// Update the frame, otherwise it won't appear.
 		frameWidth = w;
@@ -337,7 +340,7 @@ class WynSprite extends WynObject
 		{
 			// If no slice data is given, then we'll scale and fit the whole
 			// originalImage onto the final image.
-			image.g2.begin();
+			image.g2.begin(true, Color.fromValue(0x00000000));
 			image.g2.drawScaledImage(originalImage, 0, 0, image.width, image.height);
 			image.g2.end();
 		}
@@ -355,12 +358,14 @@ class WynSprite extends WynObject
 		// to scale the borders so that they'll stay intact.
 		var ratioW = 1.0;
 		var ratioH = 1.0;
+		var destW = width;
+		var destH = height;
 
 		// Get the border width and height (without the corners)
 		var sw = data.width - data.borderLeft - data.borderRight;
 		var sh = data.height - data.borderTop - data.borderBottom;
-		var dw = width - data.borderLeft - data.borderRight;
-		var dh = height - data.borderTop - data.borderBottom;
+		var dw = destW - data.borderLeft - data.borderRight;
+		var dh = destH - data.borderTop - data.borderBottom;
 		// Width and height cannot be less than zero.
 		if (sw < 0) sw = 0;
 		if (sh < 0) sh = 0;
@@ -371,14 +376,14 @@ class WynSprite extends WynObject
 		// is zero or less. Imagine when a 9-slice image is too short,
 		// we end up not seeing the side borders anymore; only the corners.
 		// When that happens, we have to scale the corners by ratio.
-		if (width < data.borderLeft + data.borderRight)
-			ratioW = width / (data.borderLeft + data.borderRight);
+		if (destW < data.borderLeft + data.borderRight)
+			ratioW = destW / (data.borderLeft + data.borderRight);
 
-		if (height < data.borderTop + data.borderBottom)
-			ratioH = height / (data.borderTop + data.borderBottom);
+		if (destH < data.borderTop + data.borderBottom)
+			ratioH = destH / (data.borderTop + data.borderBottom);
 
 		// begin drawing
-		g.begin();
+		g.begin(true, Color.fromValue(0x00000000));
 
 		// top-left border
 		g.drawScaledSubImage(source,
@@ -395,7 +400,7 @@ class WynSprite extends WynObject
 		// top-right border
 		g.drawScaledSubImage(source,
 			data.width-data.borderRight, 0, data.borderRight, data.borderTop,
-			width-data.borderRight*ratioW, 0, data.borderRight*ratioW, data.borderTop*ratioH
+			destW-data.borderRight*ratioW, 0, data.borderRight*ratioW, data.borderTop*ratioH
 			);
 
 		// middle-left border
@@ -413,25 +418,25 @@ class WynSprite extends WynObject
 		// middle-right border
 		g.drawScaledSubImage(source,
 			data.width-data.borderRight, data.borderTop, data.borderRight, sh,
-			width-data.borderRight*ratioW, data.borderTop*ratioH, data.borderRight*ratioW, dh
+			destW-data.borderRight*ratioW, data.borderTop*ratioH, data.borderRight*ratioW, dh
 			);
 
 		// bottom-left border
 		g.drawScaledSubImage(source,
 			0, data.height-data.borderBottom, data.borderLeft, data.borderBottom,
-			0, height-data.borderBottom*ratioH, data.borderLeft*ratioW, data.borderBottom*ratioH
+			0, destH-data.borderBottom*ratioH, data.borderLeft*ratioW, data.borderBottom*ratioH
 			);
 
 		// bottom
 		g.drawScaledSubImage(source,
 			data.borderLeft, data.height-data.borderBottom, sw, data.borderBottom,
-			data.borderLeft*ratioW, height-data.borderBottom*ratioH, dw, data.borderBottom*ratioH
+			data.borderLeft*ratioW, destH-data.borderBottom*ratioH, dw, data.borderBottom*ratioH
 			);
 
 		// bottom-right border
 		g.drawScaledSubImage(source,
 			data.width-data.borderRight, data.height-data.borderBottom, data.borderRight, data.borderBottom,
-			width-data.borderRight*ratioW, height-data.borderBottom*ratioH, data.borderRight*ratioW, data.borderBottom*ratioH
+			destW-data.borderRight*ratioW, destH-data.borderBottom*ratioH, data.borderRight*ratioW, data.borderBottom*ratioH
 			);
 
 		g.end();
@@ -511,13 +516,20 @@ class WynSprite extends WynObject
 		if (_spriteType == SINGLE9SLICE ||
 			_spriteType == BUTTON9SLICE)
 		{
-			// Resize the target images
-			var w = cast width;
-			var h = cast height;
-			// image = Image.createRenderTarget(w, h);
-
 			if (sliceData != null)
+			{
+				// Resize the target images
+				frameWidth = cast width;
+				frameHeight = cast height;
+				
+				// Doing this is expensive, so try to avoid it.
+				// If the image gets larger than what we have, resize it.
+				if (frameWidth > image.width ||
+					frameHeight > image.height)
+					image = Image.createRenderTarget(frameWidth, frameHeight);
+
 				drawSlice(originalImage, image, sliceData);
+			}
 		}
 
 		return width;
@@ -530,13 +542,20 @@ class WynSprite extends WynObject
 		if (_spriteType == SINGLE9SLICE ||
 			_spriteType == BUTTON9SLICE)
 		{
-			// Resize the target images
-			var w = cast width;
-			var h = cast height;
-			// image = Image.createRenderTarget(w, h);
-
 			if (sliceData != null)
+			{
+				// Resize the target images
+				frameWidth = cast width;
+				frameHeight = cast height;
+
+				// Doing this is expensive, so try to avoid it.
+				// If the image gets larger than what we have, resize it.
+				if (frameWidth > image.width ||
+					frameHeight > image.height)
+					image = Image.createRenderTarget(frameWidth, frameHeight);
+
 				drawSlice(originalImage, image, sliceData);
+			}
 		}
 
 		return height;
