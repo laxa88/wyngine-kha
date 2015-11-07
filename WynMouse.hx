@@ -25,8 +25,8 @@ class WynMouse
 	public static inline var END:Int = 2;
 
 	public static var instance:WynMouse;
-	public static var x(default, null):Int = 0;
-	public static var y(default, null):Int = 0;
+	public static var windowX(default, null):Int = 0;
+	public static var windowY(default, null):Int = 0;
 
 	private var _mousePressed:Map<Int, Int>;
 	private var _mouseHeld:Map<Int, Int>;
@@ -166,8 +166,8 @@ class WynMouse
 		_mouseHeld[index] = BEGIN;
 
 		// These are screenX/screenY
-		WynMouse.x = x;
-		WynMouse.y = y;
+		windowX = x;
+		windowY = y;
 
 		// For each camera, trigger the update the mouse coordinates accordingly.
 		for (camera in Wyngine.G.cameras)
@@ -184,8 +184,9 @@ class WynMouse
 		for (listener in _mouseMoveListeners)
 			listener(x,y,dx,dy);
 
-		WynMouse.x = x;
-		WynMouse.y = y;
+		// Assign to static variable so we can access the value at any time
+		windowX = x;
+		windowY = y;
 
 		// For each camera, trigger the update the mouse coordinates accordingly.
 		for (camera in Wyngine.G.cameras)
@@ -199,8 +200,8 @@ class WynMouse
 	{
 		_mouseReleased[index] = BEGIN;
 
-		WynMouse.x = x;
-		WynMouse.y = y;
+		windowX = x;
+		windowY = y;
 
 		// For each camera, trigger the update the mouse coordinates accordingly.
 		for (camera in Wyngine.G.cameras)

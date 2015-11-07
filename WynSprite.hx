@@ -14,10 +14,10 @@ typedef SliceData = {
 	var y:Int;
 	var width:Int;
 	var height:Int;
-	var borderLeft:Int; // the 9-slice offset to cut from. It's the same as how Unity's SpriteEditor does it.
-	var borderTop:Int;
-	var borderRight:Int;
-	var borderBottom:Int;
+	@:optional var borderLeft:Int; // the 9-slice offset to cut from. It's the same as how Unity's SpriteEditor does it.
+	@:optional var borderTop:Int;
+	@:optional var borderRight:Int;
+	@:optional var borderBottom:Int;
 }
 
 class WynSprite extends WynObject
@@ -27,15 +27,15 @@ class WynSprite extends WynObject
 	 * such as sprites, texts, bitmaptexts, buttons, etc.
 	 */
 
-	public static var LEFT:Int 		= 0;
-	public static var RIGHT:Int 	= 1;
-	public static var UP:Int 		= 2;
-	public static var DOWN:Int 		= 3;
+	public static var LEFT:Int 		= 1;
+	public static var RIGHT:Int 	= 2;
+	public static var UP:Int 		= 3;
+	public static var DOWN:Int 		= 4;
 
-	public static var SINGLE:Int 			 = 0;
-	public static var SINGLE9SLICE:Int 		 = 0;
-	public static var BUTTON:Int 			 = 0;
-	public static var BUTTON9SLICE:Int 		 = 0;
+	public static var SINGLE:Int 			 = 1;
+	public static var SINGLE9SLICE:Int 		 = 2;
+	public static var BUTTON:Int 			 = 3;
+	public static var BUTTON9SLICE:Int 		 = 4;
 
 	public var animator:WynAnimator; // Controls all animations
 	public var image:Image;
@@ -68,7 +68,7 @@ class WynSprite extends WynObject
 		super(x, y, w, h);
 
 		// By default
-		_spriteType = SINGLE;
+		_spriteType = WynSprite.SINGLE;
 
 		animator = new WynAnimator(this);
 	}
@@ -319,7 +319,7 @@ class WynSprite extends WynObject
 
 	public function load9SliceImage (name:String, ?data:SliceData)
 	{
-		_spriteType = SINGLE9SLICE;
+		_spriteType = WynSprite.SINGLE9SLICE;
 
 		// This is the original image which we'll use as a base for 9-slicing.
 		originalImage = Loader.the.getImage(name);
@@ -378,9 +378,6 @@ class WynSprite extends WynObject
 		if (sh < 0) sh = 0;
 		if (dw < 0) dw = 0;
 		if (dh < 0) dh = 0;
-
-		Wyngine.log("dest1 : " + destW + " , " + destH);
-		Wyngine.log("dest2 : " + dw + " , " + dh);
 
 		// Get ratio of the border corners if the width or height
 		// is zero or less. Imagine when a 9-slice image is too short,
@@ -478,9 +475,12 @@ class WynSprite extends WynObject
 
 	function updateAnimator ()
 	{
-		var sheetIndex:Int = animator.getSheetIndex();
-		frameX = Std.int(sheetIndex % frameColumns) * frameWidth;
-		frameY = Std.int(sheetIndex / frameColumns) * frameHeight;
+		if (_spriteType == WynSprite.SINGLE)
+		{
+			var sheetIndex:Int = animator.getSheetIndex();
+			frameX = Std.int(sheetIndex % frameColumns) * frameWidth;
+			frameY = Std.int(sheetIndex / frameColumns) * frameHeight;
+		}
 	}
 
 	/**

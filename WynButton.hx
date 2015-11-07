@@ -23,9 +23,9 @@ class WynButton extends WynSprite
 	 */
 
 	// Button states as int
-	public static inline var UP:Int = 0;
-	public static inline var HOVER:Int = 1;
-	public static inline var DOWN:Int = 2;
+	public static inline var UP:Int = 1;
+	public static inline var HOVER:Int = 2;
+	public static inline var DOWN:Int = 3;
 
 	// These store a cached image for the 9-sliced button.
 	// This way we don't have to slice it every update.
@@ -38,6 +38,8 @@ class WynButton extends WynSprite
 	var hoverData:WynSprite.SliceData;
 	var downData:WynSprite.SliceData;
 
+	var _buttonState:Int;
+
 
 
 	public function new (x:Float=0, y:Float=0, w:Float=0, h:Float=0)
@@ -48,6 +50,35 @@ class WynButton extends WynSprite
 	override public function update (dt:Float)
 	{
 		super.update(dt);
+
+		// Reset state every update. When iterating through multiple
+		// cameras, the mouse may be "inside" a button in one camera, but
+		// "outside" the button in other cameras. As such, prioritise:
+		// DOWN > HOVER > UP
+		setButtonState(WynButton.UP);
+
+		for (cam in Wyngine.G.cameras)
+		{
+			// Completely break the loop
+			if (_buttonState == WynButton.DOWN)
+				break;
+
+			var mouseX = (WynMouse.windowX / Wyngine.G.zoom / cam.zoom) - (cam.x - cam.scrollX) / cam.zoom;
+			var mouseY = (WynMouse.windowY / Wyngine.G.zoom / cam.zoom) - (cam.y - cam.scrollY) / cam.zoom;
+
+			// If the mouse is in or outside
+			var hitHoriz = false;
+			var hitVert = false;
+			if (mouseX > x) hitHoriz = mouseX < x + width;
+			if (mouseY > y) hitVert = mouseY < y + height;
+			if (hitHoriz && hitVert)
+			{
+				if (WynMouse.isMouse(0))
+					setButtonState(WynButton.DOWN);
+				else
+					setButtonState(WynButton.HOVER);
+			}
+		}
 	}
 
 	override public function render (c:WynCamera)
@@ -55,45 +86,27 @@ class WynButton extends WynSprite
 		super.render(c);
 	}
 
-	override public function destroy ()
-	{
-		super.destroy();
-	}
-
-	override public function kill ()
-	{
-		super.kill();
-	}
-
-	override public function revive ()
-	{
-		super.revive();
-	}
-
 	/**
 	 * Load image via kha's internal image loader. Make
 	 * sure you loaded the room that contains this image,
 	 * in project.kha.
 	 */
-	public function loadButtonImage (name:String, frameW:Int, frameH:Int)
+	public function loadButtonImage (name:String, frameW:Int, frameH:Int, ?up:WynSprite.SliceData, ?hover:WynSprite.SliceData, ?down:WynSprite.SliceData)
 	{
+		_spriteType = WynSprite.BUTTON;
+
 		// Image name is set from project.kha
 		image = Loader.the.getImage(name);
 
-		// Update variables
+		// Set default variables in case there is no button data
 		frameWidth = frameW;
 		frameHeight = frameH;
-		frameX = 0;
-		frameY = 0;
-		frameColumns = Std.int(image.width / frameWidth);
 
-		// This is the hitbox, not the image size itself.
-		// Use scale to resize the image, then remember to
-		// adjust the hitbox after scaling.
-		width = frameW;
-		height = frameH;
+		upData = up;
+		hoverData = hover;
+		downData = down;
 
-		// NOTE: does not adjust hitbox offset
+		setButtonState(WynButton.UP);
 	}
 
 	public function load9SliceButtonImage (name:String, downData:WynSprite.SliceData, hoverData:WynSprite.SliceData, upData:WynSprite.SliceData)
@@ -115,5 +128,35 @@ class WynButton extends WynSprite
 		// 	this.upData = upData;
 		// 	drawSlice(imageUp, upData);
 		// }
+	}
+
+	function setButtonState (state:Int)
+	{
+		if (_buttonState == state)
+			return;
+
+		_buttonState = state;
+
+		if (state == WynButton.UP && upData != null)
+		{
+			frameX = upData.x;
+			frameY = upData.y;
+			frameWidth = upData.width;
+			frameHeight = upData.height;
+		}
+		else if (state == WynButton.HOVER && hoverData != null)
+		{
+			frameX = hoverData.x;
+			frameY = hoverData.y;
+			frameWidth = hoverData.width;
+			frameHeight = hoverData.height;
+		}
+		else if (state == WynButton.DOWN && downData != null)
+		{
+			frameX = downData.x;
+			frameY = downData.y;
+			frameWidth = downData.width;
+			frameHeight = downData.height;
+		}
 	}
 }
