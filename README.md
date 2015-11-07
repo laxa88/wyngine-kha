@@ -34,6 +34,7 @@ Games made with the engine so far:
 	* Bitmap text
 * Camera system (multiple cameras, scrolling, zooming, shake, flash, fade, fill)
 * 9-slice image
+* Buttons
 
 # TODO
 

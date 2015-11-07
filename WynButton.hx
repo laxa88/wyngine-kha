@@ -23,28 +23,40 @@ class WynButton extends WynSprite
 	 */
 
 	// Button states as int
+	public static inline var NONE:Int = 0;
 	public static inline var UP:Int = 1;
 	public static inline var HOVER:Int = 2;
 	public static inline var DOWN:Int = 3;
 
 	// These store a cached image for the 9-sliced button.
 	// This way we don't have to slice it every update.
-	var imageUp:Image;
-	var imageHover:Image;
-	var imageDown:Image;
+	// var imageUp:Image;
+	// var imageHover:Image;
+	// var imageDown:Image;
 
 	// Store the slice data so we can reslice it when width or height changes
 	var upData:WynSprite.SliceData;
 	var hoverData:WynSprite.SliceData;
 	var downData:WynSprite.SliceData;
 
+	var _downListeners:Array<Void->Void>;
+	var _upListeners:Array<Void->Void>;
+	var _enterListeners:Array<Void->Void>;
+	var _exitListeners:Array<Void->Void>;
+
 	var _buttonState:Int;
+	var _prevState:Int;
 
 
 
 	public function new (x:Float=0, y:Float=0, w:Float=0, h:Float=0)
 	{
 		super(x, y, w, h);
+
+		_downListeners = [];
+		_upListeners = [];
+		_enterListeners = [];
+		_exitListeners = [];
 	}
 
 	override public function update (dt:Float)
@@ -55,14 +67,10 @@ class WynButton extends WynSprite
 		// cameras, the mouse may be "inside" a button in one camera, but
 		// "outside" the button in other cameras. As such, prioritise:
 		// DOWN > HOVER > UP
-		setButtonState(WynButton.UP);
+		var state = WynButton.UP;
 
 		for (cam in Wyngine.G.cameras)
 		{
-			// Completely break the loop
-			if (_buttonState == WynButton.DOWN)
-				break;
-
 			var mouseX = (WynMouse.windowX / Wyngine.G.zoom / cam.zoom) - (cam.x - cam.scrollX) / cam.zoom;
 			var mouseY = (WynMouse.windowY / Wyngine.G.zoom / cam.zoom) - (cam.y - cam.scrollY) / cam.zoom;
 
@@ -73,17 +81,90 @@ class WynButton extends WynSprite
 			if (mouseY > y) hitVert = mouseY < y + height;
 			if (hitHoriz && hitVert)
 			{
+				if (WynMouse.isMouseDown(0))
+				{
+					for (listener in _downListeners)
+						listener();
+				}
+				else if (WynMouse.isMouseUp(0))
+				{
+					for (listener in _upListeners)
+						listener();
+				}
+				
 				if (WynMouse.isMouse(0))
-					setButtonState(WynButton.DOWN);
+					state = WynButton.DOWN;
 				else
-					setButtonState(WynButton.HOVER);
+					state = WynButton.HOVER;
 			}
 		}
+
+		if (state != _prevState)
+		{
+			// Mouse moved into button
+			if ((state == WynButton.HOVER || state == WynButton.DOWN) &&
+				(_prevState == WynButton.UP || _prevState == WynButton.NONE))
+			{
+				for (listener in _enterListeners)
+					listener();
+			}
+
+			// Mouse moved out of button
+			if ((state == WynButton.UP || state == WynButton.NONE) &&
+				(_prevState == WynButton.HOVER || _prevState == WynButton.DOWN))
+			{
+				for (listener in _exitListeners)
+					listener();
+
+				// Reset state
+				state = WynButton.UP;
+			}
+		}
+
+		setButtonState(state);
+		_prevState = state;
 	}
 
 	override public function render (c:WynCamera)
 	{
 		super.render(c);
+	}
+
+	override public function destroy ()
+	{
+		_downListeners = [];
+		_upListeners = [];
+		_enterListeners = [];
+		_exitListeners = [];
+	}
+
+
+
+	public function notify (?downFunc:Void->Void, ?upFunc:Void->Void, ?enterFunc:Void->Void, ?exitFunc:Void->Void)
+	{
+		if (downFunc != null)
+		{
+			if (_downListeners.indexOf(downFunc) == -1)
+				_downListeners.push(downFunc);
+		}
+
+		if (upFunc != null)
+		{
+			if (_upListeners.indexOf(upFunc) == -1)
+				_upListeners.push(upFunc);
+		}
+
+		if (enterFunc != null)
+		{
+			if (_enterListeners.indexOf(enterFunc) == -1)
+				_enterListeners.push(enterFunc);
+		}
+
+		if (exitFunc != null)
+		{
+			if (_exitListeners.indexOf(exitFunc) == -1)
+				_exitListeners.push(exitFunc);
+		}
 	}
 
 	/**
