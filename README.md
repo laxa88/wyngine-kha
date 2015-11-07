@@ -17,32 +17,24 @@ Games made with the engine so far:
 
 # Current Available Features
 
-* Spritesheet Animation
-* Keyboard input
-* Mouse input
-* Touch input (untested)
+* Sprite animation
+* Input
+	* Keyboard
+	* Mouse
+	* Touch (untested)
 * Audio
+	* Play BGM
+	* Play sound
 * Simple collision check
 * Object Pooling
 * Quad-tree collisions
 * Screen states
-* Default Kha texts
-* Bitmap texts
-* Camera system (multiple cameras, scrolling, zooming)
-* 9-slice images
+* Text
+	* Default Kha text
+	* Bitmap text
+* Camera system (multiple cameras, scrolling, zooming, shake, flash, fade, fill)
+* 9-slice image
 
 # TODO
 
-* button
-	* button up, hover, down
-	* 9-slice image
-	* 9-slice button up, hover, down
-* tweening
-* particle and emitter
-* file system
-	* read from text file
-	* write to text file
-* tiled maps (parser + generator)
-* input
-  * gamepad
-* shaders
+https://trello.com/b/LAOdvBzt/wyngine

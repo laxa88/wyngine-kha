@@ -101,6 +101,7 @@ class WynSprite extends WynObject
 
 		if (Wyngine.DEBUG_DRAW && Wyngine.DRAW_COUNT < Wyngine.DRAW_COUNT_MAX)
 		{
+			// Debug image box
 			g.color = Color.Green;
 			g.drawRect(ox, oy, frameWidth, frameHeight);
 
@@ -134,7 +135,11 @@ class WynSprite extends WynObject
 			if (alpha != 1) g.pushOpacity(alpha);
 
 			// Draw the actual image
-			// TODO: scale?
+			// NOTE: When the image is single, frameWidth/frameHeight is
+			// based on each separate frame's size.
+			// When the image is 9-slice, frameWidth/frameHeight is the
+			// whole image's size, because we have an originalImage from
+			// which to slice out the result without scaling.
 			g.drawScaledSubImage(image,
 				// the spritesheet's frame to extract from
 				frameX, frameY, frameWidth, frameHeight, 
@@ -236,18 +241,18 @@ class WynSprite extends WynObject
 	/**
 	 * Convenient method to create images if you're prototyping without images.
 	 */
-	public function createEmptyImage (w:Int=50, h:Int=50)
+	public function createEmptyImage (imageW:Int=50, imageH:Int=50)
 	{
 		// Reset the size
-		width = w;
-		height = h;
+		width = imageW;
+		height = imageH;
 
 		// Create a new image
-		image = Image.createRenderTarget(w, h);
+		image = Image.createRenderTarget(imageW, imageH);
 
 		// Set the frame size to same as image size
-		frameWidth = w;
-		frameHeight = h;
+		frameWidth = imageW;
+		frameHeight = imageH;
 
 		// NOTE: does not adjust hitbox offset
 	}
@@ -255,16 +260,16 @@ class WynSprite extends WynObject
 	/**
 	 * Convenient method to create images if you're prototyping without images.
 	 */
-	public function createPlaceholderRect (color:Color, w:Int=50, h:Int=50, filled:Bool=false)
+	public function createPlaceholderRect (color:Color, imageW:Int=50, imageH:Int=50, filled:Bool=false)
 	{
-		createEmptyImage(w, h);
+		createEmptyImage(imageW, imageH);
 
 		image.g2.begin(true, Color.fromValue(0x00000000));
 		image.g2.color = color;
 		if (filled)
-			image.g2.fillRect(0, 0, w, h);
+			image.g2.fillRect(0, 0, imageW, imageH);
 		else
-			image.g2.drawRect(0, 0, w, h);
+			image.g2.drawRect(0, 0, imageW, imageH);
 		image.g2.end();
 	}
 
@@ -291,6 +296,8 @@ class WynSprite extends WynObject
 	 */
 	public function loadImage (name:String, frameW:Int, frameH:Int)
 	{
+		_spriteType = SINGLE;
+
 		// Image name is set from project.kha
 		image = Loader.the.getImage(name);
 
@@ -312,11 +319,10 @@ class WynSprite extends WynObject
 
 	public function load9SliceImage (name:String, ?data:SliceData)
 	{
+		_spriteType = SINGLE9SLICE;
+
 		// This is the original image which we'll use as a base for 9-slicing.
 		originalImage = Loader.the.getImage(name);
-
-		var w:Int = cast width;
-		var h:Int = cast height;
 
 		// Rather than create an image that fits width/height exactly,
 		// We create a full-screen image as the "max size" for the 9-slice.
@@ -324,24 +330,25 @@ class WynSprite extends WynObject
 		// doing a createRenderTarget each time.
 		image = Image.createRenderTarget(Wyngine.G.gameWidth, Wyngine.G.gameHeight);
 
-		// Update the frame, otherwise it won't appear.
-		frameWidth = w;
-		frameHeight = h;
-
 		if (data != null)
 		{
 			// Draw the slice directly onto the image, if there's
 			// the slice data. Otherwise, we're gonna just draw the whole
 			// original image and scale it.
 			sliceData = data;
+			frameWidth = cast width;
+			frameHeight = cast height;
 			drawSlice(originalImage, image, data);
 		}
 		else
 		{
+			frameWidth = image.width;
+			frameHeight = image.height;
+
 			// If no slice data is given, then we'll scale and fit the whole
 			// originalImage onto the final image.
 			image.g2.begin(true, Color.fromValue(0x00000000));
-			image.g2.drawScaledImage(originalImage, 0, 0, image.width, image.height);
+			image.g2.drawScaledImage(originalImage, 0, 0, frameWidth, frameHeight);
 			image.g2.end();
 		}
 	}
@@ -358,8 +365,8 @@ class WynSprite extends WynObject
 		// to scale the borders so that they'll stay intact.
 		var ratioW = 1.0;
 		var ratioH = 1.0;
-		var destW = width;
-		var destH = height;
+		var destW = frameWidth;
+		var destH = frameHeight;
 
 		// Get the border width and height (without the corners)
 		var sw = data.width - data.borderLeft - data.borderRight;
@@ -371,6 +378,9 @@ class WynSprite extends WynObject
 		if (sh < 0) sh = 0;
 		if (dw < 0) dw = 0;
 		if (dh < 0) dh = 0;
+
+		Wyngine.log("dest1 : " + destW + " , " + destH);
+		Wyngine.log("dest2 : " + dw + " , " + dh);
 
 		// Get ratio of the border corners if the width or height
 		// is zero or less. Imagine when a 9-slice image is too short,
@@ -384,6 +394,8 @@ class WynSprite extends WynObject
 
 		// begin drawing
 		g.begin(true, Color.fromValue(0x00000000));
+
+		// g.fillRect(0,0,1,1);
 
 		// top-left border
 		g.drawScaledSubImage(source,
@@ -511,26 +523,26 @@ class WynSprite extends WynObject
 	override private function set_width (val:Float) : Float
 	{
 		width = val;
+		if (width < 0) width = 0;
 
-		// Every time we change the size, update the 9-slice
-		if (_spriteType == SINGLE9SLICE ||
-			_spriteType == BUTTON9SLICE)
+		if (_spriteType == SINGLE9SLICE || _spriteType == BUTTON9SLICE)
 		{
+			// If this is a slice image, setting width/height will
+			// affect both the hitbox and the frameWidth/frameHeight.
 			if (sliceData != null)
 			{
-				// Resize the target images
 				frameWidth = cast width;
 				frameHeight = cast height;
-				
-				// Doing this is expensive, so try to avoid it.
-				// If the image gets larger than what we have, resize it.
-				if (frameWidth > image.width ||
-					frameHeight > image.height)
-					image = Image.createRenderTarget(frameWidth, frameHeight);
+
+				if (width > image.width || height > image.height)
+					image = Image.createRenderTarget(cast frameWidth, cast frameHeight);
 
 				drawSlice(originalImage, image, sliceData);
 			}
 		}
+
+		// If this is a single image, setting width/height doesn't
+		// affect the frameWidth/frameHeight.
 
 		return width;
 	}
@@ -538,25 +550,26 @@ class WynSprite extends WynObject
 	override private function set_height (val:Float) : Float
 	{
 		height = val;
+		if (height < 0) height = 0;
 
-		if (_spriteType == SINGLE9SLICE ||
-			_spriteType == BUTTON9SLICE)
+		if (_spriteType == SINGLE9SLICE || _spriteType == BUTTON9SLICE)
 		{
+			// If this is a slice image, setting width/height will
+			// affect both the hitbox and the frameWidth/frameHeight.
 			if (sliceData != null)
 			{
-				// Resize the target images
 				frameWidth = cast width;
 				frameHeight = cast height;
 
-				// Doing this is expensive, so try to avoid it.
-				// If the image gets larger than what we have, resize it.
-				if (frameWidth > image.width ||
-					frameHeight > image.height)
-					image = Image.createRenderTarget(frameWidth, frameHeight);
+				if (width > image.width || height > image.height)
+					image = Image.createRenderTarget(cast frameWidth, cast frameHeight);
 
 				drawSlice(originalImage, image, sliceData);
 			}
 		}
+
+		// If this is a single image, setting width/height doesn't
+		// affect the frameWidth/frameHeight.
 
 		return height;
 	}

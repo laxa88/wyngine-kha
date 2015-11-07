@@ -23,10 +23,9 @@ class WynButton extends WynSprite
 	 */
 
 	// Button states as int
-	public static inline var NONE:Int = 0;
-	public static inline var DOWN:Int = 1;
-	public static inline var HOVER:Int = 2;
-	public static inline var OVER:Int = 3;
+	public static inline var UP:Int = 0;
+	public static inline var HOVER:Int = 1;
+	public static inline var DOWN:Int = 2;
 
 	// These store a cached image for the 9-sliced button.
 	// This way we don't have to slice it every update.
@@ -76,25 +75,45 @@ class WynButton extends WynSprite
 	 * sure you loaded the room that contains this image,
 	 * in project.kha.
 	 */
-	public function loadButtonImage (name:String, w:Float, h:Float, downData:WynSprite.SliceData, hoverData:WynSprite.SliceData, upData:WynSprite.SliceData)
+	public function loadButtonImage (name:String, frameW:Int, frameH:Int)
 	{
+		// Image name is set from project.kha
+		image = Loader.the.getImage(name);
 
-		if (downData != null)
-		{
-			this.downData = downData;
-			drawSlice(imageUp, downData);
-		}
+		// Update variables
+		frameWidth = frameW;
+		frameHeight = frameH;
+		frameX = 0;
+		frameY = 0;
+		frameColumns = Std.int(image.width / frameWidth);
 
-		if (hoverData != null)
-		{
-			this.hoverData = hoverData;
-			drawSlice(imageUp, hoverData);
-		}
+		// This is the hitbox, not the image size itself.
+		// Use scale to resize the image, then remember to
+		// adjust the hitbox after scaling.
+		width = frameW;
+		height = frameH;
 
-		if (upData != null)
-		{
-			this.upData = upData;
-			drawSlice(imageUp, upData);
-		}
+		// NOTE: does not adjust hitbox offset
+	}
+
+	public function load9SliceButtonImage (name:String, downData:WynSprite.SliceData, hoverData:WynSprite.SliceData, upData:WynSprite.SliceData)
+	{
+		// if (downData != null)
+		// {
+		// 	this.downData = downData;
+		// 	drawSlice(imageUp, downData);
+		// }
+
+		// if (hoverData != null)
+		// {
+		// 	this.hoverData = hoverData;
+		// 	drawSlice(imageUp, hoverData);
+		// }
+
+		// if (upData != null)
+		// {
+		// 	this.upData = upData;
+		// 	drawSlice(imageUp, upData);
+		// }
 	}
 }

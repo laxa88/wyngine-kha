@@ -167,12 +167,16 @@ class WynObject
 
 	private function set_width (val:Float) : Float
 	{
-		return width = val;
+		width = val;
+		if (width < 0) width = 0;
+		return width;
 	}
 
 	private function set_height (val:Float) : Float
 	{
-		return height = val;
+		height = val;
+		if (height < 0) height = 0;
+		return height;
 	}
 
 	private function get_localx () : Float
