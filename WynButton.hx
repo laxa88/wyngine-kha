@@ -28,12 +28,6 @@ class WynButton extends WynSprite
 	public static inline var HOVER:Int = 2;
 	public static inline var DOWN:Int = 3;
 
-	// These store a cached image for the 9-sliced button.
-	// This way we don't have to slice it every update.
-	// var imageUp:Image;
-	// var imageHover:Image;
-	// var imageDown:Image;
-
 	// Store the slice data so we can reslice it when width or height changes
 	var upData:WynSprite.SliceData;
 	var hoverData:WynSprite.SliceData;
@@ -63,6 +57,9 @@ class WynButton extends WynSprite
 	{
 		super.update(dt);
 
+		if (!active)
+			return;
+
 		// Reset state every update. When iterating through multiple
 		// cameras, the mouse may be "inside" a button in one camera, but
 		// "outside" the button in other cameras. As such, prioritise:
@@ -79,6 +76,9 @@ class WynButton extends WynSprite
 			var hitVert = false;
 			if (mouseX > x) hitHoriz = mouseX < x + width;
 			if (mouseY > y) hitVert = mouseY < y + height;
+
+			// If the mouse is inside the button, check for
+			// mouse down or mouse over states.
 			if (hitHoriz && hitVert)
 			{
 				if (WynMouse.isMouseDown(0))
@@ -99,6 +99,7 @@ class WynButton extends WynSprite
 			}
 		}
 
+		// If the state changed, check for enter/exit events
 		if (state != _prevState)
 		{
 			// Mouse moved into button
@@ -139,7 +140,9 @@ class WynButton extends WynSprite
 	}
 
 
-
+	/**
+	 * Add event listeners for down, up, enter and exit mouse states.
+	 */
 	public function notify (?downFunc:Void->Void, ?upFunc:Void->Void, ?enterFunc:Void->Void, ?exitFunc:Void->Void)
 	{
 		if (downFunc != null)
@@ -180,64 +183,132 @@ class WynButton extends WynSprite
 		image = Loader.the.getImage(name);
 
 		// Set default variables in case there is no button data
-		frameWidth = frameW;
-		frameHeight = frameH;
+		frameWidth = imageWidth = frameW;
+		frameHeight = imageHeight = frameH;
 
+		// Assign the data for each state
 		upData = up;
 		hoverData = hover;
 		downData = down;
 
+		// Default state is always up
 		setButtonState(WynButton.UP);
 	}
 
-	public function load9SliceButtonImage (name:String, downData:WynSprite.SliceData, hoverData:WynSprite.SliceData, upData:WynSprite.SliceData)
+	/**
+	 * Unlike a fixed-sized button, 9-sliced buttons will resize based on
+	 * frameWidth/frameHeight whenever width/height is changed, much like
+	 * how WynSprite's 9-slice image works.
+	 */ 
+	public function load9SliceButtonImage (name:String, ?up:WynSprite.SliceData, ?hover:WynSprite.SliceData, ?down:WynSprite.SliceData)
 	{
-		// if (downData != null)
-		// {
-		// 	this.downData = downData;
-		// 	drawSlice(imageUp, downData);
-		// }
+		_spriteType = WynSprite.BUTTON9SLICE;
 
-		// if (hoverData != null)
-		// {
-		// 	this.hoverData = hoverData;
-		// 	drawSlice(imageUp, hoverData);
-		// }
+		// Assign the data for each state
+		upData = up;
+		hoverData = hover;
+		downData = down;
 
-		// if (upData != null)
-		// {
-		// 	this.upData = upData;
-		// 	drawSlice(imageUp, upData);
-		// }
+		// Refer to WynSprite.load9SliceImage for comments on this part
+		originalImage = Loader.the.getImage(name);
+		image = Image.createRenderTarget(Wyngine.G.gameWidth, Wyngine.G.gameHeight);
+
+		// Note: image's frame X/Y/Width/Height never changes; we use the
+		// sliceData for each state and use originalImage to slice and draw
+		// the final full image unto "image".
+		frameX = 0;
+		frameY = 0;
+		frameWidth = imageWidth = cast width;
+		frameHeight = imageHeight = cast height;
+
+		// Set default slice data
+		setButtonState(WynButton.UP);
 	}
 
 	function setButtonState (state:Int)
 	{
+		// No need to repeat if it's been done before
 		if (_buttonState == state)
 			return;
 
 		_buttonState = state;
 
 		if (state == WynButton.UP && upData != null)
-		{
-			frameX = upData.x;
-			frameY = upData.y;
-			frameWidth = upData.width;
-			frameHeight = upData.height;
-		}
+			sliceData = upData;
 		else if (state == WynButton.HOVER && hoverData != null)
-		{
-			frameX = hoverData.x;
-			frameY = hoverData.y;
-			frameWidth = hoverData.width;
-			frameHeight = hoverData.height;
-		}
+			sliceData = hoverData;
 		else if (state == WynButton.DOWN && downData != null)
+			sliceData = downData;
+
+		// Remember: We're slicing from originalImage (the raw size atlas)
+		// onto the image (dynamic size) using sliceData. When rendering
+		// image onto the buffer, the frame data (frameX, frameY,
+		// frameWidth, frameHeight) never changes.
+		if (sliceData != null)
 		{
-			frameX = downData.x;
-			frameY = downData.y;
-			frameWidth = downData.width;
-			frameHeight = downData.height;
+			if (_spriteType == WynSprite.BUTTON)
+			{
+				// If this is a single button, then the whole image atlas is
+				// used normally, and we just draw from source frame like how
+				// sprite animations do.
+				frameX = sliceData.x;
+				frameY = sliceData.y;
+				frameWidth = sliceData.width;
+				frameHeight = sliceData.height;
+			}
+			else if (_spriteType == WynSprite.BUTTON9SLICE)
+			{
+				// If this is a 9-slice button, the source frame never changes:
+				// frameX, frameY = 0
+				// frameWidth, frameHeight = imageWidth, imageHeight
+				drawSlice(originalImage, image, sliceData);
+			}
+		}
+	}
+
+	override private function set_imageWidth (val:Int) : Int
+	{
+		imageWidth = val;
+		if (imageWidth < 0) imageWidth = 0;
+
+		// Refer to WynSprite for the comments on this part
+		updateButtonSize();
+
+		return imageWidth;
+	}
+
+	override private function set_imageHeight (val:Int) : Int
+	{
+		imageHeight = val;
+		if (imageHeight < 0) imageHeight = 0;
+
+		// Refer to WynSprite for the comments on this part
+		updateButtonSize();
+
+		return imageHeight;
+	}
+
+	inline function updateButtonSize ()
+	{
+		if (_spriteType == WynSprite.BUTTON9SLICE)
+		{
+			// If this is a slice image, setting width/height will
+			// affect both the hitbox and the frameWidth/frameHeight.
+			if (sliceData != null)
+			{
+				frameWidth = imageWidth;
+				frameHeight = imageHeight;
+
+				if (_spriteType == WynSprite.BUTTON9SLICE)
+				{
+					// For buttons, we need to reslice for up,hover,down states
+					if (imageWidth > image.width || imageHeight > image.height)
+						image = Image.createRenderTarget(cast imageWidth, cast imageHeight);
+
+					// Slice into 3 separate images so we can just draw
+					drawSlice(originalImage, image, sliceData);
+				}
+			}
 		}
 	}
 }

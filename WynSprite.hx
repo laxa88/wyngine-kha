@@ -38,12 +38,14 @@ class WynSprite extends WynObject
 	public static var BUTTON9SLICE:Int 		 = 4;
 
 	public var animator:WynAnimator; // Controls all animations
-	public var image:Image;
+	public var image:Image; // The target image to be drawn to buffer
 	public var frameColumns:Int = 0; // Number of columns in spritesheet
 	public var frameX:Int = 0; // Frame position, for animation purpose
 	public var frameY:Int = 0;
-	public var frameWidth:Int = 0; // Individual frame's size
+	public var frameWidth:Int = 0; // Individual frame's size, aka the source spritesheet's size
 	public var frameHeight:Int = 0;
+	public var imageWidth(default, set):Int = 0; // The target size to be rendered
+	public var imageHeight(default, set):Int = 0;
 	public var offset:FastVector2 = new FastVector2();
 	public var color:Color = Color.White; // tint, default is white
 	public var alpha:Float = 1.0; // Opacity - 0.0 to 1.0
@@ -103,7 +105,7 @@ class WynSprite extends WynObject
 		{
 			// Debug image box
 			g.color = Color.Green;
-			g.drawRect(ox, oy, frameWidth, frameHeight);
+			g.drawRect(ox, oy, imageWidth, imageHeight);
 
 			Wyngine.DRAW_COUNT++;
 		}
@@ -115,8 +117,8 @@ class WynSprite extends WynObject
 			// If an image is flipped, we need to offset it by width/height
 			var fx = (flipX) ? -1 : 1; // flip image?
 			var fy = (flipY) ? -1 : 1;
-			var dx = (flipX) ? frameWidth : 0; // if image is flipped, displace
-			var dy = (flipY) ? frameHeight : 0;
+			var dx = (flipX) ? imageWidth : 0; // if image is flipped, displace
+			var dy = (flipY) ? imageHeight : 0;
 
 			// Remember: Rotations are expensive!
 			if (angle != 0)
@@ -124,11 +126,11 @@ class WynSprite extends WynObject
 				var rad = WynUtil.degToRad(angle);
 				g.pushTransformation(g.transformation
 					// offset toward top-left, to center image on pivot point
-					.multmat(FastMatrix3.translation(ox + frameWidth/2, oy + frameHeight/2))
+					.multmat(FastMatrix3.translation(ox + imageWidth/2, oy + imageHeight/2))
 					// rotate at pivot point
 					.multmat(FastMatrix3.rotation(rad))
 					// reverse offset
-					.multmat(FastMatrix3.translation(-ox - frameWidth/2, -oy - frameHeight/2)));
+					.multmat(FastMatrix3.translation(-ox - imageWidth/2, -oy - imageHeight/2)));
 			}
 
 			// Add opacity if any
@@ -146,8 +148,8 @@ class WynSprite extends WynObject
 				// the target position
 				ox + (dx+frameWidth/2) - (frameWidth/2),
 				oy + (dy+frameHeight/2) - (frameHeight/2),
-				frameWidth * fx * scale,
-				frameHeight * fy * scale);
+				imageWidth * fx * scale,
+				imageHeight * fy * scale);
 
 			// Finalise opacity
 			if (alpha != 1) g.popOpacity();
@@ -308,11 +310,9 @@ class WynSprite extends WynObject
 		frameY = 0;
 		frameColumns = Std.int(image.width / frameWidth);
 
-		// This is the hitbox, not the image size itself.
-		// Use scale to resize the image, then remember to
-		// adjust the hitbox after scaling.
-		width = frameW;
-		height = frameH;
+		// Set the image size. Remember; the width/height is for hitbox.
+		imageWidth = frameW;
+		imageHeight = frameH;
 
 		// NOTE: does not adjust hitbox offset
 	}
@@ -336,19 +336,21 @@ class WynSprite extends WynObject
 			// the slice data. Otherwise, we're gonna just draw the whole
 			// original image and scale it.
 			sliceData = data;
-			frameWidth = cast width;
-			frameHeight = cast height;
-			drawSlice(originalImage, image, data);
+
+			imageWidth = cast width;
+			imageHeight = cast height;
+
+			drawSlice(originalImage, image, sliceData);
 		}
 		else
 		{
-			frameWidth = image.width;
-			frameHeight = image.height;
+			imageWidth = image.width;
+			imageHeight = image.height;
 
 			// If no slice data is given, then we'll scale and fit the whole
 			// originalImage onto the final image.
 			image.g2.begin(true, Color.fromValue(0x00000000));
-			image.g2.drawScaledImage(originalImage, 0, 0, frameWidth, frameHeight);
+			image.g2.drawScaledImage(originalImage, 0, 0, imageWidth, imageHeight);
 			image.g2.end();
 		}
 	}
@@ -358,6 +360,10 @@ class WynSprite extends WynObject
 	 */
 	function drawSlice (source:Image, target:Image, data:WynSprite.SliceData)
 	{
+		// No need to slice if data is empty
+		if (data == null)
+			return;
+
 		var g:Graphics = target.g2;
 
 		// If the total of 3-slices horizontally or vertically
@@ -365,10 +371,12 @@ class WynSprite extends WynObject
 		// to scale the borders so that they'll stay intact.
 		var ratioW = 1.0;
 		var ratioH = 1.0;
-		var destW = frameWidth;
-		var destH = frameHeight;
+		var destW = imageWidth;
+		var destH = imageHeight;
 
 		// Get the border width and height (without the corners)
+		var sx = data.x;
+		var sy = data.y;
 		var sw = data.width - data.borderLeft - data.borderRight;
 		var sh = data.height - data.borderTop - data.borderBottom;
 		var dw = destW - data.borderLeft - data.borderRight;
@@ -396,55 +404,55 @@ class WynSprite extends WynObject
 
 		// top-left border
 		g.drawScaledSubImage(source,
-			0, 0, data.borderLeft, data.borderTop, // source
+			sx, sy, data.borderLeft, data.borderTop, // source
 			0, 0, data.borderLeft*ratioW, data.borderTop*ratioH // destination
 			);
 
 		// top border
 		g.drawScaledSubImage(source,
-			data.borderLeft, 0, sw, data.borderTop,
+			data.borderLeft, sy, sw, data.borderTop,
 			data.borderLeft*ratioW, 0, dw, data.borderTop*ratioH
 			);
 
 		// top-right border
 		g.drawScaledSubImage(source,
-			data.width-data.borderRight, 0, data.borderRight, data.borderTop,
+			data.width-data.borderRight, sy, data.borderRight, data.borderTop,
 			destW-data.borderRight*ratioW, 0, data.borderRight*ratioW, data.borderTop*ratioH
 			);
 
 		// middle-left border
 		g.drawScaledSubImage(source,
-			0, data.borderTop, data.borderLeft, sh,
+			sx, sy+data.borderTop, data.borderLeft, sh,
 			0, data.borderTop*ratioH, data.borderLeft*ratioW, dh
 			);
 
 		// middle
 		g.drawScaledSubImage(source,
-			data.borderLeft, data.borderTop, sw, sh,
+			data.borderLeft, sy+data.borderTop, sw, sh,
 			data.borderLeft*ratioW, data.borderTop*ratioH, dw, dh
 			);
 
 		// middle-right border
 		g.drawScaledSubImage(source,
-			data.width-data.borderRight, data.borderTop, data.borderRight, sh,
+			data.width-data.borderRight, sy+data.borderTop, data.borderRight, sh,
 			destW-data.borderRight*ratioW, data.borderTop*ratioH, data.borderRight*ratioW, dh
 			);
 
 		// bottom-left border
 		g.drawScaledSubImage(source,
-			0, data.height-data.borderBottom, data.borderLeft, data.borderBottom,
+			sx, sy+data.height-data.borderBottom, data.borderLeft, data.borderBottom,
 			0, destH-data.borderBottom*ratioH, data.borderLeft*ratioW, data.borderBottom*ratioH
 			);
 
 		// bottom
 		g.drawScaledSubImage(source,
-			data.borderLeft, data.height-data.borderBottom, sw, data.borderBottom,
+			data.borderLeft, sy+data.height-data.borderBottom, sw, data.borderBottom,
 			data.borderLeft*ratioW, destH-data.borderBottom*ratioH, dw, data.borderBottom*ratioH
 			);
 
 		// bottom-right border
 		g.drawScaledSubImage(source,
-			data.width-data.borderRight, data.height-data.borderBottom, data.borderRight, data.borderBottom,
+			data.width-data.borderRight, sy+data.height-data.borderBottom, data.borderRight, data.borderBottom,
 			destW-data.borderRight*ratioW, destH-data.borderBottom*ratioH, data.borderRight*ratioW, data.borderBottom*ratioH
 			);
 
@@ -520,57 +528,50 @@ class WynSprite extends WynObject
 		return (facing = direction);
 	}
 
-	override private function set_width (val:Float) : Float
+	private function set_imageWidth (val:Int) : Int
 	{
-		width = val;
-		if (width < 0) width = 0;
-
-		if (_spriteType == SINGLE9SLICE || _spriteType == BUTTON9SLICE)
-		{
-			// If this is a slice image, setting width/height will
-			// affect both the hitbox and the frameWidth/frameHeight.
-			if (sliceData != null)
-			{
-				frameWidth = cast width;
-				frameHeight = cast height;
-
-				if (width > image.width || height > image.height)
-					image = Image.createRenderTarget(cast frameWidth, cast frameHeight);
-
-				drawSlice(originalImage, image, sliceData);
-			}
-		}
+		imageWidth = val;
+		if (imageWidth < 0) imageWidth = 0;
 
 		// If this is a single image, setting width/height doesn't
 		// affect the frameWidth/frameHeight.
 
-		return width;
+		// Use inline function so we don't need to manually rewrite code.
+		updateImageSize();
+
+		return imageWidth;
 	}
 
-	override private function set_height (val:Float) : Float
+	private function set_imageHeight (val:Int) : Int
 	{
-		height = val;
-		if (height < 0) height = 0;
+		imageHeight = val;
+		if (imageHeight < 0) imageHeight = 0;
 
-		if (_spriteType == SINGLE9SLICE || _spriteType == BUTTON9SLICE)
+		updateImageSize();
+
+		return imageHeight;
+	}
+
+	inline function updateImageSize ()
+	{
+		if (_spriteType == WynSprite.SINGLE9SLICE)
 		{
 			// If this is a slice image, setting width/height will
 			// affect both the hitbox and the frameWidth/frameHeight.
 			if (sliceData != null)
 			{
-				frameWidth = cast width;
-				frameHeight = cast height;
+				frameWidth = imageWidth;
+				frameHeight = imageHeight;
 
-				if (width > image.width || height > image.height)
-					image = Image.createRenderTarget(cast frameWidth, cast frameHeight);
+				if (_spriteType == WynSprite.SINGLE9SLICE)
+				{
+					if (imageWidth > image.width || imageHeight > image.height)
+						image = Image.createRenderTarget(cast imageWidth, cast imageHeight);
 
-				drawSlice(originalImage, image, sliceData);
+					// For images, we only need to slice once
+					drawSlice(originalImage, image, sliceData);
+				}
 			}
 		}
-
-		// If this is a single image, setting width/height doesn't
-		// affect the frameWidth/frameHeight.
-
-		return height;
 	}
 }
