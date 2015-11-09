@@ -255,6 +255,8 @@ class WynSprite extends WynObject
 		// Set the frame size to same as image size
 		frameWidth = imageW;
 		frameHeight = imageH;
+		imageWidth = imageW;
+		imageHeight = imageH;
 
 		// NOTE: does not adjust hitbox offset
 	}
