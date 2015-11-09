@@ -14,6 +14,7 @@ Games made with the engine so far:
 * [KhaMenu](http://coinflipstudios.com/khamenu) - [last working commit](https://github.com/laxa88/wyngine/commit/eff998996195f419a062e26055c9885cc840e5b2)
 * [KhaCamera (multiple cameras, scroll)](http://coinflipstudios.com/khacamera) - [last working commit](https://github.com/laxa88/wyngine/commit/e533d9fbaf09d868666d32b306956872c44775fa)
 * [KhaCamera (flash, fill, fadeIn, fadeOut)](http://coinflipstudios.com/khacamera2) - [last working commit](https://github.com/laxa88/wyngine/commit/c4efb971e1901af2ab98d077cfa4d8348340ee6f)
+* [KhaButton (image, 9-slice image, button, 9-slice button)](http://coinflipstudios.com/khabutton) - [last working commit](https://github.com/laxa88/wyngine/commit/a393e6f0f48227323a25f2a7a45634ff722592ac)
 
 # Current Available Features
 
