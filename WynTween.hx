@@ -71,8 +71,6 @@ class WynTween
 		var item = null;
 		var t,b,c,d,n,val;
 
-		Wyngine.log("queue : " + queue.length);
-
 		while (i < queue.length)
 		{
 			item = queue[i];
