@@ -22,6 +22,10 @@ import kha.graphics2.Graphics;
 
 class Wyngine extends Game
 {
+	public static inline var FIT_NONE:Int = 0;
+	public static inline var FIT_WIDTH:Int = 1;
+	public static inline var FIT_HEIGHT:Int = 2;
+
 	public static var DEBUG:Bool = false; // Flag true to see image/collider/quadtree boxes
 	public static var DEBUG_DRAW:Bool = false; // Flag true to see image/collider/quadtree boxes
 
@@ -40,6 +44,11 @@ class Wyngine extends Game
 	var nextScreenParams:Array<Dynamic>;
 	var currentScreen:WynScreen; // current game screen
 	var paused:Bool = false;
+
+	public var fitMode:Int = FIT_WIDTH; // For scaling screen to fit in HTML5 games
+	public var oriZoom(default, null):Float; // Original starting size
+	public var oriWidth(default, null):Int; 
+	public var oriHeight(default, null):Int;
 
 	public var windowWidth(default, null):Int; // Actual window size
 	public var windowHeight(default, null):Int;
@@ -102,6 +111,12 @@ class Wyngine extends Game
 	{
 		Wyngine.log("Wyngine init");
 
+		// Save original size first, so that we can rescale the
+		// screen for HTML5 pages
+		oriZoom = zoom;
+		oriWidth = ScreenCanvas.the.width;
+		oriHeight = ScreenCanvas.the.height;
+
 		// By default, random numbers are seeded. Set
 		// a new seed after init if necessary.
 		Random.init(Std.int(Date.now().getTime()));
@@ -132,40 +147,72 @@ class Wyngine extends Game
 
 	function setupGameScreen ()
 	{
+		// Update the game size variables according to the
+		// window (or HTML5 canvas) size, and update the buffer too.
 		windowWidth = ScreenCanvas.the.width;
 		windowHeight = ScreenCanvas.the.height;
 		gameWidth = Std.int(windowWidth / zoom);
 		gameHeight = Std.int(windowHeight / zoom);
 		buffer = Image.createRenderTarget(gameWidth, gameHeight);
 
-		for (cam in cameras)
-		{
-			cam.width = gameWidth;
-			cam.height = gameHeight;
-		}
+		// We don't know if the new screen size will be proportionate,
+		// so it's not a good idea to update each camera's sizes.
+		// for (cam in cameras)
+		// {
+		// 	cam.width = gameWidth;
+		// 	cam.height = gameHeight;
+		// }
+
+		// Instead of resizing the camera, just do a callback
+		// to current screen so the user can handle it manually.
+		if (currentScreen != null)
+			currentScreen.onResize();
 	}
 
 	/**
 	 * This is only for HTML5 full-screen game purposes
 	 */
-	public function setMobileFullScreenMode ()
+	public function setMobileFullScreenMode (fitMode:Int=FIT_WIDTH)
 	{
 		#if js
+
+		this.fitMode = fitMode;
+
+		// Prevents mobile touches from scrolling the screen.
+		kha.Sys.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
+			e.preventDefault();
+		});
+
+		// Makes sure that any further resize will trigger this
+		js.Browser.window.addEventListener("resize", resizeBrowserGameScreen);
+
+		// Call resize once
+		resizeBrowserGameScreen();
+		#end
+	}
+
+	function resizeBrowserGameScreen ()
+	{
+		#if js
+
 		// Resize to fit full screen of the browser page.
 		// NOTE: if there's unnecessary padding, make sure
 		// to modify the index.html so that the <html>, <body>
 		// and <p> have zero margin and zero padding.
-
 		kha.Sys.khanvas.width = js.Browser.window.innerWidth;
 		kha.Sys.khanvas.height = js.Browser.window.innerHeight;
 
 		// Rebuild the game screen and all cameras.
 		setupGameScreen();
 
-		// Prevents mobile touches from scrolling the screen.
-		kha.Sys.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
-			e.preventDefault();
-		});
+		// After resizing, maintain the zoom level proportionate
+		// to original game size, fit to width
+		// setGameZoom(oriWidth / windowWidth);
+		if (fitMode == FIT_WIDTH)
+			setGameZoom(windowWidth / oriWidth * oriZoom);
+		else if (fitMode == FIT_HEIGHT)
+			setGameZoom(windowHeight / oriHeight * oriZoom);
+
 		#end
 	}
 

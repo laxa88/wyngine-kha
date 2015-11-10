@@ -43,4 +43,9 @@ class WynScreen extends WynGroup<WynObject>
 	{
 		super.destroy();
 	}
+
+	public function onResize ()
+	{
+		// For you to handle whenever the screen size is changed
+	}
 }
