@@ -108,13 +108,10 @@ class Wyngine extends Game
 
 		// Set the starting screen sizes, which will be used when
 		// screens are instanced, etc.
-		windowWidth = ScreenCanvas.the.width;
-		windowHeight = ScreenCanvas.the.height;
-		gameWidth = Std.int(windowWidth / zoom);
-		gameHeight = Std.int(windowHeight / zoom);
-		buffer = Image.createRenderTarget(gameWidth, gameHeight);
 		bgColor = Color.fromValue(0xff6495ed); // cornflower blue default
 		cameras = [];
+
+		setupGameScreen();
 
 		// Initialise the default main camera
 		cameras.push(new WynCamera(0, 0, gameWidth, gameHeight, Color.Black));
@@ -131,6 +128,45 @@ class Wyngine extends Game
 		touch = WynTouch.instance;
 		mouse = WynMouse.instance;
 		tween = WynTween.instance;
+	}
+
+	function setupGameScreen ()
+	{
+		windowWidth = ScreenCanvas.the.width;
+		windowHeight = ScreenCanvas.the.height;
+		gameWidth = Std.int(windowWidth / zoom);
+		gameHeight = Std.int(windowHeight / zoom);
+		buffer = Image.createRenderTarget(gameWidth, gameHeight);
+
+		for (cam in cameras)
+		{
+			cam.width = gameWidth;
+			cam.height = gameHeight;
+		}
+	}
+
+	/**
+	 * This is only for HTML5 full-screen game purposes
+	 */
+	public function setMobileFullScreenMode ()
+	{
+		#if js
+		// Resize to fit full screen of the browser page.
+		// NOTE: if there's unnecessary padding, make sure
+		// to modify the index.html so that the <html>, <body>
+		// and <p> have zero margin and zero padding.
+
+		kha.Sys.khanvas.width = js.Browser.window.innerWidth;
+		kha.Sys.khanvas.height = js.Browser.window.innerHeight;
+
+		// Rebuild the game screen and all cameras.
+		setupGameScreen();
+
+		// Prevents mobile touches from scrolling the screen.
+		kha.Sys.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
+			e.preventDefault();
+		});
+		#end
 	}
 
 	override public function update ()
