@@ -20,6 +20,12 @@ typedef SliceData = {
 	@:optional var borderBottom:Int;
 }
 
+typedef ImageCacheData = {
+	var width:Int;
+	var height:Int;
+	var image:Image;
+}
+
 class WynSprite extends WynObject
 {
 	/**
@@ -36,6 +42,8 @@ class WynSprite extends WynObject
 	public static var SINGLE9SLICE:Int 		 = 2;
 	public static var BUTTON:Int 			 = 3;
 	public static var BUTTON9SLICE:Int 		 = 4;
+
+	static var imageCache:Array<ImageCacheData>;
 
 	public var animator:WynAnimator; // Controls all animations
 	public var image:Image; // The target image to be drawn to buffer
@@ -68,6 +76,9 @@ class WynSprite extends WynObject
 	public function new (x:Float=0, y:Float=0, w:Float=0, h:Float=0)
 	{
 		super(x, y, w, h);
+
+		if (imageCache == null)
+			imageCache = [];
 
 		// By default
 		_spriteType = WynSprite.SINGLE;
@@ -241,16 +252,67 @@ class WynSprite extends WynObject
 
 
 	/**
-	 * Convenient method to create images if you're prototyping without images.
+	 * Using Image.createRenderTarget(...) is very expensive,
+	 * so we have a cache method to keep track of images which
+	 * have been created before, based on width/height.
+	 */ 
+	function getCacheImage (w:Int, h:Int) : Image
+	{
+		for (i in 0 ... imageCache.length)
+		{
+			if (imageCache[i].width == w && imageCache[i].height == h)
+				return imageCache[i].image;
+		}
+
+		return null;
+	}
+
+	function setCacheImage (w:Int, h:Int, img:Image)
+	{
+		// Don't add duplicates
+		for (i in 0 ... imageCache.length)
+		{
+			if (imageCache[i].width == w && imageCache[i].height == h)
+				return;
+		}
+
+		imageCache.push({
+			width: w,
+			height: h,
+			image: img
+		});
+	}
+
+	/**
+	 * Only use if we're running out of memory, I guess?
 	 */
-	public function createEmptyImage (imageW:Int=50, imageH:Int=50)
+	public static function clearCacheImage ()
+	{
+		imageCache = [];
+	}
+
+	/**
+	 * Convenient method to create images if you're prototyping without images.
+	 * Similar idea with HaxeFlixel, we try to cache images because doing
+	 * createRenderTarget is very expensive. We only create unique images
+	 * if explicitly flagged.
+	 */
+	public function createEmptyImage (imageW:Int=50, imageH:Int=50, isUnique:Bool=false)
 	{
 		// Reset the size
 		width = imageW;
 		height = imageH;
 
+		// Get cached image if not flagged
+		if (!isUnique)
+			image = getCacheImage(imageW, imageH);
+
 		// Create a new image
-		image = Image.createRenderTarget(imageW, imageH);
+		if (image == null)
+		{
+			image = Image.createRenderTarget(imageW, imageH);
+			setCacheImage(imageW, imageH, image);
+		}
 
 		// Set the frame size to same as image size
 		frameWidth = imageW;
@@ -266,6 +328,9 @@ class WynSprite extends WynObject
 	 */
 	public function createPlaceholderRect (color:Color, imageW:Int=50, imageH:Int=50, filled:Bool=false)
 	{
+		// createEmptyImage(imageW, imageH);
+
+		// Note: creating image is expensive, so this method uses cached image.
 		createEmptyImage(imageW, imageH);
 
 		image.g2.begin(true, Color.fromValue(0x00000000));

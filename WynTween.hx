@@ -9,6 +9,7 @@ typedef TweenData = {
 	var duration:Float;
 	var callback:Void->Void;
 	var ease:Int;
+	var paused:Bool;
 }
 
 class WynTween
@@ -65,10 +66,22 @@ class WynTween
 
 	public function update (dt:Float)
 	{
+		// reusable variables
 		var i = 0;
+		var item = null;
+		var t,b,c,d,n,val;
+
+		Wyngine.log("queue : " + queue.length);
+
 		while (i < queue.length)
 		{
-			var item = queue[i];
+			item = queue[i];
+
+			if (item.paused)
+			{
+				i++;
+				continue;
+			}
 
 			// Update elapsed
 			item.elapsed += dt;
@@ -77,12 +90,12 @@ class WynTween
 
 			// Notes on why we use "n"
 			// http://oodavid.com/2013/11/11/easing-functions-refactored.html
-			var t = item.elapsed;
-			var b = item.from;
-			var c = item.to-item.from;
-			var d = item.duration;
-			var n = t/d;
-			var val = 0.0;
+			t = item.elapsed;
+			b = item.from;
+			c = item.to-item.from;
+			d = item.duration;
+			n = t/d;
+			val = 0.0;
 
 			switch (item.ease)
 			{
@@ -156,11 +169,12 @@ class WynTween
 			elapsed : 0,
 			duration : duration,
 			ease : ease,
-			callback : callback
+			callback : callback,
+			paused : false
 		};
 
 		// Add to queue
-		instance.queue.push(data);
+		instance.addToQueue(data);
 	}
 
 	public static function tweenFromTo (target:Dynamic, property:String, from:Float, to:Float, duration:Float, ease:Int=0, ?callback:Void->Void)
@@ -174,10 +188,78 @@ class WynTween
 			elapsed : 0,
 			duration : duration,
 			ease : ease,
-			callback : callback
+			callback : callback,
+			paused : false
 		};
 
 		// Add to queue
-		instance.queue.push(data);
+		instance.addToQueue(data);
+	}
+
+	function addToQueue (data:TweenData)
+	{
+		var i = 0;
+		var item = null;
+		while (i < queue.length)
+		{
+			// If the target/prop pair already exists,
+			// overwrite it.
+			if (queue[i].target == data.target &&
+				queue[i].prop == data.prop)
+			{
+				queue[i] = data;
+				return;
+			}
+			i++;
+		}
+
+		// If we didn't overwrite anything, it means this data
+		// is unique, so push to queue.
+		queue.push(data);
+	}
+
+	public static function pause (target:Dynamic)
+	{
+		var queue = instance.queue;
+		for (i in 0 ... queue.length)
+		{
+			if (queue[i].target == target)
+				queue[i].paused = true;
+		}
+	}
+
+	public static function resume (target:Dynamic)
+	{
+		var queue = instance.queue;
+		for (i in 0 ... queue.length)
+		{
+			if (queue[i].target == target)
+				queue[i].paused = false;
+		}
+	}
+
+	/**
+	 * Cancels tween on target. if reset is true, then will revert
+	 * to original value before tween began.
+	 */
+	public static function cancel (target:Dynamic, reset:Bool=false)
+	{
+		var i = 0;
+		var queue = instance.queue;
+		var item = null;
+
+		while (i < queue.length)
+		{
+			item = queue[i];
+			if (item.target == target)
+			{
+				if (reset)
+					Reflect.setProperty(item.target, item.prop, item.from);
+
+				queue.remove(item);
+			}
+			else
+				i++;
+		}
 	}
 }
