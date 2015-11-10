@@ -7,7 +7,7 @@ The current philosphy I'm trying to follow for the engine is: "If it's fancy, th
 
 The API may change drastically as I learn new techs and apply them into the overall structure of the engine. Please use at your own risk! When the engine is ready, you will see a "Getting Started" section below. If not, please be patient :)
 
-Games made with the engine so far:
+Demos made with the engine so far:
 * [KhaPong](http://coinflipstudios.com/khapong) - [last working commit](https://github.com/laxa88/wyngine/commit/7cd34019ae85bb0e01accd81d680bcd5fd7d645b)
 * [Khasteroids](http://coinflipstudios.com/khasteroids) - [last working commit](https://github.com/laxa88/wyngine/commit/ca7718bc0fb3797fd2c14793394d6da1673f9127)
 * [KhaQuadTree](http://coinflipstudios.com/khaquadtree) - [last working commit](https://github.com/laxa88/wyngine/commit/0a576c11ad29611b7aa507452fddf5e5468e96db)
@@ -36,6 +36,7 @@ Games made with the engine so far:
 * Camera system (multiple cameras, scrolling, zooming, shake, flash, fade, fill)
 * 9-slice image
 * Buttons, 9-slice buttons
+* Tweening (with [David King's refactored code](https://github.com/oodavid/timestep/blob/master/src/animate/transitions.js) based on [Andrey Sitnik's easings.net](http://easings.net/))
 
 # TODO
 

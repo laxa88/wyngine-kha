@@ -56,6 +56,7 @@ class Wyngine extends Game
 	var input:WynInput;
 	var touch:WynTouch;
 	var mouse:WynMouse;
+	var tween:WynTween;
 
 	// Have one reusable quadtree container so we don't
 	// end up creating new variable every update.
@@ -123,11 +124,13 @@ class Wyngine extends Game
 		WynTouch.init();
 		WynMouse.init();
 		WynAudio.init();
+		WynTween.init();
 
 		// quick reference
 		input = WynInput.instance;
 		touch = WynTouch.instance;
 		mouse = WynMouse.instance;
+		tween = WynTween.instance;
 	}
 
 	override public function update ()
@@ -158,10 +161,15 @@ class Wyngine extends Game
 		// Get FPS
 		updateFps();
 
+		// Get dt based on whether it's paused or not
+		var _dt = dt * ((paused) ? 0 : 1);
+
 		// Update inputs
 		input.update();
 		touch.update();
 		mouse.update();
+		//audio.update(); // no need for this yet
+		tween.update(_dt);
 
 		// Update each camera if they have effects, such as
 		// shake, flash, fade...
@@ -169,11 +177,11 @@ class Wyngine extends Game
 		for (i in 0 ... cameras.length)
 		{
 			cam = cameras[i];
-			cam.update( dt * ((paused) ? 0 : 1) );
+			cam.update(_dt);
 		}
 
 		// Main game update goes here
-		currentScreen.update( dt * ((paused) ? 0 : 1) );
+		currentScreen.update(_dt);
 	}
 
 	function updateFps ()
