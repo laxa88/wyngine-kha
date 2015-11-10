@@ -97,41 +97,41 @@ class WynTouch
 	 * use the static methods instead.
 	 */
 
-	public function _isTouchDown (index:Int) : TouchData
+	public function _isTouchDown (index:Int) : Bool
 	{
 		if (_touchPressed.exists(index) && _touchPressed[index].on)
-			return _touchPressed[index];
+			return true;
 		else
-			return null;
+			return false;
 	}
-	public function _isTouch (index:Int) : TouchData
+	public function _isTouch (index:Int) : Bool
 	{
 		if (_touchHeld.exists(index) && _touchHeld[index].on)
-			return _touchHeld[index];
+			return true;
 		else
-			return null;
+			return false;
 	}
-	public function _isTouchUp (index:Int) : TouchData
+	public function _isTouchUp (index:Int) : Bool
 	{
 		if (_touchReleased.exists(index) && _touchReleased[index].on)
-			return _touchReleased[index];
+			return true;
 		else
-			return null;
+			return false;
 	}
 
 	/**
 	 * Similar to WynInput
 	 */
 
-	public static function isTouchDown (index:Int) : TouchData
+	public static function isTouchDown (index:Int) : Bool
 	{
 		return instance._isTouchDown(index);
 	}
-	public static function isTouch (index:Int) : TouchData
+	public static function isTouch (index:Int) : Bool
 	{
 		return instance._isTouch(index);
 	}
-	public static function isTouchUp (index:Int) : TouchData
+	public static function isTouchUp (index:Int) : Bool
 	{
 		return instance._isTouchUp(index);
 	}
@@ -140,7 +140,7 @@ class WynTouch
 
 	function onTouchStart (index:Int, x:Int, y:Int)
 	{
-		trace("onTouchStart : " +index+","+x+","+y);
+		// trace("onTouchStart : " +index+","+x+","+y);
 
 		_touchPressed.set(index, { index:index, x:x, y:y, on:true });
 		_touchHeld.set(index, { index:index, x:x, y:y, on:false });
@@ -149,7 +149,7 @@ class WynTouch
 
 	function onTouchMove (index:Int, x:Int, y:Int)
 	{
-		trace("onTouchMove : " +index+","+x+","+y);
+		// trace("onTouchMove : " +index+","+x+","+y);
 
 		// Update the held position
 		_touchHeld[index].x = x;
@@ -159,7 +159,7 @@ class WynTouch
 
 	function onTouchEnd (index:Int, x:Int, y:Int)
 	{
-		trace("onTouchEnd : " +index+","+x+","+y);
+		// trace("onTouchEnd : " +index+","+x+","+y);
 
 		// Note: let the _touchRelease toggle the _touchMove in update() naturally.
 		_touchPressed.set(index, { index:index, x:x, y:y, on:false });
