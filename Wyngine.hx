@@ -124,12 +124,11 @@ class Wyngine extends Game
 		// Set the starting screen sizes, which will be used when
 		// screens are instanced, etc.
 		bgColor = Color.fromValue(0xff6495ed); // cornflower blue default
-		cameras = [];
 
 		setupGameScreen();
 
 		// Initialise the default main camera
-		cameras.push(new WynCamera(0, 0, gameWidth, gameHeight, Color.Black));
+		resetCameras();
 
 		// Initialise engine variables
 		WynInput.init();
@@ -214,6 +213,12 @@ class Wyngine extends Game
 			setGameZoom(windowHeight / oriHeight * oriZoom);
 
 		#end
+	}
+
+	public function resetCameras ()
+	{
+		cameras = [];
+		cameras.push(new WynCamera(0, 0, gameWidth, gameHeight, Color.Black));
 	}
 
 	override public function update ()
