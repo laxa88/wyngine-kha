@@ -26,8 +26,9 @@ class Wyngine extends Game
 	public static inline var FIT_WIDTH:Int = 1;
 	public static inline var FIT_HEIGHT:Int = 2;
 
-	public static var DEBUG:Bool = false; // Flag true to see image/collider/quadtree boxes
+	public static var DEBUG_LOG:Bool = false; // Flag true to see image/collider/quadtree boxes
 	public static var DEBUG_DRAW:Bool = false; // Flag true to see image/collider/quadtree boxes
+	public static var DEBUG_QUAD:Bool = false; // Flag true to see image/collider/quadtree boxes
 
 	public static var G:Wyngine; // static reference
 	public static var totalMemory(get, null):Int;
@@ -305,7 +306,7 @@ class Wyngine extends Game
 			g.begin(true, cam.bgColor);
 
 			// Draw quadtree if you want
-			if (WynQuadTree.DEBUG)
+			if (DEBUG_QUAD)
 			{
 				if (_quadtree != null)
 					_quadtree.drawTrees(cam);
@@ -579,7 +580,7 @@ class Wyngine extends Game
 	 */
 	public static function log (str:String)
 	{
-		if (DEBUG)
+		if (DEBUG_LOG)
 		{
 			#if js
 			js.Browser.console.log(str);
