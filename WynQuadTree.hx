@@ -1,7 +1,6 @@
 package wyn;
 
 import kha.Color;
-import kha.Rectangle;
 
 /**
  * v1: Taken from here:
@@ -16,7 +15,6 @@ import kha.Rectangle;
 
 class WynQuadTree
 {
-	public static var DEBUG:Bool = false;
 	public static inline var LIST_A:Int = 0;
 	public static inline var LIST_B:Int = 1;
 	public static inline var MAX_OBJECTS:Int = 10;
@@ -500,7 +498,7 @@ class WynQuadTree
 				o2H = _object2.height;
 
 				// The actual collision logic between o1 and o2 happens here
-				// Compare now (copied from kha.Rectangle)
+				// Compare now (copied from WynRect)
 				var hitHoriz:Bool;
 				var hitVert:Bool;
 

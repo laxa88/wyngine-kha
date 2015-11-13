@@ -26,6 +26,7 @@ class WynUtil
 				vel = 0;
 		}
 
+		// Only cap velocity if max is not zero.
 		if ((vel != 0) && (max != 0))
 		{
 			if (vel > max)

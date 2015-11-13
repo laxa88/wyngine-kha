@@ -2,7 +2,6 @@ package wyn;
 
 import kha.Color;
 import kha.Image;
-import kha.Rectangle;
 import kha.Loader;
 import kha.math.FastMatrix3;
 import kha.math.FastVector2;
@@ -47,7 +46,7 @@ class WynSprite extends WynObject
 
 	public var animator:WynAnimator; // Controls all animations
 	public var image:Image; // The target image to be drawn to buffer
-	public var frameColumns:Int = 0; // Number of columns in spritesheet
+	public var frameColumns:Int = 1; // Number of columns in spritesheet
 	public var frameX:Int = 0; // Frame position, for animation purpose
 	public var frameY:Int = 0;
 	public var frameWidth:Int = 0; // Individual frame's size, aka the source spritesheet's size
