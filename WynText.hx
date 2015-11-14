@@ -20,7 +20,7 @@ class WynText extends WynSprite
 		super(x, y, w, h);
 
 		setFont(name, size, bold, italic, underlined);
-		createEmptyImage(w, h);
+		createEmptyImage(w, h, true);
 
 		text = t;
 	}
