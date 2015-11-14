@@ -39,16 +39,15 @@ class Wyngine extends Game
 	public static inline var DRAW_COUNT_MAX:Int = 500;
 	public static var DRAW_COUNT:Int;
 
-	public var zoom(default, null):Float;
+	public var zoom(default, null):Float = 1;
 	var thisScreen:Class<WynScreen>; // curr screen, checks against nextScreen
 	var nextScreen:Class<WynScreen>; // next screen. If different from currScreen, will transition.
-	var nextScreenParams:Array<Dynamic>;
 	var currentScreen:WynScreen; // current game screen
 	var paused:Bool = false;
 
 	public var fitMode:Int = FIT_WIDTH; // For scaling screen to fit in HTML5 games
 	public var oriZoom(default, null):Float; // Original starting size
-	public var oriWidth(default, null):Int; 
+	public var oriWidth(default, null):Int;
 	public var oriHeight(default, null):Int;
 
 	public var windowWidth(default, null):Int; // Actual window size
@@ -90,7 +89,7 @@ class Wyngine extends Game
 	 * @param 	zoom 	If window = 640x480, then if zoom=2,
 	 * 					then output resolution is 320x240.
 	 */
-	public function new (?startScreen:Class<WynScreen>, zoom:Float=1)
+	public function new (startScreen:Class<WynScreen>)
 	{
 		super("Wyngine");
 
@@ -98,11 +97,6 @@ class Wyngine extends Game
 
 		// Set reference first thing first.
 		G = this;
-
-		this.zoom = zoom;
-
-		if (startScreen == null)
-			startScreen = WynScreen;
 
 		// Switch to screen after we're done
 		switchScreen(startScreen);
@@ -239,7 +233,7 @@ class Wyngine extends Game
 			// Initialise some stuff that shouldn't carry over between screens
 			WynAudio.reset();
 
-			currentScreen = cast (Type.createInstance(nextScreen, nextScreenParams));
+			currentScreen = cast (Type.createInstance(nextScreen, []));
 		}
 
 		// Get elapsed time
@@ -429,17 +423,12 @@ class Wyngine extends Game
 	 * screen manually before calling this method. NOTE:
 	 * Switching a screen will destroy the previous screen.
 	 */
-	public function switchScreen (targetScreen:Class<WynScreen>, ?params:Array<Dynamic>)
+	public function switchScreen (targetScreen:Class<WynScreen>)
 	{
 		// Don't immediately switch screen. Instead, flag the next screen, so
 		// we can switch in the next frame. This prevents situations where a
 		// new screen may immediately call switchScreen(), causing problems.
-
-		if (params == null)
-			params = [];
-
 		nextScreen = targetScreen;
-		nextScreenParams = params;
 	}
 
 	/**
