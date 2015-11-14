@@ -131,7 +131,8 @@ class WynBitmapText extends WynSprite
 		var fontNode:Xml = fullXml.firstElement();
 		var data = new Fast(fontNode);
 
-		// what's this for?
+		// If the font file doesn't have a " " character,
+		// this will be a default spacing for it.
 		var spaceWidth = 8;
 
 		// NOTE: Each of these attributes are in the .fnt XML data.
