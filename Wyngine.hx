@@ -45,8 +45,6 @@ class Wyngine extends Game
 	var currentScreen:WynScreen; // current game screen
 	var paused:Bool = false;
 
-	public var fitMode:Int = FIT_WIDTH; // For scaling screen to fit in HTML5 games
-	public var oriZoom(default, null):Float; // Original starting size
 	public var oriWidth(default, null):Int;
 	public var oriHeight(default, null):Int;
 
@@ -89,7 +87,7 @@ class Wyngine extends Game
 	 * @param 	zoom 	If window = 640x480, then if zoom=2,
 	 * 					then output resolution is 320x240.
 	 */
-	public function new (startScreen:Class<WynScreen>)
+	public function new (startScreen:Class<WynScreen>, zoom:Float)
 	{
 		super("Wyngine");
 
@@ -97,6 +95,8 @@ class Wyngine extends Game
 
 		// Set reference first thing first.
 		G = this;
+
+		this.zoom = zoom;
 
 		// Switch to screen after we're done
 		switchScreen(startScreen);
@@ -108,7 +108,6 @@ class Wyngine extends Game
 
 		// Save original size first, so that we can rescale the
 		// screen for HTML5 pages
-		oriZoom = zoom;
 		oriWidth = ScreenCanvas.the.width;
 		oriHeight = ScreenCanvas.the.height;
 
@@ -120,7 +119,13 @@ class Wyngine extends Game
 		// screens are instanced, etc.
 		bgColor = Color.fromValue(0xff6495ed); // cornflower blue default
 
-		setupGameScreen();
+		// Update the game size variables according to the
+		// window (or HTML5 canvas) size, and update the buffer too.
+		windowWidth = ScreenCanvas.the.width;
+		windowHeight = ScreenCanvas.the.height;
+		gameWidth = Std.int(windowWidth / zoom);
+		gameHeight = Std.int(windowHeight / zoom);
+		buffer = Image.createRenderTarget(gameWidth, gameHeight);
 
 		// Initialise the default main camera
 		resetCameras();
@@ -137,40 +142,14 @@ class Wyngine extends Game
 		touch = WynTouch.instance;
 		mouse = WynMouse.instance;
 		tween = WynTween.instance;
+
+		// Start with the originally specified zoom
+		setGameZoom(zoom);
 	}
 
-	function setupGameScreen ()
-	{
-		// Update the game size variables according to the
-		// window (or HTML5 canvas) size, and update the buffer too.
-		windowWidth = ScreenCanvas.the.width;
-		windowHeight = ScreenCanvas.the.height;
-		gameWidth = Std.int(windowWidth / zoom);
-		gameHeight = Std.int(windowHeight / zoom);
-		buffer = Image.createRenderTarget(gameWidth, gameHeight);
-
-		// We don't know if the new screen size will be proportionate,
-		// so it's not a good idea to update each camera's sizes.
-		// for (cam in cameras)
-		// {
-		// 	cam.width = gameWidth;
-		// 	cam.height = gameHeight;
-		// }
-
-		// Instead of resizing the camera, just do a callback
-		// to current screen so the user can handle it manually.
-		if (currentScreen != null)
-			currentScreen.onResize();
-	}
-
-	/**
-	 * This is only for HTML5 full-screen game purposes
-	 */
-	public function setMobileFullScreenMode (fitMode:Int=FIT_WIDTH)
+	public function initMobileMode ()
 	{
 		#if js
-
-		this.fitMode = fitMode;
 
 		// Prevents mobile touches from scrolling the screen.
 		kha.Sys.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
@@ -182,6 +161,10 @@ class Wyngine extends Game
 
 		// Call resize once
 		resizeBrowserGameScreen();
+
+		// resets to one full-screen camera
+		resetCameras();
+
 		#end
 	}
 
@@ -196,16 +179,18 @@ class Wyngine extends Game
 		kha.Sys.khanvas.width = js.Browser.window.innerWidth;
 		kha.Sys.khanvas.height = js.Browser.window.innerHeight;
 
-		// Rebuild the game screen and all cameras.
-		setupGameScreen();
+		// We don't know if the new screen size will be proportionate,
+		// so it's not a good idea to update each camera's sizes.
+		// for (cam in cameras)
+		// {
+		// 	cam.width = gameWidth;
+		// 	cam.height = gameHeight;
+		// }
 
-		// After resizing, maintain the zoom level proportionate
-		// to original game size, fit to width
-		// setGameZoom(oriWidth / windowWidth);
-		if (fitMode == FIT_WIDTH)
-			setGameZoom(windowWidth / oriWidth * oriZoom);
-		else if (fitMode == FIT_HEIGHT)
-			setGameZoom(windowHeight / oriHeight * oriZoom);
+		// Instead of resizing the camera, just do a callback
+		// to current screen so the user can handle it manually.
+		if (currentScreen != null)
+			currentScreen.onResize();
 
 		#end
 	}
