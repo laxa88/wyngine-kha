@@ -1,6 +1,7 @@
 package wyn;
 
 import kha.math.FastVector2;
+import kha.math.Random;
 
 class WynUtil
 {
@@ -77,6 +78,22 @@ class WynUtil
 		var p:FastVector2 = randomInCircle();
 		p.normalize();
 		return p;
+	}
+
+	/**
+	 * Kha only has Int version, so get a float one
+	 */
+	public inline static function randomFloat (min:Float, max:Float) : Float
+	{
+		if (min == max)
+		{
+			return min;
+		}
+		else
+		{
+			var r = Math.random() * (max - min);
+			return (min + r);
+		}
 	}
 
 	/**
