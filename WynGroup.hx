@@ -406,7 +406,10 @@ class WynGroup<T:WynObject> extends WynObject
 			// offset all members
 			var offset = val - x;
 			for (i in 0 ... length)
-				members[i].x += offset;
+			{
+				if (!members[i].isStaticPosition)
+					members[i].x += offset;
+			}
 
 			return x = val;
 		}
@@ -421,7 +424,10 @@ class WynGroup<T:WynObject> extends WynObject
 			// offset all members
 			var offset = val - y;
 			for (i in 0 ... length)
-				members[i].y += offset;
+			{
+				if (!members[i].isStaticPosition)
+					members[i].y += offset;
+			}
 
 			return y = val;
 		}
