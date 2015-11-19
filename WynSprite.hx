@@ -23,6 +23,7 @@ typedef ImageCacheData = {
 	var width:Int;
 	var height:Int;
 	var image:Image;
+	var type:Int;
 }
 
 class WynSprite extends WynObject
@@ -31,16 +32,18 @@ class WynSprite extends WynObject
 	 * This is the base class for anything that can be rendered,
 	 * such as sprites, texts, bitmaptexts, buttons, etc.
 	 */
+	public static inline var CACHE_RECT 	= 1;
+	public static inline var CACHE_CIRCLE 	= 2;
 
-	public static var LEFT:Int 		= 1;
-	public static var RIGHT:Int 	= 2;
-	public static var UP:Int 		= 3;
-	public static var DOWN:Int 		= 4;
+	public static inline var LEFT:Int 		= 1;
+	public static inline var RIGHT:Int 		= 2;
+	public static inline var UP:Int 		= 3;
+	public static inline var DOWN:Int 		= 4;
 
-	public static var SINGLE:Int 			 = 1;
-	public static var SINGLE9SLICE:Int 		 = 2;
-	public static var BUTTON:Int 			 = 3;
-	public static var BUTTON9SLICE:Int 		 = 4;
+	public static inline var SINGLE:Int 			 = 1;
+	public static inline var SINGLE9SLICE:Int 		 = 2;
+	public static inline var BUTTON:Int 			 = 3;
+	public static inline var BUTTON9SLICE:Int 		 = 4;
 
 	static var imageCache:Array<ImageCacheData>;
 
@@ -127,8 +130,10 @@ class WynSprite extends WynObject
 			// If an image is flipped, we need to offset it by width/height
 			var fx = (flipX) ? -1 : 1; // flip image?
 			var fy = (flipY) ? -1 : 1;
-			var dx = (flipX) ? imageWidth : 0; // if image is flipped, displace
-			var dy = (flipY) ? imageHeight : 0;
+			var dx = (flipX) ? imageWidth*scale : 0; // if image is flipped, displace
+			var dy = (flipY) ? imageHeight*scale : 0;
+			var sx = ((imageWidth*scale) - imageWidth) / 2; // When iamge is scaled, we center it rather than leave it at origin.
+			var sy = ((imageHeight*scale) - imageHeight) / 2;
 
 			// Remember: Rotations are expensive!
 			if (angle != 0)
@@ -136,11 +141,11 @@ class WynSprite extends WynObject
 				var rad = WynUtil.degToRad(angle);
 				g.pushTransformation(g.transformation
 					// offset toward top-left, to center image on pivot point
-					.multmat(FastMatrix3.translation(ox + imageWidth/2, oy + imageHeight/2))
+					.multmat(FastMatrix3.translation(ox + scale*imageWidth/2, oy + scale*imageHeight/2))
 					// rotate at pivot point
 					.multmat(FastMatrix3.rotation(rad))
 					// reverse offset
-					.multmat(FastMatrix3.translation(-ox - imageWidth/2, -oy - imageHeight/2)));
+					.multmat(FastMatrix3.translation(-ox - scale*imageWidth/2, -oy - scale*imageHeight/2)));
 			}
 
 			// Add opacity if any
@@ -156,8 +161,8 @@ class WynSprite extends WynObject
 				// the spritesheet's frame to extract from
 				frameX, frameY, frameWidth, frameHeight, 
 				// the target position
-				ox + (dx+frameWidth/2) - (frameWidth/2),
-				oy + (dy+frameHeight/2) - (frameHeight/2),
+				ox + (dx+frameWidth/2) - (frameWidth/2) - sx,
+				oy + (dy+frameHeight/2) - (frameHeight/2) - sy,
 				imageWidth * fx * scale,
 				imageHeight * fy * scale);
 
@@ -255,18 +260,20 @@ class WynSprite extends WynObject
 	 * so we have a cache method to keep track of images which
 	 * have been created before, based on width/height.
 	 */ 
-	function getCacheImage (w:Int, h:Int) : Image
+	function getCacheImage (w:Int, h:Int, t:Int) : Image
 	{
 		for (i in 0 ... imageCache.length)
 		{
-			if (imageCache[i].width == w && imageCache[i].height == h)
+			if (imageCache[i].width == w &&
+				imageCache[i].height == h &&
+				imageCache[i].type == t)
 				return imageCache[i].image;
 		}
 
 		return null;
 	}
 
-	function setCacheImage (w:Int, h:Int, img:Image)
+	function setCacheImage (w:Int, h:Int, img:Image, t:Int)
 	{
 		// Don't add duplicates
 		for (i in 0 ... imageCache.length)
@@ -278,7 +285,8 @@ class WynSprite extends WynObject
 		imageCache.push({
 			width: w,
 			height: h,
-			image: img
+			image: img,
+			type: t
 		});
 	}
 
@@ -296,21 +304,25 @@ class WynSprite extends WynObject
 	 * createRenderTarget is very expensive. We only create unique images
 	 * if explicitly flagged.
 	 */
-	public function createEmptyImage (imageW:Int=50, imageH:Int=50, isUnique:Bool=false)
+	public function createEmptyImage (imageW:Int=50, imageH:Int=50, isUnique:Bool=false, cacheType:Int=0)
 	{
 		// Reset the size
 		width = imageW;
 		height = imageH;
 
+		// If we cache an image just based on size, we end up overwriting
+		// unique shapes within each same-sized image, so... let's not cache them
+		// image = Image.createRenderTarget(imageW, imageH);
+
 		// Get cached image if not flagged
 		if (!isUnique)
-			image = getCacheImage(imageW, imageH);
+			image = getCacheImage(imageW, imageH, cacheType);
 
 		// Create a new image
 		if (image == null)
 		{
 			image = Image.createRenderTarget(imageW, imageH);
-			setCacheImage(imageW, imageH, image);
+			setCacheImage(imageW, imageH, image, cacheType);
 		}
 
 		// Set the frame size to same as image size
@@ -325,12 +337,12 @@ class WynSprite extends WynObject
 	/**
 	 * Convenient method to create images if you're prototyping without images.
 	 */
-	public function createPlaceholderRect (color:Color, imageW:Int=50, imageH:Int=50, filled:Bool=false)
+	public function createPlaceholderRect (color:Color, imageW:Int=50, imageH:Int=50, filled:Bool=false, isUnique:Bool=false)
 	{
 		// createEmptyImage(imageW, imageH);
 
 		// Note: creating image is expensive, so this method uses cached image.
-		createEmptyImage(imageW, imageH);
+		createEmptyImage(imageW, imageH, isUnique, CACHE_RECT);
 
 		image.g2.begin(true, Color.fromValue(0x00000000));
 		image.g2.color = color;
@@ -344,9 +356,9 @@ class WynSprite extends WynObject
 	/**
 	 * Convenient method to create images if you're prototyping without images.
 	 */
-	public function createPlaceholderCircle (color:Color, radius:Int=25, filled:Bool=false)
+	public function createPlaceholderCircle (color:Color, radius:Int=25, filled:Bool=false, isUnique:Bool=false)
 	{
-		createEmptyImage(radius*2, radius*2);
+		createEmptyImage(radius*2, radius*2, isUnique, CACHE_CIRCLE);
 
 		image.g2.begin(true, Color.fromValue(0x00000000));
 		image.g2.color = color;
