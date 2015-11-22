@@ -18,26 +18,26 @@ class WynEmitter<T:WynParticle> extends WynGroup<T>
 
 	// You can manually set these values to modify
 	// the emitter behaviour directly.
-	public var _lifespan:Bounds<Float>;
-	public var _xPosition:Bounds<Float>;
-	public var _yPosition:Bounds<Float>;
-	public var _xVelocity:Bounds<Float>;
-	public var _yVelocity:Bounds<Float>;
-	public var _rotation:Bounds<Float>;
-	public var _startScale:Bounds<Float>;
-	public var _endScale:Bounds<Float>;
-	public var _startAlpha:Bounds<Float>;
-	public var _endAlpha:Bounds<Float>;
-	public var _particleDrag:FastVector2;
-	public var _particleAccel:FastVector2;
+	var _particleLifespan:Bounds<Float>;
+	var _xPosition:Bounds<Float>;
+	var _yPosition:Bounds<Float>;
+	var _xVelocity:Bounds<Float>;
+	var _yVelocity:Bounds<Float>;
+	var _rotation:Bounds<Float>;
+	var _startScale:Bounds<Float>;
+	var _endScale:Bounds<Float>;
+	var _startAlpha:Bounds<Float>;
+	var _endAlpha:Bounds<Float>;
+	var _particleDrag:FastVector2;
+	var _particleAccel:FastVector2;
 
 
 
-	public function new (?x:Int, ?y:Int)
+	public function new (?x:Int, ?y:Int, ?objClass:Class<T>, ?objCount:Int=100)
 	{
 		super(x, y);
 
-		_lifespan = new Bounds<Float>(3, 3);
+		_particleLifespan = new Bounds<Float>(3, 3);
 		_xPosition = new Bounds<Float>(0, 0);
 		_yPosition = new Bounds<Float>(0, 0);
 		_xVelocity = new Bounds<Float>(-100, 100);
@@ -50,35 +50,18 @@ class WynEmitter<T:WynParticle> extends WynGroup<T>
 		_particleDrag = new FastVector2(0, 0);
 		_particleAccel = new FastVector2(0, 0);
 
+		if (objClass != null)
+		{
+			for (i in 0 ... objCount)
+			{
+				var particle:T = cast (Type.createInstance(objClass, []));
+				particle.kill();
+				add(particle);
+			}
+		}
+
 		// Start out "dead" by default
 		kill();
-	}
-
-	/**
-	 * Triggers the emitter. Use kill() to stop, use destroy() to remove completely.
-	 * NOTE:
-	 * - Remember to use add() to add your particles first!
-	 * - if countPerEmit is zero, will emit all particles at once
-	 * - if frequency is zero, will emit one particle per frame. Otherwise, will emit countPerEmit per frame.
-	 * - if quantity is zero, emit indefinitely. Otherwise, emit up to quantity, then kill emitter.
-	 * - if lifespan is zero, they never die and get recycled.
-	 */
-	public function emit (countPerEmit:Int=0, frequency:Float=0, quantity:Int=0, emitLifespan:Float=0)
-	{
-		// Revive emitter
-		revive();
-
-		_emitCount = countPerEmit;
-		_emitFrequency = frequency;
-		_emitQuantity = quantity;
-		_emitLifespan = emitLifespan;
-
-		// Reset the emitter state
-		_on = true;
-		_waitForKill = false;
-		_emitElapsed = 0;
-		_elapsed = 0;
-		_emitCounter = 0;
 	}
 
 	override public function update (dt:Float)
@@ -96,7 +79,7 @@ class WynEmitter<T:WynParticle> extends WynGroup<T>
 			if (_emitCount <= 0)
 			{
 				// If _emitCount is zero, burst emit ALL particles
-				var len:Int = members.length;
+				var len:Int = (_emitQuantity <= 0) ? members.length : _emitQuantity;
 				for (i in 0 ... len)
 					emitParticle();
 
@@ -137,7 +120,7 @@ class WynEmitter<T:WynParticle> extends WynGroup<T>
 		{
 			// HaxeFlixel waits for a default of 3 seconds before it kills the emitter.
 			_elapsed += dt;
-			if (_elapsed >= _emitLifespan)
+			if (_emitLifespan > 0 && _elapsed >= _emitLifespan)
 				kill();
 		}
 	}
@@ -156,7 +139,7 @@ class WynEmitter<T:WynParticle> extends WynGroup<T>
 		if (particle != null)
 		{
 			// Reset and randomise stats
-			var lifespan = WynUtil.randomFloat(_lifespan.min, _lifespan.max);
+			var lifespan = WynUtil.randomFloat(_particleLifespan.min, _particleLifespan.max);
 			var xPosition = WynUtil.randomFloat(_xPosition.min, _xPosition.max);
 			var yPosition = WynUtil.randomFloat(_yPosition.min, _yPosition.max);
 			var xVelocity = WynUtil.randomFloat(_xVelocity.min, _xVelocity.max);
@@ -230,38 +213,99 @@ class WynEmitter<T:WynParticle> extends WynGroup<T>
 		super.revive();
 	}
 
-	// /**
-	//  * Don't use WynGroup's set_x/set_y method, because we don't
-	//  * want to affect the position of the child particles.
-	//  */
-	// override private function set_x (val:Float) : Float
-	// {
-	// 	if (_xPosition != null)
-	// 		_xPosition.min = val;
+	/**
+	 * Triggers the emitter. Use stopEmit() to pause, resumeEmit() to resume, kill() to disable/remove.
+	 * NOTE:
+	 * - Remember to use add() to add your particles first!
+	 * - if countPerEmit is zero, will emit all particles at once
+	 * - if frequency is zero, will emit particles every update. Otherwise, will emit countPerEmit per frame.
+	 * - if quantity is zero, emit indefinitely. Otherwise, emit up to quantity, then kill emitter.
+	 * - if lifespan is zero, they never die and get recycled.
+	 *
+	 * Hints on common effects
+	 * for explosions: leave countPerEmit and frequency to zero
+	 * for sparks: similar to explosion, but set velocity and particleDrag
+	 * for smoke: set particleAccel
+	 */
+	public function emit (countPerEmit:Int=1, frequency:Float=0, quantity:Int=0, emitLifespan:Float=0.1)
+	{
+		// Revive emitter
+		revive();
 
-	// 	return x = val;
-	// }
-	// override private function set_y (val:Float) : Float
-	// {
-	// 	if (_yPosition != null)
-	// 		_yPosition.min = val;
+		_emitCount = countPerEmit;
+		_emitFrequency = frequency;
+		_emitQuantity = quantity;
+		_emitLifespan = emitLifespan;
 
-	// 	return y = val;
-	// }
-	// override private function set_width (val:Float) : Float
-	// {
-	// 	if (_xPosition != null)
-	// 		_xPosition.max = val;
+		// Reset the emitter state
+		_on = true;
+		_waitForKill = false;
+		_emitElapsed = 0;
+		_elapsed = 0;
+		_emitCounter = 0;
+	}
+	/**
+	 * Helper function. Useful for explosions, twinkles, etc.
+	 */
+	public function emitOnce (count:Int=10, emitLifespan:Float=0)
+	{
+		emit(0, 0, count, emitLifespan);
+	}
 
-	// 	return super.set_width(val);
-	// }
-	// override private function set_height (val:Float) : Float
-	// {
-	// 	if (_yPosition != null)
-	// 		_yPosition.max = val;
+	/**
+	 * Stops emission, but it's still alive
+	 */
+	public function stopEmit ()
+	{
+		_on = false;
+	}
+	/**
+	 * Restarts emission
+	 */
+	public function resumeEmit ()
+	{
+		_on = true;
+	}
 
-	// 	return super.set_height(val);
-	// }
+	/**
+	 * Helper functions to quickly set emitter behaviour.
+	 */
+	public function setLifespanRange (min:Float, max:Float)
+	{
+		_particleLifespan.set(min, max);
+	}
+	public function setPositionRange (minX:Float, maxX:Float, minY:Float, maxY:Float)
+	{
+		_xPosition.set(minX, maxX);
+		_yPosition.set(minY, maxY);
+	}
+	public function setVelocityRange (minX:Float, maxX:Float, minY:Float, maxY:Float)
+	{
+		_xVelocity.set(minX, maxX);
+		_yVelocity.set(minY, maxY);
+	}
+	public function setRotationRange (min:Float, max:Float)
+	{
+		_rotation.set(min, max);
+	}
+	public function setScaleRange (startMin:Float, startMax:Float, endMin:Float, endMax:Float)
+	{
+		_startScale.set(startMin, startMax);
+		_endScale.set(endMin, endMax);
+	}
+	public function setAlphaRange (startMin:Float, startMax:Float, endMin:Float, endMax:Float)
+	{
+		_startAlpha.set(startMin, startMax);
+		_endAlpha.set(endMin, endMax);
+	}
+	public function setParticleDrag (x:Float, y:Float)
+	{
+		_particleDrag = new FastVector2(x, y);
+	}
+	public function setParticleAccel (x:Float, y:Float)
+	{
+		_particleAccel = new FastVector2(x, y);
+	}
 }
 
 /**

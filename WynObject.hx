@@ -23,7 +23,7 @@ class WynObject
 	public var objectType(default, null):Int = WynObject.NONE;
 
 	public var parent:WynObject; // used with WynGroup to identify this object's parent
-	public var isStaticPosition:Bool = false; // used ot ignore movement when parent moves
+	public var isStaticPosition:Bool = false; // set true if position is independent of parent position
 	public var localx(get, set):Float; // relative to parent
 	public var localy(get, set):Float;
 	public var x(default, set):Float = 0; // Note: position origin is at top-left corner.

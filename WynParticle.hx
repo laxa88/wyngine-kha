@@ -2,12 +2,15 @@ package wyn;
 
 class WynParticle extends WynSprite
 {
+	// TODO
+	// - animate particle color (perhaps too fancy, skip for now)
+	// - friction (for particles that interact with surroundings)
+
 	public var lifespan:Float = 0;
 	// public var friction:Float = 0; // used for collision against walls
 	public var useFading:Bool = false;
 	public var useScaling:Bool = false;
 	// public var useColoring:Bool = false;
-	// public var maxLifespan:Float = 0;
 	public var startAlpha:Float = 0;
 	public var endAlpha:Float = 0;
 	public var startScale:Float = 0;
@@ -20,11 +23,19 @@ class WynParticle extends WynSprite
 	// public var endBlue:Float = 0;
 	var lifeElapsed:Float = 0;
 
+	public function new (isStaticPosition:Bool=true)
+	{
+		super();
+
+		// By default, particle positions are not affected by emitter's position.
+		this.isStaticPosition = isStaticPosition;
+	}
+
 	override public function update (dt:Float)
 	{
 		super.update(dt);
 
-		// Only flag to kill if lifespan is not zero (infinite)
+		// Only animate scale/alpha and flag to kill if lifespan is not zero.
 		if (lifespan > 0)
 		{
 			lifeElapsed += dt;
@@ -32,7 +43,13 @@ class WynParticle extends WynSprite
 			updateParticle();
 
 			if (lifeElapsed >= lifespan)
+			{
+				// set final alpha and scale before killing
+				alpha = endAlpha;
+				scale = endScale;
+
 				kill();
+			}
 		}
 	}
 

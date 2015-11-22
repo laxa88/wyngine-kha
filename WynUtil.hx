@@ -91,8 +91,18 @@ class WynUtil
 		}
 		else
 		{
-			var r = Math.random() * (max - min);
-			return (min + r);
+			var r = 0.0;
+			if (min > max)
+			{
+				// If min is larger than max, revert the calculation
+				r = Math.random() * (min - max);
+				return (max + r);
+			}
+			else
+			{
+				r = Math.random() * (max - min);
+				return (min + r);
+			}
 		}
 	}
 

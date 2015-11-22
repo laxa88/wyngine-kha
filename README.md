@@ -37,6 +37,7 @@ Demos made with the engine so far:
 * 9-slice image
 * Buttons, 9-slice buttons
 * Tweening (with [David King's refactored code](https://github.com/oodavid/timestep/blob/master/src/animate/transitions.js) based on [Andrey Sitnik's easings.net](http://easings.net/))
+* Particle system (for explosions & smoke effects)
 
 # TODO
 
