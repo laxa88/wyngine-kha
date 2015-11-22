@@ -278,7 +278,9 @@ class WynSprite extends WynObject
 		// Don't add duplicates
 		for (i in 0 ... imageCache.length)
 		{
-			if (imageCache[i].width == w && imageCache[i].height == h)
+			if (imageCache[i].width == w &&
+				imageCache[i].height == h &&
+				imageCache[i].type == t)
 				return;
 		}
 
@@ -316,13 +318,20 @@ class WynSprite extends WynObject
 
 		// Get cached image if not flagged
 		if (!isUnique)
+		{
 			image = getCacheImage(imageW, imageH, cacheType);
 
-		// Create a new image
-		if (image == null)
+			// Create a new image if there's no cache
+			if (image == null)
+			{
+				image = Image.createRenderTarget(imageW, imageH);
+				setCacheImage(imageW, imageH, image, cacheType);
+			}
+		}
+		else
 		{
+			// If this is unique, always create a new image
 			image = Image.createRenderTarget(imageW, imageH);
-			setCacheImage(imageW, imageH, image, cacheType);
 		}
 
 		// Set the frame size to same as image size
