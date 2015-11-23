@@ -3,7 +3,6 @@ package wyn;
 import kha.Color;
 import kha.Image;
 import kha.Loader;
-import kha.Rectangle;
 import kha.graphics2.Graphics;
 
 class WynButton extends WynSprite
