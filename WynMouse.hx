@@ -27,6 +27,10 @@ class WynMouse
 	public static var instance:WynMouse;
 	public static var windowX(default, null):Int = 0;
 	public static var windowY(default, null):Int = 0;
+	public static var offsetX(default, null):Int = 0; // used for HTML5 where canvas can be scaled
+	public static var offsetY(default, null):Int = 0;
+	public static var ratioW(default, null):Float = 0; // used for HTML5 where canvas can be scaled
+	public static var ratioH(default, null):Float = 0;
 
 	private var _mousePressed:Map<Int, Int>;
 	private var _mouseHeld:Map<Int, Int>;
@@ -233,19 +237,42 @@ class WynMouse
 		// camScreen x,y = {75, 100} (screen - (camera.pos / camera.zoom))
 		// world x,y (camera) = {125, 170} (camScreen + scroll)
 
+		ratioW = 1;
+		ratioH = 1;
+		offsetX = 0;
+		offsetY = 0;
+
+		#if js
+
+		// The extra calculations below are only for HTML5 targets:
+		// when canvas is resized, position and sizes are scaled, so the mouse
+		// position needs to be scaled accordingly.
+		var canvasW = kha.Sys.khanvas.width;
+		var canvasH = kha.Sys.khanvas.height;
+		ratioW = canvasW / Wyngine.G.gameWidth / Wyngine.G.zoom;
+		ratioH = canvasH / Wyngine.G.gameHeight / Wyngine.G.zoom;
+		var ratio = Math.min(ratioW, ratioH);
+		var w = Wyngine.G.gameWidth * Wyngine.G.zoom * ratio;
+		var h = Wyngine.G.gameHeight * Wyngine.G.zoom * ratio;
+		if (ratioH < ratioW)
+			offsetX = Math.round((canvasW - w) / 2);
+		else
+			offsetY = Math.round((canvasH - h) / 2);
+
+		#end
 
 		// NOTE: doesn't include camera shake!
 		return {
-			windowX : Math.round(x),
-			windowY : Math.round(y),
-			screenX : Math.round(x / camera.zoom),
-			screenY : Math.round(y / camera.zoom),
-			camWindowX : Math.round(x - camera.x),
-			camWindowY : Math.round(y - camera.y),
-			camScreenX : Math.round((x - camera.x) / camera.zoom),
-			camScreenY : Math.round((y - camera.y) / camera.zoom),
-			worldX : Math.round(((x - camera.x) / camera.zoom) + camera.scrollX),
-			worldY : Math.round(((y - camera.y) / camera.zoom) + camera.scrollY)
+			windowX : Math.round(x - offsetX),
+			windowY : Math.round(y - offsetY),
+			screenX : Math.round(x / camera.zoom - offsetX),
+			screenY : Math.round(y / camera.zoom - offsetY),
+			camWindowX : Math.round(x - camera.x - offsetX),
+			camWindowY : Math.round(y - camera.y - offsetY),
+			camScreenX : Math.round((x - camera.x) / camera.zoom - offsetX),
+			camScreenY : Math.round((y - camera.y) / camera.zoom - offsetY),
+			worldX : Math.round(((x - camera.x) / camera.zoom) + camera.scrollX - offsetX),
+			worldY : Math.round(((y - camera.y) / camera.zoom) + camera.scrollY - offsetY)
 		};
 	}
 
