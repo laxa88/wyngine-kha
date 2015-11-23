@@ -101,12 +101,14 @@ class WynButton extends WynSprite
 			// mouse down or mouse over states.
 			if (hitHoriz && hitVert)
 			{
+				// NOTE: down and up event may happen in the same update, so don't do if-else.
 				if (WynMouse.isMouseDown(0))
 				{
 					for (listener in _downListeners)
 						listener();
 				}
-				else if (WynMouse.isMouseUp(0))
+
+				if (WynMouse.isMouseUp(0))
 				{
 					for (listener in _upListeners)
 						listener();
