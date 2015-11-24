@@ -158,65 +158,72 @@ class Wyngine extends Game
 	{
 		#if js
 
-		// Prevents mobile touches from scrolling the screen.
-		kha.Sys.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
-			e.preventDefault();
-		});
+			// Prevents mobile touches from scrolling the screen.
+			kha.Sys.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
+				e.preventDefault();
+			});
 
-		// Makes sure that any further resize will trigger this
-		js.Browser.window.addEventListener("resize", resizeBrowserGameScreen);
+			// Makes sure that any further resize will trigger this
+			js.Browser.window.addEventListener("resize", resizeBrowserGameScreen);
+
+		#end
 
 		// Call resize once
 		resizeBrowserGameScreen();
 
 		// resets to one full-screen camera
 		resetCameras();
-
-		#end
 	}
 
 	function resizeBrowserGameScreen ()
 	{
+		var canvasW = 0;
+		var canvasH = 0;
+
 		#if js
 
-		// Resize to fit full screen of the browser page.
-		// NOTE: if there's unnecessary padding, make sure
-		// to modify the index.html so that the <html>, <body>
-		// and <p> have zero margin and zero padding.
-		var canvasW = kha.Sys.khanvas.width = js.Browser.window.innerWidth;
-		var canvasH = kha.Sys.khanvas.height = js.Browser.window.innerHeight;
+			// Resize to fit full screen of the browser page.
+			// NOTE: if there's unnecessary padding, make sure
+			// to modify the index.html so that the <html>, <body>
+			// and <p> have zero margin and zero padding.
+			canvasW = kha.Sys.khanvas.width = js.Browser.window.innerWidth;
+			canvasH = kha.Sys.khanvas.height = js.Browser.window.innerHeight;
 
-		// Every time the canvas resizes, the origin will be displaced,
-		// so we need to add offsets to all world positions.
-		#if js
+			// Every time the canvas resizes, the origin will be displaced,
+			// so we need to add offsets to all world positions.
 
-			// The extra calculations below are only for HTML5 targets:
-			// when canvas is resized, position and sizes are scaled, so the mouse
-			// position needs to be scaled accordingly.
-			screenRatioW = canvasW / Wyngine.G.gameWidth / Wyngine.G.zoom;
-			screenRatioH = canvasH / Wyngine.G.gameHeight / Wyngine.G.zoom;
-			screenRatioMin = Math.min(screenRatioW, screenRatioH);
-			var w = Wyngine.G.gameWidth * Wyngine.G.zoom * screenRatioMin;
-			var h = Wyngine.G.gameHeight * Wyngine.G.zoom * screenRatioMin;
-			if (screenRatioW > screenRatioH)
-			{
-				screenOffsetX = Math.floor((canvasW - w) / 2);
-				gameOffsetX = Math.floor((canvasW - w) / 2 / Wyngine.G.zoom);
-			}
-			else
-			{
-				screenOffsetY = Math.floor((canvasH - h) / 2);
-				gameOffsetY = Math.floor((canvasH - h) / 2 / Wyngine.G.zoom);
-			}
+		#else
+
+			// TODO
+			// this may not apply to cpp targets, need to check later
+			canvasW = kha.Sys.w;
+			canvasH = kha.Sys.h;
 
 		#end
+
+		// The extra calculations below are only for HTML5 targets:
+		// when canvas is resized, position and sizes are scaled, so the mouse
+		// position needs to be scaled accordingly.
+		screenRatioW = canvasW / Wyngine.G.gameWidth / Wyngine.G.zoom;
+		screenRatioH = canvasH / Wyngine.G.gameHeight / Wyngine.G.zoom;
+		screenRatioMin = Math.min(screenRatioW, screenRatioH);
+		var w = Wyngine.G.gameWidth * Wyngine.G.zoom * screenRatioMin;
+		var h = Wyngine.G.gameHeight * Wyngine.G.zoom * screenRatioMin;
+		if (screenRatioW > screenRatioH)
+		{
+			screenOffsetX = Math.floor((canvasW - w) / 2);
+			gameOffsetX = Math.floor((canvasW - w) / 2 / Wyngine.G.zoom);
+		}
+		else
+		{
+			screenOffsetY = Math.floor((canvasH - h) / 2);
+			gameOffsetY = Math.floor((canvasH - h) / 2 / Wyngine.G.zoom);
+		}
 
 		// Instead of resizing the camera, just do a callback
 		// to current screen so the user can handle it manually.
 		if (currentScreen != null)
 			currentScreen.onResize();
-
-		#end
 	}
 
 	public function resetCameras ()
