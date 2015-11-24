@@ -5,21 +5,6 @@ import kha.graphics2.Graphics;
 import kha.Image;
 import kha.Color;
 
-// Refer to WynMouse.onMouseStart for explanation
-typedef MouseData =
-{
-	var windowX:Int;
-	var windowY:Int;
-	var screenX:Int;
-	var screenY:Int;
-	var camWindowX:Int;
-	var camWindowY:Int;
-	var camScreenX:Int;
-	var camScreenY:Int;
-	var worldX:Int;
-	var worldY:Int;
-}
-
 class WynCamera
 {
 	// TODO
@@ -37,6 +22,10 @@ class WynCamera
 	 */
 
 	public var buffer:Image;
+
+	// mouse position within this camera. Updated from WynMouse.
+	public var mouseX:Int;
+	public var mouseY:Int;
 
 	// This is where the image will "render" WynSprites.
 	// e.g. if a sprite is at x=50 and camera has scrollX=20,
@@ -71,9 +60,9 @@ class WynCamera
 	public var zoom(default, set):Float = 1;
 
 	// Mouse listeners
-	var downListeners:Array<MouseData->Void>;
-	var moveListeners:Array<MouseData->Void>;
-	var upListeners:Array<MouseData->Void>;
+	var downListeners:Array<Void->Void>;
+	var moveListeners:Array<Void->Void>;
+	var upListeners:Array<Void->Void>;
 
 
 
@@ -208,7 +197,7 @@ class WynCamera
 	 * up/move/down for each individual camera
 	 */
 
-	public function notifyMouseDown (listener:MouseData->Void)
+	public function notifyMouseDown (listener:Void->Void)
 	{
 		// Don't add duplicates
 		if (downListeners.indexOf(listener) != -1)
@@ -217,7 +206,7 @@ class WynCamera
 		downListeners.push(listener);
 	}
 
-	public function notifyMouseMove (listener:MouseData->Void)
+	public function notifyMouseMove (listener:Void->Void)
 	{
 		// Don't add duplicates
 		if (moveListeners.indexOf(listener) != -1)
@@ -226,7 +215,7 @@ class WynCamera
 		moveListeners.push(listener);
 	}
 
-	public function notifyMouseUp (listener:MouseData->Void)
+	public function notifyMouseUp (listener:Void->Void)
 	{
 		// Don't add duplicates
 		if (upListeners.indexOf(listener) != -1)
@@ -239,22 +228,22 @@ class WynCamera
 	 * These methods are called by WynMouse accordingly.
 	 */
 
-	public function onMouseStart (data:MouseData)
+	public function onMouseStart ()
 	{
 		for (listener in downListeners)
-			listener(data);
+			listener();
 	}
 
-	public function onMouseMove (data:MouseData)
+	public function onMouseMove ()
 	{
 		for (listener in moveListeners)
-			listener(data);
+			listener();
 	}
 
-	public function onMouseEnd (data:MouseData)
+	public function onMouseEnd ()
 	{
 		for (listener in upListeners)
-			listener(data);
+			listener();
 	}
 
 	private function set_zoom (val:Float) : Float

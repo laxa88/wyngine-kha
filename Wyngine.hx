@@ -45,14 +45,21 @@ class Wyngine extends Game
 	var currentScreen:WynScreen; // current game screen
 	var paused:Bool = false;
 
-	public var oriWidth(default, null):Int;
-	public var oriHeight(default, null):Int;
+	public var screenRatioW(default, null):Float = 1;
+	public var screenRatioH(default, null):Float = 1;
+	public var screenRatioMin(default, null):Float = 1;
+	public var screenOffsetX(default, null):Int = 0; // used for HTML5 where canvas can be scaled
+	public var screenOffsetY(default, null):Int = 0;
+	public var gameOffsetX(default, null):Int = 0; // used for HTML5 where canvas can be scaled
+	public var gameOffsetY(default, null):Int = 0;
 
-	public var windowWidth(default, null):Int; // Actual window size
-	public var windowHeight(default, null):Int;
-	public var gameWidth(default, null):Int; // Game's scaled resolution size
-	public var gameHeight(default, null):Int;
-	public var loadPercentage(get, null):Float;
+	public var oriWidth(default, null):Int = 0;
+	public var oriHeight(default, null):Int = 0;
+	public var windowWidth(default, null):Int = 0; // Actual window size
+	public var windowHeight(default, null):Int = 0;
+	public var gameWidth(default, null):Int = 0; // Game's scaled resolution size
+	public var gameHeight(default, null):Int = 0;
+	public var loadPercentage(get, null):Float = 0;
 
 	// Cameras are basically one or more image buffers
 	// rendered onto the main Framebuffer.
@@ -176,16 +183,33 @@ class Wyngine extends Game
 		// NOTE: if there's unnecessary padding, make sure
 		// to modify the index.html so that the <html>, <body>
 		// and <p> have zero margin and zero padding.
-		kha.Sys.khanvas.width = js.Browser.window.innerWidth;
-		kha.Sys.khanvas.height = js.Browser.window.innerHeight;
+		var canvasW = kha.Sys.khanvas.width = js.Browser.window.innerWidth;
+		var canvasH = kha.Sys.khanvas.height = js.Browser.window.innerHeight;
 
-		// We don't know if the new screen size will be proportionate,
-		// so it's not a good idea to update each camera's sizes.
-		// for (cam in cameras)
-		// {
-		// 	cam.width = gameWidth;
-		// 	cam.height = gameHeight;
-		// }
+		// Every time the canvas resizes, the origin will be displaced,
+		// so we need to add offsets to all world positions.
+		#if js
+
+			// The extra calculations below are only for HTML5 targets:
+			// when canvas is resized, position and sizes are scaled, so the mouse
+			// position needs to be scaled accordingly.
+			screenRatioW = canvasW / Wyngine.G.gameWidth / Wyngine.G.zoom;
+			screenRatioH = canvasH / Wyngine.G.gameHeight / Wyngine.G.zoom;
+			screenRatioMin = Math.min(screenRatioW, screenRatioH);
+			var w = Wyngine.G.gameWidth * Wyngine.G.zoom * screenRatioMin;
+			var h = Wyngine.G.gameHeight * Wyngine.G.zoom * screenRatioMin;
+			if (screenRatioW > screenRatioH)
+			{
+				screenOffsetX = Math.floor((canvasW - w) / 2);
+				gameOffsetX = Math.floor((canvasW - w) / 2 / Wyngine.G.zoom);
+			}
+			else
+			{
+				screenOffsetY = Math.floor((canvasH - h) / 2);
+				gameOffsetY = Math.floor((canvasH - h) / 2 / Wyngine.G.zoom);
+			}
+
+		#end
 
 		// Instead of resizing the camera, just do a callback
 		// to current screen so the user can handle it manually.

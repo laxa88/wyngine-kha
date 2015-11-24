@@ -2,6 +2,22 @@ package wyn;
 
 import kha.input.Mouse;
 
+// Refer to WynMouse.onMouseStart for explanation
+typedef MouseData =
+{
+	// NOTE: "offset" only applies for HTML5 canvases when scaled,
+	// because the final screen may be letterboxed, requiring an offset.
+
+	var x:Int; // raw, unscaled screen position, without offset
+	var y:Int;
+	var windowX:Int; // raw, unscaled screen position, with offset
+	var windowY:Int;
+	var gameX:Int; // game position, (affected by zoom)
+	var gameY:Int;
+	var camX:Int; // game position within camera
+	var camY:Int;
+}
+
 class WynMouse
 {
 	/**
@@ -27,10 +43,8 @@ class WynMouse
 	public static var instance:WynMouse;
 	public static var windowX(default, null):Int = 0;
 	public static var windowY(default, null):Int = 0;
-	public static var offsetX(default, null):Int = 0; // used for HTML5 where canvas can be scaled
-	public static var offsetY(default, null):Int = 0;
-	public static var ratioW(default, null):Float = 0; // used for HTML5 where canvas can be scaled
-	public static var ratioH(default, null):Float = 0;
+	public static var gameX(default, null):Int = 0;
+	public static var gameY(default, null):Int = 0;
 
 	private var _mousePressed:Map<Int, Int>;
 	private var _mouseHeld:Map<Int, Int>;
@@ -169,15 +183,16 @@ class WynMouse
 		_mousePressed[index] = BEGIN;
 		_mouseHeld[index] = BEGIN;
 
-		// These are screenX/screenY
-		windowX = x;
-		windowY = y;
+		// Assign to static variable so we can access the value at any time
+		updateMouseData(x, y);
 
 		// For each camera, trigger the update the mouse coordinates accordingly.
 		for (camera in Wyngine.G.cameras)
 		{
-			var mouseData = getMousePositions(camera, x, y);
-			camera.onMouseStart(mouseData);
+			// For this camera, update the mouse position within it.
+			updateCameraMousePosition(camera);
+
+			camera.onMouseStart();
 		}
 	}
 
@@ -189,14 +204,15 @@ class WynMouse
 			listener(x,y,dx,dy);
 
 		// Assign to static variable so we can access the value at any time
-		windowX = x;
-		windowY = y;
+		updateMouseData(x, y);
 
 		// For each camera, trigger the update the mouse coordinates accordingly.
 		for (camera in Wyngine.G.cameras)
 		{
-			var mouseData = getMousePositions(camera, x, y);
-			camera.onMouseMove(mouseData);
+			// For this camera, update the mouse position within it.
+			updateCameraMousePosition(camera);
+
+			camera.onMouseMove();
 		}
 	}
 
@@ -204,76 +220,49 @@ class WynMouse
 	{
 		_mouseReleased[index] = BEGIN;
 
-		windowX = x;
-		windowY = y;
+		// Assign to static variable so we can access the value at any time
+		updateMouseData(x, y);
 
 		// For each camera, trigger the update the mouse coordinates accordingly.
 		for (camera in Wyngine.G.cameras)
 		{
-			var mouseData = getMousePositions(camera, x, y);
-			camera.onMouseEnd(mouseData);
+			// For this camera, update the mouse position within it.
+			updateCameraMousePosition(camera);
+
+			camera.onMouseEnd();
 		}
 	}
 
-	inline function getMousePositions (camera:WynCamera, x:Int, y:Int) : WynCamera.MouseData
+	function updateMouseData (x:Int, y:Int)
 	{
-		// TODO
-		// cameraX/Y (position relative to top-left origin of camera)
+		// Get mouse pos in window (with offset, based on bufferImage's position)
+		windowX = x - Wyngine.G.screenOffsetX;
+		windowY = y - Wyngine.G.screenOffsetY;
 
-		// windowX/Y (raw window mouse position)
-		// screenX/Y (scaled window mouse position)
-		// camWindowX/Y (raw camera mouse position)
-		// camScreenX/Y (scaled camera mouse position)
-		// worldX/Y (mouse position in game world, based on current camera, offset by camera scroll)
+		// Get mouse pos in game world (with offset)
+		var gameScale = Wyngine.G.gameWidth / (Wyngine.G.windowWidth * Wyngine.G.screenRatioMin);
+		gameX = Math.floor(windowX * gameScale);
+		gameY = Math.floor(windowY * gameScale);
 
-		// Example:
-		// game = {width:640, height:480, zoom:2}
-		// camera = {x:200, y:100, width:320, height:240, scrollX:50, scrollY:70}
-		// AND mouse clicked in screen = {x:350, y:300}
-		// THEN:
-		// window x,y = {350, 300} (original value)
-		// screen x,y = {175, 150} (window / camera.zoom)
-		// camWindow x,y = {150, 200} (window - camera.pos)
-		// camScreen x,y = {75, 100} (screen - (camera.pos / camera.zoom))
-		// world x,y (camera) = {125, 170} (camScreen + scroll)
+		// trace("### " + {
+		// 	canvasWidth : kha.Sys.khanvas.width,
+		// 	windowWidth : Wyngine.G.windowWidth,
+		// 	scaledWindowWidth : Wyngine.G.windowWidth * Wyngine.G.screenRatioMin,
+		// 	windowOffsetX : Wyngine.G.screenOffsetX,
+		// 	gameWidth : Wyngine.G.gameWidth,
+		// 	// scaledGameWidth : Wyngine.G.gameWidth * Wyngine.G.screenRatioMin, // no need for this
+		// 	x : x,
+		// 	windowX : windowX,
+		// 	gameX : gameX,
+		// 	screenRatioMin : Wyngine.G.screenRatioMin
+		// });
+	}
 
-		ratioW = 1;
-		ratioH = 1;
-		offsetX = 0;
-		offsetY = 0;
-
-		#if js
-
-		// The extra calculations below are only for HTML5 targets:
-		// when canvas is resized, position and sizes are scaled, so the mouse
-		// position needs to be scaled accordingly.
-		var canvasW = kha.Sys.khanvas.width;
-		var canvasH = kha.Sys.khanvas.height;
-		ratioW = canvasW / Wyngine.G.gameWidth / Wyngine.G.zoom;
-		ratioH = canvasH / Wyngine.G.gameHeight / Wyngine.G.zoom;
-		var ratio = Math.min(ratioW, ratioH);
-		var w = Wyngine.G.gameWidth * Wyngine.G.zoom * ratio;
-		var h = Wyngine.G.gameHeight * Wyngine.G.zoom * ratio;
-		if (ratioH < ratioW)
-			offsetX = Math.round((canvasW - w) / 2);
-		else
-			offsetY = Math.round((canvasH - h) / 2);
-
-		#end
-
-		// NOTE: doesn't include camera shake!
-		return {
-			windowX : Math.round(x - offsetX),
-			windowY : Math.round(y - offsetY),
-			screenX : Math.round(x / camera.zoom - offsetX),
-			screenY : Math.round(y / camera.zoom - offsetY),
-			camWindowX : Math.round(x - camera.x - offsetX),
-			camWindowY : Math.round(y - camera.y - offsetY),
-			camScreenX : Math.round((x - camera.x) / camera.zoom - offsetX),
-			camScreenY : Math.round((y - camera.y) / camera.zoom - offsetY),
-			worldX : Math.round(((x - camera.x) / camera.zoom) + camera.scrollX - offsetX),
-			worldY : Math.round(((y - camera.y) / camera.zoom) + camera.scrollY - offsetY)
-		};
+	inline function updateCameraMousePosition (camera:WynCamera)
+	{
+		// This code is inlined because it's rather short.
+		camera.mouseX = Math.floor((gameX - camera.x) / camera.zoom);
+		camera.mouseY = Math.floor((gameY - camera.y) / camera.zoom);
 	}
 
 	function onMouseWheel (delta:Int)

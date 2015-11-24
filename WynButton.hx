@@ -67,35 +67,11 @@ class WynButton extends WynSprite
 
 		for (cam in Wyngine.G.cameras)
 		{
-			var offsetX = 0;
-			var offsetY = 0;
-			var ratio = 1.0;
-
-			#if js
-			// The extra calculations below are only for HTML5 targets:
-			// when canvas is resized, position and sizes are scaled, so the mouse
-			// position needs to be scaled accordingly.
-			ratio = Math.min(WynMouse.ratioW, WynMouse.ratioH);
-			if (WynMouse.ratioW > WynMouse.ratioH)
-				offsetX = Math.round(WynMouse.offsetX / Wyngine.G.zoom / cam.zoom);
-			else
-				offsetY = Math.round(WynMouse.offsetY / Wyngine.G.zoom / cam.zoom);
-			#end
-
-			// Remember that when canvas is scaled, the mouse position
-			// and object positions are also scaled.
-			var mouseX = (WynMouse.windowX / Wyngine.G.zoom / cam.zoom) - (cam.x - cam.scrollX) / cam.zoom - offsetX;
-			var mouseY = (WynMouse.windowY / Wyngine.G.zoom / cam.zoom) - (cam.y - cam.scrollY) / cam.zoom - offsetY;
-			var buttonX = x * ratio;
-			var buttonY = y * ratio;
-			var buttonW = width * ratio;
-			var buttonH = height * ratio;
-
 			// If the mouse is in or outside
 			var hitHoriz = false;
 			var hitVert = false;
-			if (mouseX > buttonX) hitHoriz = mouseX < buttonX + buttonW;
-			if (mouseY > buttonY) hitVert = mouseY < buttonY + buttonH;
+			if (WynMouse.gameX > x) hitHoriz = WynMouse.gameX < x + width;
+			if (WynMouse.gameY > y) hitVert = WynMouse.gameY < y + height;
 
 			// If the mouse is inside the button, check for
 			// mouse down or mouse over states.
