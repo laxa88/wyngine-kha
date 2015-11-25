@@ -138,6 +138,7 @@ class Wyngine extends Game
 		resetCameras();
 
 		// Initialise engine variables
+		WynCache.init();
 		WynInput.init();
 		WynTouch.init();
 		WynMouse.init();

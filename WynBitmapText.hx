@@ -8,6 +8,26 @@ import kha.math.FastVector2;
 import haxe.xml.Fast;
 import haxe.Utf8;
 
+/**
+	Tip on how to generate Bitmap font, for Windows AND Mac:
+	- use BMFont.exe (www.angelcode.com/products/bmfont/)
+	- For mac, install Wine (easily install via Brew)
+	- My setup for BMFont:
+		- go to Options > Font Settings
+		- Load font (make sure the font is installed)
+		- Leave everything as default
+		- go to Options > Export Options
+		- CHECK Force offsets to zero (quirk: if unchecked, letter kernings may get weird)
+		- Make sure texture size is big enough, so that all letters fit in one graphic (mine is 512x512)
+		- Bit depth = 32
+		- Channel - A = glyph, R/G/B = one
+		- Presets - White text with alpha
+		- Font description - XML (required for WynBitmapText to parse data)
+		- Textures - PNG
+	- Once done setup, just click Options > Save bitmap font as...
+	- Copy the generated PNG and FNT file to your kha assets folder and use normally.
+ */
+
 typedef Font = {
 	var size:Int;
 	var lineHeight:Int;
@@ -50,6 +70,7 @@ class WynBitmapText extends WynSprite
 	public static inline var ALIGN_LEFT:Int = 0;
 	public static inline var ALIGN_MIDDLE:Int = 1;
 	public static inline var ALIGN_RIGHT:Int = 2;
+
 	static var spaceCharCode:Int = " ".charCodeAt(0);
 
 	// Stores a list of all bitmap fonts into a dictionary

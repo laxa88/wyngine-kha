@@ -19,21 +19,12 @@ typedef SliceData = {
 	@:optional var borderBottom:Int;
 }
 
-typedef ImageCacheData = {
-	var width:Int;
-	var height:Int;
-	var image:Image;
-	var type:Int;
-}
-
 class WynSprite extends WynObject
 {
 	/**
 	 * This is the base class for anything that can be rendered,
 	 * such as sprites, texts, bitmaptexts, buttons, etc.
 	 */
-	public static inline var CACHE_RECT 	= 1;
-	public static inline var CACHE_CIRCLE 	= 2;
 
 	public static inline var LEFT:Int 		= 1;
 	public static inline var RIGHT:Int 		= 2;
@@ -44,8 +35,6 @@ class WynSprite extends WynObject
 	public static inline var SINGLE9SLICE:Int 		 = 2;
 	public static inline var BUTTON:Int 			 = 3;
 	public static inline var BUTTON9SLICE:Int 		 = 4;
-
-	static var imageCache:Array<ImageCacheData>;
 
 	public var animator:WynAnimator; // Controls all animations
 	public var image:Image; // The target image to be drawn to buffer
@@ -78,9 +67,6 @@ class WynSprite extends WynObject
 	public function new (x:Float=0, y:Float=0, w:Float=0, h:Float=0)
 	{
 		super(x, y, w, h);
-
-		if (imageCache == null)
-			imageCache = [];
 
 		// By default
 		_spriteType = WynSprite.SINGLE;
@@ -253,53 +239,6 @@ class WynSprite extends WynObject
 		return (hitHoriz && hitVert);
 	}
 
-
-
-	/**
-	 * Using Image.createRenderTarget(...) is very expensive,
-	 * so we have a cache method to keep track of images which
-	 * have been created before, based on width/height.
-	 */ 
-	function getCacheImage (w:Int, h:Int, t:Int) : Image
-	{
-		for (i in 0 ... imageCache.length)
-		{
-			if (imageCache[i].width == w &&
-				imageCache[i].height == h &&
-				imageCache[i].type == t)
-				return imageCache[i].image;
-		}
-
-		return null;
-	}
-
-	function setCacheImage (w:Int, h:Int, img:Image, t:Int)
-	{
-		// Don't add duplicates
-		for (i in 0 ... imageCache.length)
-		{
-			if (imageCache[i].width == w &&
-				imageCache[i].height == h &&
-				imageCache[i].type == t)
-				return;
-		}
-
-		imageCache.push({
-			width: w,
-			height: h,
-			image: img,
-			type: t
-		});
-	}
-
-	/**
-	 * Only use if we're running out of memory, I guess?
-	 */
-	public static function clearCacheImage ()
-	{
-		imageCache = [];
-	}
-
 	/**
 	 * Convenient method to create images if you're prototyping without images.
 	 * Similar idea with HaxeFlixel, we try to cache images because doing
@@ -319,14 +258,7 @@ class WynSprite extends WynObject
 		// Get cached image if not flagged
 		if (!isUnique)
 		{
-			image = getCacheImage(imageW, imageH, cacheType);
-
-			// Create a new image if there's no cache
-			if (image == null)
-			{
-				image = Image.createRenderTarget(imageW, imageH);
-				setCacheImage(imageW, imageH, image, cacheType);
-			}
+			image = WynCache.getCacheImage(imageW, imageH, cacheType);
 		}
 		else
 		{
@@ -351,7 +283,7 @@ class WynSprite extends WynObject
 		// createEmptyImage(imageW, imageH);
 
 		// Note: creating image is expensive, so this method uses cached image.
-		createEmptyImage(imageW, imageH, isUnique, CACHE_RECT);
+		createEmptyImage(imageW, imageH, isUnique, WynCache.CACHE_RECT);
 
 		image.g2.begin(true, Color.fromValue(0x00000000));
 		image.g2.color = color;
@@ -367,7 +299,7 @@ class WynSprite extends WynObject
 	 */
 	public function createPlaceholderCircle (color:Color, radius:Int=25, filled:Bool=false, isUnique:Bool=false)
 	{
-		createEmptyImage(radius*2, radius*2, isUnique, CACHE_CIRCLE);
+		createEmptyImage(radius*2, radius*2, isUnique, WynCache.CACHE_CIRCLE);
 
 		image.g2.begin(true, Color.fromValue(0x00000000));
 		image.g2.color = color;
