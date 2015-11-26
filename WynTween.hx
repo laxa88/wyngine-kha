@@ -246,8 +246,6 @@ class WynTween
 					var prevFieldProps:PropData = Reflect.getProperty(queueData.props, field);
 					var currFieldProps:PropData = Reflect.getProperty(data.props, field);
 
-					trace("currFieldProps : " + currFieldProps);
-
 					if (currFieldProps.from == null)
 					{
 						switch (playbackMode)
@@ -263,48 +261,8 @@ class WynTween
 						}
 					}
 
-					// Set the {from, to} values to "props"
+					// Set the {from, to} values to field of prop, e.g. "x", "width"...
 					Reflect.setProperty(queueData.props, field, currFieldProps);
-
-					// switch (playbackMode)
-					// {
-					// 	case PLAYDEFAULT:
-							
-					// 		// If the provided data has the field, use the latest field's value.
-					// 		if (Reflect.hasField(data.props, field))
-					// 		{
-					// 			if (currFieldProps.from == null)
-					// 				currFieldProps.from = Reflect.getProperty(data.target, field);
-
-					// 			// Set the {from, to} values to "props"
-					// 			Reflect.setProperty(queueData.props, field, currFieldProps);
-					// 		}
-
-					// 	case PLAYRESET:
-
-					// 		Reflect.setProperty(queueData.target, field, prevFieldProps.from);
-
-					// 		trace("SET : " + prevFieldProps);
-
-					// 		// Reset the field's value to "from"
-					// 		// var propData = {
-					// 		// 	from: prevFieldProps.from,
-					// 		// 	to: currFieldProps.to
-					// 		// };
-					// 		// Reflect.setProperty(queueData.props, field, propData);
-
-					// 	case PLAYSKIP:
-
-					// 	trace("SET : " + prevFieldProps);
-					// 		Reflect.setProperty(queueData.target, field, prevFieldProps.to);
-
-					// 		// Reset the field's value to "to"
-					// 		// var propData = {
-					// 		// 	from: prevFieldProps.to,
-					// 		// 	to: currFieldProps.to
-					// 		// };
-					// 		// Reflect.setProperty(queueData.props, field, propData);
-					// }
 				}
 
 				// For every field that we've updated "from" and "to", update the queue data
