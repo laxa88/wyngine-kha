@@ -1,15 +1,43 @@
 package wyn;
 
+// typedef TweenData = {
+// 	var target:WynObject;
+// 	var prop:String;
+// 	var from:Float;
+// 	var to:Float;
+// 	var elapsed:Float;
+// 	var duration:Float;
+// 	var callback:Void->Void;
+// 	var ease:Int;
+// 	var paused:Bool;
+// }
+
+/**
+ props example:
+ 	var props = {
+		x: { to : 50 },
+		y: { from : 100, to : 200 }
+ 	}
+
+ Priority:
+ 	- If mode is "PLAYDEFAULT", will use current value as start value if "from" isn't provided
+ 	- If mode is "PLAYRESET", will rest "from" 
+ 	- If mode is "PLAYSKIP", will use "from" and "to" values whenever available.
+ */
+
 typedef TweenData = {
-	var target:WynObject;
-	var prop:String;
-	var from:Float;
-	var to:Float;
+	var target:Dynamic;
+	var props:Dynamic;
 	var elapsed:Float;
 	var duration:Float;
-	var callback:Void->Void;
 	var ease:Int;
+	var callback:Void->Void;
 	var paused:Bool;
+}
+
+typedef PropData = {
+	@:optional var from:Float;
+	@:optional var to:Float;
 }
 
 class WynTween
@@ -49,6 +77,10 @@ class WynTween
 	public static inline var EASEOUTBOUNCE:Int 			= 29;
 	public static inline var EASEINOUTBOUNCE:Int 		= 30;
 
+	public static inline var PLAYDEFAULT:Int = 0; // tweens from current value
+	public static inline var PLAYRESET:Int = 1; // if current item is being tweened, resets to original "from" value before tweening
+	public static inline var PLAYSKIP:Int = 2; // if current item is being tweened, jumps to "to" value before tweening
+
 	public static var instance:WynTween;
 	var queue:Array<TweenData>;
 
@@ -68,77 +100,89 @@ class WynTween
 	{
 		// reusable variables
 		var i = 0;
-		var item = null;
+		var tween = null;
 		var t,b,c,d,n,val;
 
 		while (i < queue.length)
 		{
-			item = queue[i];
+			// Get tween data
+			tween = queue[i];
 
-			if (item.paused)
+			// Don't update if tween is paused
+			if (tween.paused)
 			{
 				i++;
 				continue;
 			}
 
 			// Update elapsed
-			item.elapsed += dt;
-			if (item.elapsed >= item.duration)
-				item.elapsed = item.duration;
+			tween.elapsed += dt;
+			if (tween.elapsed >= tween.duration)
+				tween.elapsed = tween.duration;
 
 			// Notes on why we use "n"
 			// http://oodavid.com/2013/11/11/easing-functions-refactored.html
-			t = item.elapsed;
-			b = item.from;
-			c = item.to-item.from;
-			d = item.duration;
+			t = tween.elapsed;
+			b = 0;
+			c = 0;
+			d = tween.duration;
 			n = t/d;
 			val = 0.0;
 
-			switch (item.ease)
+			// For this tween target, update each of its properties
+			var fields:Array<String> = Reflect.fields(tween.props);
+			for (field in fields)
 			{
-				case EASEINQUAD: 		val = b + WynMath.easeInQuad (n) * c;
-				case EASEOUTQUAD: 		val = b + WynMath.easeOutQuad (n) * c;
-				case EASEINOUTQUAD: 	val = b + WynMath.easeInOutQuad (n) * c;
-				case EASEINCUBIC: 		val = b + WynMath.easeInCubic (n) * c;
-				case EASEOUTCUBIC: 		val = b + WynMath.easeOutCubic (n) * c;
-				case EASEINOUTCUBIC: 	val = b + WynMath.easeInOutCubic (n) * c;
-				case EASEINQUART: 		val = b + WynMath.easeInQuart (n) * c;
-				case EASEOUTQUART: 		val = b + WynMath.easeOutQuart (n) * c;
-				case EASEINOUTQUART: 	val = b + WynMath.easeInOutQuart (n) * c;
-				case EASEINQUINT: 		val = b + WynMath.easeInQuint (n) * c;
-				case EASEOUTQUINT: 		val = b + WynMath.easeOutQuint (n) * c;
-				case EASEINOUTQUINT: 	val = b + WynMath.easeInOutQuint (n) * c;
-				case EASEINSINE: 		val = b + WynMath.easeInSine (n) * c;
-				case EASEOUTSINE: 		val = b + WynMath.easeOutSine (n) * c;
-				case EASEINOUTSINE: 	val = b + WynMath.easeInOutSine (n) * c;
-				case EASEINEXPO: 		val = b + WynMath.easeInExpo (n) * c;
-				case EASEOUTEXPO: 		val = b + WynMath.easeOutExpo (n) * c;
-				case EASEINOUTEXPO: 	val = b + WynMath.easeInOutExpo (n) * c;
-				case EASEINCIRC: 		val = b + WynMath.easeInCirc (n) * c;
-				case EASEOUTCIRC: 		val = b + WynMath.easeOutCirc (n) * c;
-				case EASEINOUTCIRC: 	val = b + WynMath.easeInOutCirc (n) * c;
-				case EASEINELASTIC: 	val = b + WynMath.easeInElastic (n) * c;
-				case EASEOUTELASTIC: 	val = b + WynMath.easeOutElastic (n) * c;
-				case EASEINOUTELASTIC: 	val = b + WynMath.easeInOutElastic (n) * c;
-				case EASEINBACK: 		val = b + WynMath.easeInBack (n) * c;
-				case EASEOUTBACK: 		val = b + WynMath.easeOutBack (n) * c;
-				case EASEINOUTBACK: 	val = b + WynMath.easeInOutBack (n) * c;
-				case EASEINBOUNCE: 		val = b + WynMath.easeInBounce (n) * c;
-				case EASEOUTBOUNCE: 	val = b + WynMath.easeOutBounce (n) * c;
-				case EASEINOUTBOUNCE: 	val = b + WynMath.easeInOutBounce (n) * c;
-				default: 				val = b + WynMath.linear(n) * c; // linear by default
+				var data = Reflect.getProperty(tween.props, field);
+				b = data.from;
+				c = data.to - data.from;
+
+				switch (tween.ease)
+				{
+					case EASEINQUAD: 		val = b + WynMath.easeInQuad (n) * c;
+					case EASEOUTQUAD: 		val = b + WynMath.easeOutQuad (n) * c;
+					case EASEINOUTQUAD: 	val = b + WynMath.easeInOutQuad (n) * c;
+					case EASEINCUBIC: 		val = b + WynMath.easeInCubic (n) * c;
+					case EASEOUTCUBIC: 		val = b + WynMath.easeOutCubic (n) * c;
+					case EASEINOUTCUBIC: 	val = b + WynMath.easeInOutCubic (n) * c;
+					case EASEINQUART: 		val = b + WynMath.easeInQuart (n) * c;
+					case EASEOUTQUART: 		val = b + WynMath.easeOutQuart (n) * c;
+					case EASEINOUTQUART: 	val = b + WynMath.easeInOutQuart (n) * c;
+					case EASEINQUINT: 		val = b + WynMath.easeInQuint (n) * c;
+					case EASEOUTQUINT: 		val = b + WynMath.easeOutQuint (n) * c;
+					case EASEINOUTQUINT: 	val = b + WynMath.easeInOutQuint (n) * c;
+					case EASEINSINE: 		val = b + WynMath.easeInSine (n) * c;
+					case EASEOUTSINE: 		val = b + WynMath.easeOutSine (n) * c;
+					case EASEINOUTSINE: 	val = b + WynMath.easeInOutSine (n) * c;
+					case EASEINEXPO: 		val = b + WynMath.easeInExpo (n) * c;
+					case EASEOUTEXPO: 		val = b + WynMath.easeOutExpo (n) * c;
+					case EASEINOUTEXPO: 	val = b + WynMath.easeInOutExpo (n) * c;
+					case EASEINCIRC: 		val = b + WynMath.easeInCirc (n) * c;
+					case EASEOUTCIRC: 		val = b + WynMath.easeOutCirc (n) * c;
+					case EASEINOUTCIRC: 	val = b + WynMath.easeInOutCirc (n) * c;
+					case EASEINELASTIC: 	val = b + WynMath.easeInElastic (n) * c;
+					case EASEOUTELASTIC: 	val = b + WynMath.easeOutElastic (n) * c;
+					case EASEINOUTELASTIC: 	val = b + WynMath.easeInOutElastic (n) * c;
+					case EASEINBACK: 		val = b + WynMath.easeInBack (n) * c;
+					case EASEOUTBACK: 		val = b + WynMath.easeOutBack (n) * c;
+					case EASEINOUTBACK: 	val = b + WynMath.easeInOutBack (n) * c;
+					case EASEINBOUNCE: 		val = b + WynMath.easeInBounce (n) * c;
+					case EASEOUTBOUNCE: 	val = b + WynMath.easeOutBounce (n) * c;
+					case EASEINOUTBOUNCE: 	val = b + WynMath.easeInOutBounce (n) * c;
+					default: 				val = b + WynMath.linear(n) * c; // linear by default
+				}
+
+				// Update the value
+				// If t=0, then val will become NaN, in which case we
+				// assume it reached the target value instantly.
+				if (Math.isNaN(val))
+					val = data.to;
+
+				Reflect.setProperty(tween.target, field, val);
 			}
 
-			// If t=0, then val will become NaN, in which case we
-			// assume it reached the target value instantly.
-			if (Math.isNaN(val))
-				val = item.to;
-
-			Reflect.setProperty(item.target, item.prop, val);
-
-			if (item.elapsed >= item.duration)
-				queue.remove(item);
+			if (tween.elapsed >= tween.duration)
+				queue.remove(tween);
 			else
 				i++;
 		}
@@ -149,21 +193,18 @@ class WynTween
 	 * This method only tweens a single property.
 	 * This method only tweens from CURRENT value to target value
 	 */
-	public static function tweenTo (target:Dynamic, property:String, to:Float, duration:Float, ease:Int=0, ?callback:Void->Void)
+	public static function tween (target:Dynamic, props:Dynamic, duration:Float=1, ease:Int=EASENONE, playbackMode:Int=PLAYDEFAULT, ?callback:Void->Void)
 	{
-		// Get the starting value, making sure it's a valid value.
-		var from:Dynamic = Reflect.getProperty(target, property);
-		if (from == null)
-			throw "Property (" + property + ") does not exist";
-		if (Math.isNaN(from))
-			throw "Property (" + property + ") is not numeric";
+		// Make sure the tween is valid
+		if (target == null)
+			throw "Cannot tween null target.";
+		else if (props == null)
+			throw "Cannot tween null props.";
 
-		// Save the data
+		// Save the tween data
 		var data:TweenData = {
 			target : target,
-			prop : property,
-			from : from,
-			to : to,
+			props : props,
 			elapsed : 0,
 			duration : duration,
 			ease : ease,
@@ -171,48 +212,118 @@ class WynTween
 			paused : false
 		};
 
-		// Add to queue
-		instance.addToQueue(data);
+		// Add (or replace) data into tween queue
+		instance.addToQueue(data, playbackMode);
 	}
 
-	public static function tweenFromTo (target:Dynamic, property:String, from:Float, to:Float, duration:Float, ease:Int=0, ?callback:Void->Void)
+	function addToQueue (data:TweenData, playbackMode:Int)
 	{
-		// Save the data
-		var data:TweenData = {
-			target : target,
-			prop : property,
-			from : from,
-			to : to,
-			elapsed : 0,
-			duration : duration,
-			ease : ease,
-			callback : callback,
-			paused : false
-		};
+		trace("add to queue : " + data.props);
 
-		// Add to queue
-		instance.addToQueue(data);
-	}
-
-	function addToQueue (data:TweenData)
-	{
-		var i = 0;
-		var item = null;
-		while (i < queue.length)
+		var len = queue.length;
+		for (i in 0 ... len)
 		{
-			// If the target/prop pair already exists,
-			// overwrite it.
-			if (queue[i].target == data.target &&
-				queue[i].prop == data.prop)
+			// If the target already has a tween, based on playbackMode,
+			// we update the tween data accordingly.
+			if (data.target == queue[i].target)
 			{
-				queue[i] = data;
+				// For each property, Update the "from" value to current value
+				var queueData = queue[i];
+
+				// Update data
+				queueData.elapsed = 0;
+				queueData.duration = data.duration;
+				queueData.ease = data.ease;
+				queueData.callback = data.callback;
+				queueData.paused = false;
+
+				// Update tween properties for this target
+				var queueFields:Array<String> = Reflect.fields(queueData.props);
+				for (field in queueFields)
+				{
+					// e.g. field = "x", "width", etc.
+
+					var prevFieldProps:PropData = Reflect.getProperty(queueData.props, field);
+					var currFieldProps:PropData = Reflect.getProperty(data.props, field);
+
+					trace("currFieldProps : " + currFieldProps);
+
+					if (currFieldProps.from == null)
+					{
+						switch (playbackMode)
+						{
+							case PLAYDEFAULT:
+								currFieldProps.from = Reflect.getProperty(data.target, field);
+
+							case PLAYRESET:
+								currFieldProps.from = prevFieldProps.from;
+
+							case PLAYSKIP:
+								currFieldProps.from = prevFieldProps.to;
+						}
+					}
+
+					// Set the {from, to} values to "props"
+					Reflect.setProperty(queueData.props, field, currFieldProps);
+
+					// switch (playbackMode)
+					// {
+					// 	case PLAYDEFAULT:
+							
+					// 		// If the provided data has the field, use the latest field's value.
+					// 		if (Reflect.hasField(data.props, field))
+					// 		{
+					// 			if (currFieldProps.from == null)
+					// 				currFieldProps.from = Reflect.getProperty(data.target, field);
+
+					// 			// Set the {from, to} values to "props"
+					// 			Reflect.setProperty(queueData.props, field, currFieldProps);
+					// 		}
+
+					// 	case PLAYRESET:
+
+					// 		Reflect.setProperty(queueData.target, field, prevFieldProps.from);
+
+					// 		trace("SET : " + prevFieldProps);
+
+					// 		// Reset the field's value to "from"
+					// 		// var propData = {
+					// 		// 	from: prevFieldProps.from,
+					// 		// 	to: currFieldProps.to
+					// 		// };
+					// 		// Reflect.setProperty(queueData.props, field, propData);
+
+					// 	case PLAYSKIP:
+
+					// 	trace("SET : " + prevFieldProps);
+					// 		Reflect.setProperty(queueData.target, field, prevFieldProps.to);
+
+					// 		// Reset the field's value to "to"
+					// 		// var propData = {
+					// 		// 	from: prevFieldProps.to,
+					// 		// 	to: currFieldProps.to
+					// 		// };
+					// 		// Reflect.setProperty(queueData.props, field, propData);
+					// }
+				}
+
+				// For every field that we've updated "from" and "to", update the queue data
+				queue[i] = queueData;
+
+				// Once we updated the tween data, no need to do further checks
 				return;
 			}
-			i++;
 		}
 
-		// If we didn't overwrite anything, it means this data
-		// is unique, so push to queue.
+		// If target doesn't have tween, just add to queue normally
+		var dataFields:Array<String> = Reflect.fields(data.props);
+		for (field in dataFields)
+		{
+			// Make sure there is a "from" value
+			var propData = Reflect.getProperty(data.props, field); // e.g. "x"
+			if (propData.from == null)
+				propData.from = Reflect.getProperty(data.target, field);
+		}
 		queue.push(data);
 	}
 
@@ -240,21 +351,38 @@ class WynTween
 	 * Cancels tween on target. if reset is true, then will revert
 	 * to original value before tween began.
 	 */
-	public static function cancel (target:Dynamic, reset:Bool=false)
+	public static function cancel (target:Dynamic, resetType:Int=PLAYDEFAULT)
 	{
 		var i = 0;
 		var queue = instance.queue;
-		var item = null;
+		var data = null;
 
 		while (i < queue.length)
 		{
-			item = queue[i];
-			if (item.target == target)
-			{
-				if (reset)
-					Reflect.setProperty(item.target, item.prop, item.from);
+			data = queue[i];
 
-				queue.remove(item);
+			// If the target has a tween...
+			if (data.target == target)
+			{
+				// Note: PLAYDEFAULT means the tween is abruptly cancelled
+				// without resetting the current field values.
+				if (resetType != PLAYDEFAULT)
+				{
+					var dataFields:Array<String> = Reflect.fields(data.props);
+					for (field in dataFields)
+					{
+						// Reset the field to "from" value
+						var propData = Reflect.getProperty(data.props, field); // e.g. "x"
+
+						// propData
+						if (resetType == PLAYRESET)
+							Reflect.setProperty(data.target, field, propData.from);
+						else if (resetType == PLAYSKIP)
+							Reflect.setProperty(data.target, field, propData.to);
+					}
+				}
+
+				queue.remove(data);
 			}
 			else
 				i++;
