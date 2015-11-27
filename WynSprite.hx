@@ -45,7 +45,6 @@ class WynSprite extends WynObject
 	public var frameHeight:Int = 0;
 	public var imageWidth(default, set):Int = 0; // The target size to be rendered
 	public var imageHeight(default, set):Int = 0;
-	public var offset:FastVector2 = new FastVector2();
 	public var color:Color = Color.White; // tint, default is white
 	public var alpha:Float = 1.0; // Opacity - 0.0 to 1.0
 	public var scale:Float = 1.0;
@@ -163,7 +162,11 @@ class WynSprite extends WynObject
 		{
 			// Debug hitbox
 			g.color = Color.Red;
-			g.drawRect(ox + offset.x, oy + offset.y, width, height);
+
+			if (hitboxType == WynObject.HITBOX)
+				g.drawRect(ox + offset.x, oy + offset.y, width, height);
+			else if (hitboxType == WynObject.HITCIRCLE)
+				GraphicsExtension.drawCircle(g, ox+radius+offset.x, oy+radius+offset.y, radius);
 
 			Wyngine.DRAW_COUNT++;
 		}
@@ -201,42 +204,6 @@ class WynSprite extends WynObject
 
 		// active = true;
 		// visible = true;
-	}
-
-	/**
-	 * When you don't need fancy quadtrees, you can
-	 * use this for single checks.
-	 */
-	override public function collide (other:WynObject) : Bool
-	{
-		var hitHoriz:Bool;
-		var hitVert:Bool;
-		var otherx:Float;
-		var othery:Float;
-
-		if (Std.is(other, WynSprite))
-		{
-			var sprite = cast (other, WynSprite);
-			otherx = sprite.x + sprite.offset.x;
-			othery = sprite.y + sprite.offset.y;
-		}
-		else
-		{
-			otherx = other.x;
-			othery = other.y;
-		}
-
-		if (x < otherx)
-			hitHoriz = otherx < (x + width);
-		else
-			hitHoriz = x < (otherx + other.width);
-
-		if (y < othery)
-			hitVert = othery < (y + height);
-		else
-			hitVert = y < (othery + other.height);
-
-		return (hitHoriz && hitVert);
 	}
 
 	/**
@@ -521,14 +488,6 @@ class WynSprite extends WynObject
 		_faceMap.set(direction, {x:flipX, y:flipY});
 	}
 
-	public function setHitbox (offsetX:Float, offsetY:Float, w:Float, h:Float)
-	{
-		offset.x = offsetX;
-		offset.y = offsetY;
-		width = w;
-		height = h;
-	}
-
 	public function setHitboxCentered (w:Float, h:Float)
 	{
 		// centers hitbox at the center of the image
@@ -537,19 +496,6 @@ class WynSprite extends WynObject
 		offset.x = imageWidth/2 - width/2;
 		offset.y = imageHeight/2 - height/2;
 	}
-
-	override public function setCenterPosition (x:Float, y:Float)
-	{
-		this.x = x - width/2 - offset.x;
-		this.y = y - height/2 - offset.y;
-	}
-
-	override public function getCenterPosition () : FastVector2
-	{
-		return new FastVector2(x + width/2 + offset.x, y + height/2 + offset.y);
-	}
-
-
 
 	/**
 	 * This applies X/Y flip based on what you set from

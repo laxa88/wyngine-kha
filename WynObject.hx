@@ -14,6 +14,9 @@ class WynObject
 	public static inline var GROUP:Int = 2;
 	public static inline var TILE:Int = 3;
 
+	public static inline var HITBOX:Int = 1;
+	public static inline var HITCIRCLE:Int = 2;
+
 	public var id:Int = -1; // unique identifier for objects. Currently unused internally.
 	public var name:String = ""; // non-unique identifier for your custom usage.
 	public var exists:Bool = true;
@@ -30,6 +33,9 @@ class WynObject
 	public var y(default, set):Float = 0;
 	public var width(default, set):Float = 0; // By default, hitbox size is same as image size
 	public var height(default, set):Float = 0;
+	public var radius(default, set):Float = 0;
+	public var hitboxType:Int = HITBOX;
+	public var offset:FastVector2 = new FastVector2(); // hitbox offset
 
 	public var angle:Float = 0; // Note: Rotations are costly, especially on flash!
 	public var velocity(default, null):FastVector2 = new FastVector2();
@@ -108,28 +114,97 @@ class WynObject
 		exists = true;
 	}
 
-
-
 	/**
 	 * When you don't need fancy quadtrees, you can
 	 * use this for single checks.
 	 */
 	public function collide (other:WynObject) : Bool
 	{
-		var hitHoriz:Bool;
-		var hitVert:Bool;
+		if (hitboxType == HITBOX)
+		{
+			if (other.hitboxType == HITBOX)
+				return collideRectWithRect(other);
+			else if (other.hitboxType == HITCIRCLE)
+				return collideRectWithCircle(other);
+		}
+		else if (hitboxType == HITCIRCLE)
+		{
+			if (other.hitboxType == HITBOX)
+				return collideRectWithCircle(other);
+			else if (other.hitboxType == HITCIRCLE)
+				return collideCircleWithCircle(other);
+		}
 
-		if (x < other.x)
-			hitHoriz = other.x < (x + width);
-		else
-			hitHoriz = x < (other.x + other.width);
+		return false;
+	}
 
-		if (y < other.y)
-			hitVert = other.y < (y + height);
+	function collideRectWithRect (other:WynObject) : Bool
+	{
+		var hitHoriz:Bool = false;
+		var hitVert:Bool = false;
+		var thisX:Float = x + offset.x;
+		var thisY:Float = y + offset.y;
+		var otherX:Float = other.x + other.offset.x;
+		var otherY:Float = other.y + other.offset.y;
+
+		if (thisX < otherX)
+			hitHoriz = otherX < (thisX + width);
 		else
-			hitVert = y < (other.y + other.height);
+			hitHoriz = thisX < (otherX + other.width);
+
+		if (thisY < otherY)
+			hitVert = otherY < (thisY + height);
+		else
+			hitVert = thisY < (otherY + other.height);
 
 		return (hitHoriz && hitVert);
+	}
+
+	function collideRectWithCircle (other:WynObject) : Bool
+	{
+		trace("collideRectWithCircle");
+
+		return false;
+	}
+
+	function collideCircleWithCircle (other:WynObject) : Bool
+	{
+		// TODO - check if we need to include offsets
+		var dx:Float = x - other.x;
+		var dy:Float = y - other.y;
+
+		return (dx * dx + dy * dy) < Math.pow(radius + other.radius, 2);
+	}
+
+	public function setHitbox (offsetX:Float, offsetY:Float, w:Float, h:Float)
+	{
+		hitboxType = WynObject.HITBOX;
+		offset.x = offsetX;
+		offset.y = offsetY;
+		width = w;
+		height = h;
+		// radius = 0;
+	}
+
+	public function setHitcircle (offsetX:Float, offsetY:Float, r:Float)
+	{
+		hitboxType = WynObject.HITCIRCLE;
+		offset.x = offsetX;
+		offset.y = offsetY;
+		// width = 0;
+		// height = 0;
+		radius = r;
+	}
+
+	public function setCenterPosition (x:Float, y:Float)
+	{
+		this.x = x - width/2 - offset.x;
+		this.y = y - height/2 - offset.y;
+	}
+
+	public function getCenterPosition () : FastVector2
+	{
+		return new FastVector2(x + width/2 + offset.x, y + height/2 + offset.y);
 	}
 
 	/**
@@ -139,21 +214,6 @@ class WynObject
 	{
 		this.x = x;
 		this.y = y;
-	}
-
-	/**
-	 * Useful for resetting position quickly in one line.
-	 * Instead of top-left, this offsets to the center of the object.
-	 */
-	public function setCenterPosition (x:Float, y:Float)
-	{
-		this.x = x - width/2;
-		this.y = y - height/2;
-	}
-
-	public function getCenterPosition () : FastVector2
-	{
-		return new FastVector2(x+width/2, y+height/2);
 	}
 
 	private function set_x (val:Float) : Float
@@ -178,6 +238,11 @@ class WynObject
 		height = val;
 		if (height < 0) height = 0;
 		return height;
+	}
+
+	private function set_radius (val:Float) : Float
+	{
+		return (radius = val);
 	}
 
 	private function get_localx () : Float
