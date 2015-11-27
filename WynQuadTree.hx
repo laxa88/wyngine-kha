@@ -51,9 +51,6 @@ class WynQuadTree
 	private static var _useBothLists:Bool;
 	private static var _callback:WynObject->WynObject->Void;
 	private static var _object:WynObject;
-	private static var _sprite:WynSprite; // same as _object, but to access WynSprite variables
-	// private static var _object2:WynObject; // For overlap checks
-	// private static var _sprite2:WynSprite;
 	private static var _objectLeft:Float;
 	private static var _objectTop:Float;
 	private static var _objectRight:Float;
@@ -236,23 +233,10 @@ class WynQuadTree
 				// because other types don't matter.
 
 				_object = cast (objectOrGroup, WynObject);
-
-				if (Std.is(objectOrGroup, WynSprite))
-				{
-					_sprite = cast (objectOrGroup, WynSprite);
-
-					_objectLeft = _sprite.x + _sprite.offset.x;
-					_objectTop = _sprite.y + _sprite.offset.y;
-					_objectRight = _objectLeft + _sprite.width;
-					_objectBottom = _objectTop + _sprite.height;
-				}
-				else
-				{
-					_objectLeft = _object.x;
-					_objectTop = _object.y;
-					_objectRight = _objectLeft + _object.width;
-					_objectBottom = _objectTop + _object.height;
-				}
+				_objectLeft = _object.x + _object.offset.x;
+				_objectTop = _object.y + _object.offset.y;
+				_objectRight = _objectLeft + _object.width;
+				_objectBottom = _objectTop + _object.height;
 
 				addObject();
 			}
@@ -417,23 +401,6 @@ class WynQuadTree
 				// checking.
 				if (_object != null && _object.exists)
 				{
-					if (Std.is(_listA[index1], WynSprite))
-					{
-						_sprite = cast (_listA[index1], WynSprite);
-						o1X = _sprite.x + _sprite.offset.x;
-						o1Y = _sprite.y + _sprite.offset.y;
-					}
-					else
-					{
-						o1X = _object.x;
-						o1Y = _object.y;
-					}
-
-					o1W = _object.width;
-					o1H = _object.height;
-
-					// Let another function handle the interaction
-					// between _object and _listI
 					if (overlapNode())
 						hit = true;
 				}
@@ -473,52 +440,20 @@ class WynQuadTree
 			return false;
 
 		var hit:Bool = false;
+		var thisHit:Bool = false;
 		var len2:Int = _listI.length;
 
 		for (i in 0 ... len2)
 		{
 			var _object2:WynObject = _listI[i];
-			var _sprite2:WynSprite = null;
 
-			if (_object2 != null && _object2.exists)
+			thisHit = _object.collide(_object2);
+			if (thisHit)
 			{
-				if (Std.is(_listI[i], WynSprite))
-				{
-					_sprite2 = cast (_listI[i], WynSprite);
-					o2X = _sprite2.x + _sprite2.offset.x;
-					o2Y = _sprite2.y + _sprite2.offset.y;
-				}
-				else
-				{
-					o2X = _object2.x;
-					o2Y = _object2.y;
-				}
+				hit = thisHit;
 
-				o2W = _object2.width;
-				o2H = _object2.height;
-
-				// The actual collision logic between o1 and o2 happens here
-				// Compare now (copied from WynRect)
-				var hitHoriz:Bool;
-				var hitVert:Bool;
-
-				if (o1X < o2X)
-					hitHoriz = o2X < (o1X + o1W);
-				else
-					hitHoriz = o1X < (o2X + o2W);
-
-				if (o1Y < o2Y)
-					hitVert = o2Y < (o1Y + o1H);
-				else
-					hitVert = o1Y < (o2Y + o2H);
-
-				if (hitHoriz && hitVert)
-				{
-					if (_callback != null)
-						_callback(_object, _object2);
-				}
-
-				hit = hitHoriz && hitVert;
+				if (_callback != null)
+					_callback(_object, _object2);
 			}
 		}
 
