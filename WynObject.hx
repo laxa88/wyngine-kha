@@ -123,16 +123,24 @@ class WynObject
 		if (hitboxType == HITBOX)
 		{
 			if (other.hitboxType == HITBOX)
+			{
 				return collideRectWithRect(other);
+			}
 			else if (other.hitboxType == HITCIRCLE)
+			{
 				return collideRectWithCircle(other);
+			}
 		}
 		else if (hitboxType == HITCIRCLE)
 		{
 			if (other.hitboxType == HITBOX)
-				return collideRectWithCircle(other);
+			{
+				return other.collideRectWithCircle(this);
+			}
 			else if (other.hitboxType == HITCIRCLE)
+			{
 				return collideCircleWithCircle(other);
+			}
 		}
 
 		return false;
@@ -162,13 +170,41 @@ class WynObject
 
 	function collideRectWithCircle (other:WynObject) : Bool
 	{
-		trace("collideRectWithCircle");
+		// Based on code from HaxePunk's Circle.hx
+		// https://github.com/HaxePunk/HaxePunk/blob/306f7cc50356a698859434641613b7c95bfbba4f/com/haxepunk/masks/Circle.hx
 
-		return false;
+		var _otherHalfWidth:Float = width * 0.5;
+		var _otherHalfHeight:Float = height * 0.5;
+		var _squaredRadius = other.radius * other.radius;
+
+		var px:Float = other.x + other.offset.x,
+			py:Float = other.y + other.offset.y;
+
+		var ox:Float = x + offset.x,
+			oy:Float = y + offset.y;
+
+		var distanceX:Float = Math.abs(px - ox - _otherHalfWidth),
+			distanceY:Float = Math.abs(py - oy - _otherHalfHeight);
+
+		if (distanceX > _otherHalfWidth + radius || distanceY > _otherHalfHeight + radius)
+		{
+			return false;	// the hitbox is too far away so return false
+		}
+		if (distanceX <= _otherHalfWidth || distanceY <= _otherHalfHeight)
+		{
+			return true;
+		}
+		var distanceToCorner:Float = (distanceX - _otherHalfWidth) * (distanceX - _otherHalfWidth)
+			+ (distanceY - _otherHalfHeight) * (distanceY - _otherHalfHeight);
+
+		return distanceToCorner <= _squaredRadius;
 	}
 
 	function collideCircleWithCircle (other:WynObject) : Bool
 	{
+		// Based on code from HaxePunk's Circle.hx
+		// https://github.com/HaxePunk/HaxePunk/blob/306f7cc50356a698859434641613b7c95bfbba4f/com/haxepunk/masks/Circle.hx
+
 		// TODO - check if we need to include offsets
 		var dx:Float = x - other.x;
 		var dy:Float = y - other.y;
