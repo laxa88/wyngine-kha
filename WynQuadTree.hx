@@ -235,8 +235,17 @@ class WynQuadTree
 				_object = cast (objectOrGroup, WynObject);
 				_objectLeft = _object.x + _object.offset.x;
 				_objectTop = _object.y + _object.offset.y;
-				_objectRight = _objectLeft + _object.width;
-				_objectBottom = _objectTop + _object.height;
+
+				if (_object.hitboxType == WynObject.HITBOX)
+				{
+					_objectRight = _objectLeft + _object.width;
+					_objectBottom = _objectTop + _object.height;
+				}
+				else if (_object.hitboxType == WynObject.HITCIRCLE)
+				{
+					_objectRight = _objectLeft + _object.radius*2;
+					_objectBottom = _objectTop + _object.radius*2;
+				}
 
 				addObject();
 			}
