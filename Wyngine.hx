@@ -313,6 +313,10 @@ class Wyngine extends Game
 			// For every camera, render the current screen onto their buffers.
 			g = cam.buffer.g2;
 
+			#if js
+				cast(g, kha.graphics4.Graphics2).setBilinearFiltering(true);
+			#end
+
 			// Clear screen with bgColor
 			g.begin(true, cam.bgColor);
 
@@ -357,6 +361,12 @@ class Wyngine extends Game
 
 		// Once we're done, draw and upscale the buffer onto screen
 		frame.g2.begin();
+
+		#if js
+			// For HTML5 canvas
+			cast(frame.g2, kha.graphics4.Graphics2).setBilinearFiltering(true);
+		#end
+
 		Scaler.scale(buffer, frame, Sys.screenRotation);
 		frame.g2.end();
 
