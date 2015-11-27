@@ -251,6 +251,10 @@ class Wyngine extends Game
 			// Initialise some stuff that shouldn't carry over between screens
 			WynAudio.reset();
 
+			// Clear quadtree when switching scenes
+			if (_quadtree != null)
+				_quadtree.destroy();
+
 			currentScreen = cast (Type.createInstance(nextScreen, []));
 		}
 
