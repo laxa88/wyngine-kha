@@ -64,6 +64,7 @@ class Wyngine extends Game
 	// Cameras are basically one or more image buffers
 	// rendered onto the main Framebuffer.
 	// TODO multiple cameras
+	public var bilinearFiltering:Bool = false;
 	public var buffer(default, null):Image;
 	public var bgColor(default, set):Color;
 	public var cameras(default, null):Array<WynCamera>;
@@ -314,7 +315,8 @@ class Wyngine extends Game
 			g = cam.buffer.g2;
 
 			#if js
-				cast(g, kha.graphics4.Graphics2).setBilinearFiltering(true);
+				// For HTML5 canvas
+				cast(g, kha.graphics4.Graphics2).setBilinearFiltering(bilinearFiltering);
 			#end
 
 			// Clear screen with bgColor
@@ -364,7 +366,7 @@ class Wyngine extends Game
 
 		#if js
 			// For HTML5 canvas
-			cast(frame.g2, kha.graphics4.Graphics2).setBilinearFiltering(true);
+			cast(frame.g2, kha.graphics4.Graphics2).setBilinearFiltering(bilinearFiltering);
 		#end
 
 		Scaler.scale(buffer, frame, Sys.screenRotation);
