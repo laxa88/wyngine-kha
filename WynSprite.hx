@@ -521,12 +521,32 @@ class WynSprite extends WynObject
 		_faceMap.set(direction, {x:flipX, y:flipY});
 	}
 
-	public function setHitbox (x:Float, y:Float, w:Float, h:Float)
+	public function setHitbox (offsetX:Float, offsetY:Float, w:Float, h:Float)
 	{
-		offset.x = x;
-		offset.y = y;
+		offset.x = offsetX;
+		offset.y = offsetY;
 		width = w;
 		height = h;
+	}
+
+	public function setHitboxCentered (w:Float, h:Float)
+	{
+		// centers hitbox at the center of the image
+		width = w;
+		height = h;
+		offset.x = imageWidth/2 - width/2;
+		offset.y = imageHeight/2 - height/2;
+	}
+
+	override public function setCenterPosition (x:Float, y:Float)
+	{
+		this.x = x - width/2 - offset.x;
+		this.y = y - height/2 - offset.y;
+	}
+
+	override public function getCenterPosition () : FastVector2
+	{
+		return new FastVector2(x + width/2 + offset.x, y + height/2 + offset.y);
 	}
 
 
