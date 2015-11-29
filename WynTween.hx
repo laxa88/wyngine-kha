@@ -12,19 +12,6 @@ package wyn;
 // 	var paused:Bool;
 // }
 
-/**
- props example:
- 	var props = {
-		x: { to : 50 },
-		y: { from : 100, to : 200 }
- 	}
-
- Priority:
- 	- If mode is "PLAYDEFAULT", will use current value as start value if "from" isn't provided
- 	- If mode is "PLAYRESET", will rest "from" 
- 	- If mode is "PLAYSKIP", will use "from" and "to" values whenever available.
- */
-
 typedef TweenData = {
 	var target:Dynamic;
 	var props:Dynamic;
@@ -42,8 +29,13 @@ typedef PropData = {
 
 class WynTween
 {
-	// TODO
-	// - overwrite or cancel tweens
+	// props example:
+	//  - var props = { x: { to:50 }, y: { from:100, to:200 } }
+	// Priority:
+	// 	- If mode is "PLAYDEFAULT", will use current value as start value if "from" isn't provided
+	// 	- If mode is "PLAYRESET", will rest "from" 
+	// 	- If mode is "PLAYSKIP", will use "from" and "to" values whenever available.
+	//
 
 	public static inline var EASENONE:Int 				= 0; // aka linear
 	public static inline var EASEINQUAD:Int 			= 1;
@@ -323,7 +315,8 @@ class WynTween
 			if (data.target == target)
 			{
 				// Note: PLAYDEFAULT means the tween is abruptly cancelled
-				// without resetting the current field values.
+				// without resetting the current field values. If it's not
+				// default, then we reset by PLAYRESET or PLAYSKIP type.
 				if (resetType != PLAYDEFAULT)
 				{
 					var dataFields:Array<String> = Reflect.fields(data.props);
@@ -345,5 +338,13 @@ class WynTween
 			else
 				i++;
 		}
+	}
+
+	/**
+	 * Clears all tweens. Useful when resetting the game.
+	 */
+	public static function clear ()
+	{
+		instance.queue = [];
 	}
 }
