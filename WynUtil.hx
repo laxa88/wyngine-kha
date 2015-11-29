@@ -108,7 +108,10 @@ class WynUtil
 
 	/**
 	 * Remember:
-	 * - zero angles is to the EAST (x=1,y=0)
+	 * - angle 0 = EAST (x=1,y=0)
+	 * - angle 90 = SOUTH
+	 * - angle 180 = WEST
+	 * - angle -90 = NORTH
 	 * - negative-y is actually UP on the screen
 	 */
 	public inline static function radToVector (rad:Float) : FastVector2
