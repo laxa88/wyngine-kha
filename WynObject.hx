@@ -130,11 +130,6 @@ class WynObject
 	 */
 	public function collide (other:WynObject) : Bool
 	{
-		velocity.x = WynUtil.computeVelocity(dt, velocity.x, acceleration.x, drag.x, maxVelocity.x);
-		velocity.y = WynUtil.computeVelocity(dt, velocity.y, acceleration.y, drag.y, maxVelocity.y);
-		x += dt * velocity.x;
-		y += dt * velocity.y;
-
 		if (hitboxType == HITBOX)
 		{
 			if (other.hitboxType == HITBOX)
