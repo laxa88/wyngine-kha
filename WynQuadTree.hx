@@ -17,9 +17,10 @@ class WynQuadTree
 {
 	public static inline var LIST_A:Int = 0;
 	public static inline var LIST_B:Int = 1;
-	public static inline var MAX_OBJECTS:Int = 10;
-	public static inline var MAX_LEVELS:Int = 5;
-
+	public static var MAX_OBJECTS:Int = 10;
+	public static var MAX_LEVELS:Int = 5;
+	public static var ID_COUNTER:Int=0;
+	public var id:Int; // for debugging
 	public var active:Bool;
 
 	var _nodes:Array<WynQuadTree>;
@@ -66,6 +67,8 @@ class WynQuadTree
 	{
 		// Reset variables once
 		reset(level, x, y, w, h, parent);
+
+		id = ++ID_COUNTER;
 	}
 
 	/**
@@ -420,7 +423,7 @@ class WynQuadTree
 		for (i in 0 ... 4)
 		{
 			if (_nodes[i] != null)
-				_nodes[i].execute();
+				hit = _nodes[i].execute();
 		}
 
 		// If at least one of the above compared list items
@@ -445,6 +448,7 @@ class WynQuadTree
 	{
 		// If this is null, that means there's nothing
 		// else to compare with.
+
 		if (_listI == null)
 			return false;
 
