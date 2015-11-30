@@ -132,7 +132,7 @@ class WynCamera
 	}
 
 	/**
-	 * This is called to render extra stuff on the cameraa fter
+	 * This is called to render extra stuff on the camera after
 	 * updates, such as camera flashes.
 	 */
 	public function render ()

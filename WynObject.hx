@@ -31,11 +31,19 @@ class WynObject
 	public var localy(get, set):Float;
 	public var x(default, set):Float = 0; // Note: position origin is at top-left corner.
 	public var y(default, set):Float = 0;
+	public var scrollFactorX:Float = 1; // For parallax or GUI use
+	public var scrollFactorY:Float = 1;
 	public var width(default, set):Float = 0; // By default, hitbox size is same as image size
 	public var height(default, set):Float = 0;
 	public var radius(default, set):Float = 0;
 	public var hitboxType:Int = HITBOX;
 	public var offset:FastVector2 = new FastVector2(); // hitbox offset
+
+	// This stores the previous x/y values for convenience. When doing collision
+	// with something, we may not want to draw the object at the latest position,
+	// or adjust the position to the collision point.
+	var oldX:Float = 0;
+	var oldY:Float = 0;
 
 	public var angle:Float = 0; // Note: Rotations are costly, especially on flash!
 	public var velocity(default, null):FastVector2 = new FastVector2();
@@ -69,6 +77,8 @@ class WynObject
 		// Update physics
 		velocity.x = WynUtil.computeVelocity(dt, velocity.x, acceleration.x, drag.x, maxVelocity.x);
 		velocity.y = WynUtil.computeVelocity(dt, velocity.y, acceleration.y, drag.y, maxVelocity.y);
+		oldX = x;
+		oldY = y;
 		x += dt * velocity.x;
 		y += dt * velocity.y;
 
@@ -120,6 +130,11 @@ class WynObject
 	 */
 	public function collide (other:WynObject) : Bool
 	{
+		velocity.x = WynUtil.computeVelocity(dt, velocity.x, acceleration.x, drag.x, maxVelocity.x);
+		velocity.y = WynUtil.computeVelocity(dt, velocity.y, acceleration.y, drag.y, maxVelocity.y);
+		x += dt * velocity.x;
+		y += dt * velocity.y;
+
 		if (hitboxType == HITBOX)
 		{
 			if (other.hitboxType == HITBOX)
@@ -252,6 +267,23 @@ class WynObject
 		this.y = y;
 	}
 
+	/**
+	 * Sets how affected this object's x/y position is affected by the camera's scroll.
+	 * E.g. if camera scroll = [50,50], object position = [80, 80],
+	 * Thus the object's visible position = [30, 30]
+	 * However, if scrollFactor is [0.5, 0.5], then the object's visible
+	 * position becomes [55, 55].
+	 *
+	 * For common use:
+	 * - set scrollFactor to [0,0] for UI elements
+	 * - set scrollFactor for backgrounds images to values < 1 for parallax effect
+	 */
+	public function setScrollFactor (x:Float, y:Float)
+	{
+		scrollFactorX = x;
+		scrollFactorY = y;
+	}
+
 	private function set_x (val:Float) : Float
 	{
 		return x = val;
@@ -300,7 +332,7 @@ class WynObject
 	private function set_localx (val:Float) : Float
 	{
 		if (parent != null)
-			return x = parent.x + val;
+			return x = parent.x + (val * scrollFactorX);
 		else
 			return 0;
 	}
@@ -308,7 +340,7 @@ class WynObject
 	private function set_localy (val:Float) : Float
 	{
 		if (parent != null)
-			return y = parent.y + val;
+			return y = parent.y + (val * scrollFactorY);
 		else
 			return 0;
 	}
