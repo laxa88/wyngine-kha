@@ -54,10 +54,7 @@ typedef Line = {
 }
 
 typedef Options = {
-	@:optional var size:Int;
-	@:optional var lineHeight:Int;
 	@:optional var color:Color;
-	@:optional var bgColor:Color;
 	@:optional var align:Int;
 }
 
@@ -80,10 +77,7 @@ class WynBitmapText extends WynSprite
 	var _prevText:String = "";
 	var _cursor:FastVector2 = new FastVector2();
 
-	// TODO - add getter/setter logic
 	public var font(default, null):Font;
-	public var size(default, null):Int;
-	public var lineHeight(get, set):Int;
 	public var align:Int = ALIGN_LEFT;
 	public var trimEnds:Bool = true; // trims trailing space characters
 	public var trimAll:Bool = true; // trims ALL space characters (including mid-sentence)
@@ -94,7 +88,7 @@ class WynBitmapText extends WynSprite
 	 * Loads the bitmap font from Loader. Make sure you added it in project.kha.
 	 * TODO: options parameter
 	 */
-	public function new (str:String, fontName:String, x:Int=0, y:Int=0, w:Int=200, h:Int=100)
+	public function new (str:String, fontName:String, x:Int=0, y:Int=0, w:Int=200, h:Int=100, option:Options)
 	{
 		super(x, y, w, h);
 
@@ -103,8 +97,7 @@ class WynBitmapText extends WynSprite
 		if (fontCache != null && fontCache.exists(fontName))
 		{
 			font = fontCache.get(fontName);
-			size = font.size;
-			createEmptyImage(w, h);
+			createEmptyImage(w, h, true);
 		}
 		else
 		{
@@ -114,13 +107,21 @@ class WynBitmapText extends WynSprite
 			if (fontCache != null && fontCache.exists(fontName))
 			{
 				font = fontCache.get(fontName);
-				size = font.size;
-				createEmptyImage(w, h);
+				createEmptyImage(w, h, true);
 			}
 			else
 			{
 				trace('Failed to init WynBitmapText with "${fontName}"');
 			}
+		}
+
+		if (option != null)
+		{
+			if (option.color != null)
+				color = option.color;
+
+			if (option.align != null)
+				align = option.align;
 		}
 	}
 
