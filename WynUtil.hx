@@ -133,4 +133,44 @@ class WynUtil
 	// {
 
 	// }
+
+	public static function roundToPrecision (v:Float, precision:Int) : Float
+	{
+		return Math.round( v * Math.pow(10, precision) ) / Math.pow(10, precision);
+	}
+
+	public static function roundToPrecisionString (v:Float, precision:Int) : String
+	{
+		var n = Math.round(v * Math.pow(10, precision));
+		var str = '' + n;
+		var len = str.length;
+
+		if (len <= precision)
+		{
+			// Example: v = 0.01234
+			// n = 1
+			// str = "1"
+			// len = 1
+			// str = "01"
+			// return "0.01";
+
+			while (len < precision)
+			{
+				str = '0' + str;
+				len++;
+			}
+
+			return '0.' + str;
+		}
+		else
+		{
+			// Example: v = 5.1234
+			// n = 512
+			// str = "512"
+			// len = 3
+			// return "5" + "." + "12"
+
+			return str.substr(0, str.length-precision) + '.' + str.substr(str.length-precision);
+		}
+	}
 }
