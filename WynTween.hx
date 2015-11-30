@@ -210,8 +210,6 @@ class WynTween
 
 	function addToQueue (data:TweenData, playbackMode:Int)
 	{
-		trace("add to queue : " + data.props);
-
 		var len = queue.length;
 		for (i in 0 ... len)
 		{
