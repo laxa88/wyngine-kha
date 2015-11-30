@@ -366,15 +366,16 @@ class Wyngine extends Game
 		g.end();
 
 		// Once we're done, draw and upscale the buffer onto screen
-		frame.g2.begin();
+		g = frame.g2;
+		g.begin();
 
 		#if js
 			// For HTML5 canvas
-			cast(frame.g2, kha.graphics4.Graphics2).setBilinearFiltering(bilinearFiltering);
+			cast(g, kha.graphics4.Graphics2).setBilinearFiltering(bilinearFiltering);
 		#end
 
 		Scaler.scale(buffer, frame, Sys.screenRotation);
-		frame.g2.end();
+		g.end();
 
 		// Reset at end of every cycle
 		DRAW_COUNT = 0;
