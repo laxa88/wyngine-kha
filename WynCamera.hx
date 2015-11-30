@@ -151,7 +151,7 @@ class WynCamera
 		}
 	}
 
-	public function shake (intensity:Float, weakenRate:Float, horizontal:Bool=true, vertical:Bool=true)
+	public function shake (intensity:Float=10, weakenRate:Float=20, horizontal:Bool=true, vertical:Bool=true)
 	{
 		this.intensity = intensity;
 		this.weakenRate = weakenRate;
@@ -190,6 +190,28 @@ class WynCamera
 		curtainCallback = callback;
 		curtainFadeDirection = 1; // from alpha 0 to 1
 		isFading = true;
+	}
+
+	/**
+	 * Cancels screen effects
+	 */
+	public function cancelEffects ()
+	{
+		// cancel screenshake
+		shakeHorizontal = false;
+		shakeVertical = false;
+		intensity = 0;
+		weakenRate = 0;
+		shakeX = 0;
+		shakeY = 0;
+
+		// cancel screen fade/flash
+		curtainColor = Color.White;
+		curtainAlpha = 0;
+		curtainDuration = 0;
+		curtainCallback = null;
+		curtainFadeDirection = 0; // neutral
+		isFading = false;
 	}
 
 	/**
