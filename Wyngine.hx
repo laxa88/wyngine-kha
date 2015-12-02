@@ -52,6 +52,8 @@ class Wyngine extends Game
 	public var screenOffsetY(default, null):Int = 0;
 	public var gameOffsetX(default, null):Int = 0; // used for HTML5 where canvas can be scaled
 	public var gameOffsetY(default, null):Int = 0;
+	public var gameScale(default, null):Float = 1;
+	public var isFullscreen(default, null):Bool = false; // for HTML5, whether the canvas fills the entire visible browser size
 
 	public var oriWidth(default, null):Int = 0;
 	public var oriHeight(default, null):Int = 0;
@@ -99,7 +101,7 @@ class Wyngine extends Game
 	{
 		super("Wyngine");
 
-		Wyngine.log("Wyngine new");
+		trace("Wyngine new");
 
 		// Set reference first thing first.
 		G = this;
@@ -112,7 +114,14 @@ class Wyngine extends Game
 
 	override public function init ()
 	{
-		Wyngine.log("Wyngine init");
+		trace("Wyngine init");
+
+		#if js
+			// Prevents mobile touches from scrolling/scaling the screen.
+			kha.Sys.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
+				e.preventDefault();
+			});
+		#end
 
 		// Save original size first, so that we can rescale the
 		// screen for HTML5 pages
@@ -156,17 +165,17 @@ class Wyngine extends Game
 		setGameZoom(zoom);
 	}
 
-	public function initMobileMode ()
+	public function initMobileMode (fullscreen:Bool)
 	{
-		#if js
+		isFullscreen = fullscreen;
 
-			// Prevents mobile touches from scrolling the screen.
-			kha.Sys.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
-				e.preventDefault();
-			});
+		#if js
 
 			// Makes sure that any further resize will trigger this
 			js.Browser.window.addEventListener("resize", resizeBrowserGameScreen);
+
+			// add callback
+			js.Browser.window.addEventListener("resize", onResizeBrowser);
 
 		#end
 
@@ -188,8 +197,18 @@ class Wyngine extends Game
 			// NOTE: if there's unnecessary padding, make sure
 			// to modify the index.html so that the <html>, <body>
 			// and <p> have zero margin and zero padding.
-			canvasW = kha.Sys.khanvas.width = js.Browser.window.innerWidth;
-			canvasH = kha.Sys.khanvas.height = js.Browser.window.innerHeight;
+			if (isFullscreen)
+			{
+				// Canvas size is same as browser size
+				canvasW = kha.Sys.khanvas.width = js.Browser.window.innerWidth;
+				canvasH = kha.Sys.khanvas.height = js.Browser.window.innerHeight;
+			}
+			else
+			{
+				// Canvas size is unaffected by browser size
+				canvasW = kha.Sys.khanvas.width;
+				canvasH = kha.Sys.khanvas.height;
+			}
 
 			// Every time the canvas resizes, the origin will be displaced,
 			// so we need to add offsets to all world positions.
@@ -206,22 +225,29 @@ class Wyngine extends Game
 		// The extra calculations below are only for HTML5 targets:
 		// when canvas is resized, position and sizes are scaled, so the mouse
 		// position needs to be scaled accordingly.
-		screenRatioW = canvasW / Wyngine.G.gameWidth / Wyngine.G.zoom;
-		screenRatioH = canvasH / Wyngine.G.gameHeight / Wyngine.G.zoom;
+		screenRatioW = canvasW / gameWidth / zoom;
+		screenRatioH = canvasH / gameHeight / zoom;
 		screenRatioMin = Math.min(screenRatioW, screenRatioH);
-		var w = Wyngine.G.gameWidth * Wyngine.G.zoom * screenRatioMin;
-		var h = Wyngine.G.gameHeight * Wyngine.G.zoom * screenRatioMin;
+		var w = gameWidth * zoom * screenRatioMin;
+		var h = gameHeight * zoom * screenRatioMin;
+
 		if (screenRatioW > screenRatioH)
 		{
 			screenOffsetX = Math.floor((canvasW - w) / 2);
-			gameOffsetX = Math.floor((canvasW - w) / 2 / Wyngine.G.zoom);
+			gameOffsetX = Math.floor((canvasW - w) / 2 / zoom);
 		}
 		else
 		{
 			screenOffsetY = Math.floor((canvasH - h) / 2);
-			gameOffsetY = Math.floor((canvasH - h) / 2 / Wyngine.G.zoom);
+			gameOffsetY = Math.floor((canvasH - h) / 2 / zoom);
 		}
 
+		// This scale determines the WynMouse gameX/gameY
+		gameScale = gameWidth / (windowWidth * screenRatioMin);
+	}
+
+	function onResizeBrowser ()
+	{
 		// Instead of resizing the camera, just do a callback
 		// to current screen so the user can handle it manually.
 		if (currentScreen != null)
@@ -375,6 +401,7 @@ class Wyngine extends Game
 		#end
 
 		Scaler.scale(buffer, frame, Sys.screenRotation);
+
 		g.end();
 
 		// Reset at end of every cycle
@@ -384,27 +411,27 @@ class Wyngine extends Game
 	override public function onForeground():Void
 	{
 		// TODO
-		log("onForeground");
+		trace("onForeground");
 	}
 	override public function onResume():Void
 	{
 		// TODO
-		log("onResume");
+		trace("onResume");
 	}
 	override public function onPause():Void
 	{
 		// TODO
-		log("onPause");
+		trace("onPause");
 	}
 	override public function onBackground():Void
 	{
 		// TODO
-		log("onBackground");
+		trace("onBackground");
 	}
 	override public function onShutdown():Void
 	{
 		// TODO
-		log("onShutdown");
+		trace("onShutdown");
 	}
 
 	/**

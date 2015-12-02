@@ -240,22 +240,8 @@ class WynMouse
 		windowY = y - Wyngine.G.screenOffsetY;
 
 		// Get mouse pos in game world (with offset)
-		var gameScale = Wyngine.G.gameWidth / (Wyngine.G.windowWidth * Wyngine.G.screenRatioMin);
-		gameX = Math.floor(windowX * gameScale);
-		gameY = Math.floor(windowY * gameScale);
-
-		// trace("### " + {
-		// 	canvasWidth : kha.Sys.khanvas.width,
-		// 	windowWidth : Wyngine.G.windowWidth,
-		// 	scaledWindowWidth : Wyngine.G.windowWidth * Wyngine.G.screenRatioMin,
-		// 	windowOffsetX : Wyngine.G.screenOffsetX,
-		// 	gameWidth : Wyngine.G.gameWidth,
-		// 	// scaledGameWidth : Wyngine.G.gameWidth * Wyngine.G.screenRatioMin, // no need for this
-		// 	x : x,
-		// 	windowX : windowX,
-		// 	gameX : gameX,
-		// 	screenRatioMin : Wyngine.G.screenRatioMin
-		// });
+		gameX = Math.floor(windowX * Wyngine.G.gameScale);
+		gameY = Math.floor(windowY * Wyngine.G.gameScale);
 	}
 
 	inline function updateCameraMousePosition (camera:WynCamera)
