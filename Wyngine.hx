@@ -53,7 +53,7 @@ class Wyngine extends Game
 	public var gameOffsetX(default, null):Int = 0; // used for HTML5 where canvas can be scaled
 	public var gameOffsetY(default, null):Int = 0;
 	public var gameScale(default, null):Float = 1;
-	public var isFullscreen(default, null):Bool = false; // for HTML5, whether the canvas fills the entire visible browser size
+	public var isFullscreen:Bool = false; // for HTML5, whether the canvas fills the entire visible browser size
 
 	public var oriWidth(default, null):Int = 0;
 	public var oriHeight(default, null):Int = 0;
@@ -186,7 +186,12 @@ class Wyngine extends Game
 		resetCameras();
 	}
 
-	function resizeBrowserGameScreen ()
+	/**
+	 * Call this when the screen is resized. This method should be called externally
+	 * for cases where the khanvas is manually resized -- since the WynMouse position
+	 * relies on the gameScale value.
+	 */
+	public function resizeBrowserGameScreen ()
 	{
 		var canvasW = 0;
 		var canvasH = 0;
