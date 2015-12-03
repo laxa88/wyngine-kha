@@ -16,9 +16,9 @@ class WynGroup<T:WynObject> extends WynObject
 
 
 
-	public function new (?x:Int, ?y:Int)
+	public function new (?x:Int, ?y:Int, ?w:Int, ?h:Int)
 	{
-		super(x, y);
+		super(x, y, w, h);
 
 		objectType = WynObject.GROUP;
 	}

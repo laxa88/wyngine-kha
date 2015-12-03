@@ -31,6 +31,8 @@ class WynObject
 	public var localy(get, set):Float;
 	public var x(default, set):Float = 0; // Note: position origin is at top-left corner.
 	public var y(default, set):Float = 0;
+	public var cx(get, set):Float; // Note: center position based on x/y and width/height.
+	public var cy(get, set):Float;
 	public var scrollFactorX:Float = 1; // For parallax or GUI use
 	public var scrollFactorY:Float = 1;
 	public var width(default, set):Float = 0; // By default, hitbox size is same as image size
@@ -244,13 +246,13 @@ class WynObject
 
 	public function setCenterPosition (x:Float, y:Float)
 	{
-		this.x = x - width/2 - offset.x;
-		this.y = y - height/2 - offset.y;
+		cx = x;
+		cy = y;
 	}
 
 	public function getCenterPosition () : FastVector2
 	{
-		return new FastVector2(x + width/2 + offset.x, y + height/2 + offset.y);
+		return new FastVector2(cx, cy);
 	}
 
 	/**
@@ -306,6 +308,28 @@ class WynObject
 	private function set_radius (val:Float) : Float
 	{
 		return (radius = val);
+	}
+
+	private function get_cx () : Float
+	{
+		return (x + width/2 - offset.x);
+	}
+
+	private function get_cy () : Float
+	{
+		return (y + height/2 - offset.y);
+	}
+
+	private function set_cx (val:Float) : Float
+	{
+		x = val - width/2 - offset.x;
+		return val;
+	}
+
+	private function set_cy (val:Float) : Float
+	{
+		y = val - height/2 - offset.y;
+		return val;
 	}
 
 	private function get_localx () : Float
