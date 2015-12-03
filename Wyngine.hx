@@ -170,13 +170,8 @@ class Wyngine extends Game
 		isFullscreen = fullscreen;
 
 		#if js
-
 			// Makes sure that any further resize will trigger this
 			js.Browser.window.addEventListener("resize", resizeBrowserGameScreen);
-
-			// add callback
-			js.Browser.window.addEventListener("resize", onResizeBrowser);
-
 		#end
 
 		// Call resize once
@@ -249,10 +244,7 @@ class Wyngine extends Game
 
 		// This scale determines the WynMouse gameX/gameY
 		gameScale = gameWidth / (windowWidth * screenRatioMin);
-	}
 
-	function onResizeBrowser ()
-	{
 		// Instead of resizing the camera, just do a callback
 		// to current screen so the user can handle it manually.
 		if (currentScreen != null)
