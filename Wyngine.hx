@@ -11,6 +11,7 @@ import kha.Scaler;
 import kha.ScreenCanvas;
 import kha.math.Random;
 import kha.graphics2.Graphics;
+import kha.graphics4.Graphics2;
 
 /**
  * Kha's screens are kha.Game classes.
@@ -66,8 +67,9 @@ class Wyngine extends Game
 	// Cameras are basically one or more image buffers
 	// rendered onto the main Framebuffer.
 	// TODO multiple cameras
-	public var bilinearFiltering:Bool = false;
+	public var bilinearFiltering(default, set):Bool = false;
 	public var buffer(default, null):Image;
+	public var framebuffer(default, null):Framebuffer;
 	public var bgColor(default, set):Color;
 	public var cameras(default, null):Array<WynCamera>;
 	var input:WynInput;
@@ -331,6 +333,10 @@ class Wyngine extends Game
 	{
 		// TODO: shaders
 
+		// Assign the buffer for modification thru Wyngine later
+		if (framebuffer == null)
+			framebuffer = frame;
+
 		var g:Graphics;
 		var cam:WynCamera;
 
@@ -340,11 +346,6 @@ class Wyngine extends Game
 
 			// For every camera, render the current screen onto their buffers.
 			g = cam.buffer.g2;
-
-			#if js
-				// For HTML5 canvas
-				cast(g, kha.graphics4.Graphics2).setBilinearFiltering(bilinearFiltering);
-			#end
 
 			// Clear screen with bgColor
 			g.begin(true, cam.bgColor);
@@ -391,11 +392,6 @@ class Wyngine extends Game
 		// Once we're done, draw and upscale the buffer onto screen
 		g = frame.g2;
 		g.begin();
-
-		#if js
-			// For HTML5 canvas
-			cast(g, kha.graphics4.Graphics2).setBilinearFiltering(bilinearFiltering);
-		#end
 
 		Scaler.scale(buffer, frame, Sys.screenRotation);
 
@@ -600,6 +596,33 @@ class Wyngine extends Game
 		// 	val = Color.fromValue(0xff6495ed);
 
 		return (bgColor = val);
+	}
+
+	private function set_bilinearFiltering (val:Bool) : Bool
+	{
+		bilinearFiltering = val;
+
+		#if js
+			// For HTML5 canvas
+			var g2:Graphics2;
+
+			if (framebuffer != null)
+			{
+				g2 = cast(framebuffer.g2, kha.graphics4.Graphics2);
+				if (g2 != null)
+					g2.setBilinearFiltering(bilinearFiltering);
+			}
+
+			// Update all cameras
+			for (cam in cameras)
+			{
+				g2 = cast(cam.buffer.g2, kha.graphics4.Graphics2);
+				if (g2 != null)
+					g2.setBilinearFiltering(bilinearFiltering);
+			}
+		#end
+
+		return val;
 	}
 
 	/**
