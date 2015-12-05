@@ -137,7 +137,6 @@ class WynButton extends WynSprite
 		_exitListeners = [];
 	}
 
-
 	/**
 	 * Add event listeners for down, up, enter and exit mouse states.
 	 */

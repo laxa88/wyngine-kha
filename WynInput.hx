@@ -20,13 +20,7 @@ class WynInput
 
 	public function new ()
 	{
-		_keysPressed = new Map<Key, Bool>();
-		_charsPressed = new Map<String, Bool>();
-		_keysHeld = new Map<Key, Bool>();
-		_charsHeld = new Map<String, Bool>();
-		_keysReleased = new Map<Key, Bool>();
-		_charsReleased = new Map<String, Bool>();
-
+		// Add event
 		Keyboard.get().notify(onKeyDown, onKeyUp);
 	}
 
@@ -152,7 +146,11 @@ class WynInput
 
 	public static function init ()
 	{
+		// Init instance
 		instance = new WynInput();
+
+		// Reset all notifier arrays
+		reset();
 	}
 	public static function isKeyDown (key:Key, char:String=""):Bool
 	{
@@ -165,5 +163,16 @@ class WynInput
 	public static function isKeyUp (key:Key, char:String=""):Bool
 	{
 		return instance._isKeyUp(key, char);
+	}
+	public static function reset ()
+	{
+		// When changing screens or opening subscreen, this is used
+		// so that previous inputs do not interfere in the new screen.
+		instance._keysPressed = new Map<Key, Bool>();
+		instance._charsPressed = new Map<String, Bool>();
+		instance._keysHeld = new Map<Key, Bool>();
+		instance._charsHeld = new Map<String, Bool>();
+		instance._keysReleased = new Map<Key, Bool>();
+		instance._charsReleased = new Map<String, Bool>();
 	}
 }
