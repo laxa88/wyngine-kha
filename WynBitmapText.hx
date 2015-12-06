@@ -247,7 +247,7 @@ class WynBitmapText extends WynSprite
 		// Reset cursor position
 		_cursor = new FastVector2();
 
-		image.g2.begin(true, Color.fromValue(0x00000000));
+		image.g2.begin(true, 0x00000000);
 		image.g2.color = color;
 
 		for (line in lines)
