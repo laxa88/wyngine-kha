@@ -157,19 +157,6 @@ class WynSprite extends WynObject
 			// Finalise the rotation
 			if (angle != 0) g.popTransformation();
 		}
-
-		if (Wyngine.DEBUG_DRAW && Wyngine.DRAW_COUNT < Wyngine.DRAW_COUNT_MAX)
-		{
-			// Debug hitbox
-			g.color = Color.Red;
-
-			if (hitboxType == WynObject.HITBOX)
-				g.drawRect(ox + offset.x, oy + offset.y, width, height);
-			else if (hitboxType == WynObject.HITCIRCLE)
-				GraphicsExtension.drawCircle(g, ox+radius+offset.x, oy+radius+offset.y, radius);
-
-			Wyngine.DRAW_COUNT++;
-		}
 	}
 
 	override public function destroy ()

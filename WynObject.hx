@@ -1,6 +1,8 @@
 package wyn;
 
 import kha.math.FastVector2;
+import kha.Color;
+import kha.graphics2.GraphicsExtension;
 
 class WynObject
 {
@@ -93,6 +95,23 @@ class WynObject
 	{
 		// By default, empty objects don't have image.
 		// Do rendering logic in WynSprite instead.
+
+		if (Wyngine.DEBUG_DRAW && Wyngine.DRAW_COUNT < Wyngine.DRAW_COUNT_MAX)
+		{
+			var g = c.buffer.g2;
+			var ox = x - (c.scrollX - c.shakeX) * scrollFactorX;
+			var oy = y - (c.scrollY - c.shakeY) * scrollFactorY;
+
+			// Debug hitbox
+			g.color = Color.Red;
+
+			if (hitboxType == WynObject.HITBOX)
+				g.drawRect(ox + offset.x, oy + offset.y, width, height);
+			else if (hitboxType == WynObject.HITCIRCLE)
+				GraphicsExtension.drawCircle(g, ox+radius+offset.x, oy+radius+offset.y, radius);
+
+			Wyngine.DRAW_COUNT++;
+		}
 	}
 
 	public function destroy ()
@@ -132,6 +151,10 @@ class WynObject
 	 */
 	public function collide (other:WynObject) : Bool
 	{
+		// no need to check if there's no dimension
+		// if (width == 0 || height == 0)
+		// 	return false;
+
 		if (hitboxType == HITBOX)
 		{
 			if (other.hitboxType == HITBOX)
