@@ -311,7 +311,7 @@ class Wyngine extends Game
 		}
 
 		// Main game update goes here
-		currentScreen.update(_dt);
+		currentScreen.tryUpdate(dt);
 	}
 
 	function updateFps ()
@@ -359,7 +359,13 @@ class Wyngine extends Game
 
 			// Draw each object onto current camera
 			g.color = Color.White;
+
+			// Render screen (and subscreens, if any) onto current cam
 			currentScreen.render(cam);
+
+			// Once all screens are rendered, render the cam for
+			// screenshake/flash/fill effects.
+			cam.render();
 
 			g.end();
 		}

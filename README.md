@@ -39,7 +39,12 @@ Demos made with the engine so far:
 * Buttons, 9-slice buttons
 * Tweening (with [David King's refactored code](https://github.com/oodavid/timestep/blob/master/src/animate/transitions.js) based on [Andrey Sitnik's easings.net](http://easings.net/))
 * Particle system (for explosions & smoke effects)
+* Subscreens (similar to Flixel's SubStates)
 
 # TODO
 
 https://trello.com/b/LAOdvBzt/wyngine
+
+# NOTES
+
+Wyngine is currently based on legacy Kha code. The most recent (as of December 5 2015) is still unstable and mostly broken, so I have not updated Wyngine to to sync with them yet.
