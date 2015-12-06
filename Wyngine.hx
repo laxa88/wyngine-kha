@@ -391,7 +391,7 @@ class Wyngine extends Game
 
 		// Once we're done, draw and upscale the buffer onto screen
 		g = frame.g2;
-		g.begin();
+		g.begin(true, bgColor);
 
 		Scaler.scale(buffer, frame, Sys.screenRotation);
 
