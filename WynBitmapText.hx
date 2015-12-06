@@ -88,7 +88,7 @@ class WynBitmapText extends WynSprite
 	 * Loads the bitmap font from Loader. Make sure you added it in project.kha.
 	 * TODO: options parameter
 	 */
-	public function new (str:String, fontName:String, x:Int=0, y:Int=0, w:Int=200, h:Int=100, option:Options)
+	public function new (str:String, fontName:String, x:Float=0, y:Float=0, w:Int=200, h:Int=100, ?option:Options)
 	{
 		super(x, y, w, h);
 
