@@ -7,6 +7,9 @@ class WynInput
 {
 	public static var instance:WynInput;
 
+	private var _anyKeyDown:Bool = false;
+	private var _anyKeyHeld:Bool = false;
+	private var _anyKeyUp:Bool = false;
 	private var _keysPressed:Map<Key, Bool>;
 	private var _charsPressed:Map<String, Bool>;
 	private var _keysHeld:Map<Key, Bool>;
@@ -28,6 +31,8 @@ class WynInput
 	{
 		for (key in _keysPressed.keys())
 		{
+			// If a key is "pressed", flag "held"
+			// (in next update) If a key is "held", unflag "pressed"
 			if (_keysPressed[key])
 			{
 				if (_keysHeld[key])
@@ -36,6 +41,8 @@ class WynInput
 					_keysHeld[key] = true;
 			}
 
+			// If a key is "released", unflag "held"
+			// (in next update) If a key is "held", unflag "released"
 			if (_keysReleased[key])
 			{
 				if (_keysHeld[key])
@@ -45,6 +52,7 @@ class WynInput
 			}
 		}
 
+		// Similar to code above, but this is for character keys.
 		for (char in _charsPressed.keys())
 		{
 			if (_charsPressed[char])
@@ -63,10 +71,29 @@ class WynInput
 					_charsReleased[char] = false;
 			}
 		}
+
+		// Same as above, but this is for any key.
+		if (_anyKeyDown)
+		{
+			if (_anyKeyHeld)
+				_anyKeyDown = false;
+			else
+				_anyKeyHeld = true;
+		}
+		if (_anyKeyUp)
+		{
+			if (_anyKeyHeld)
+				_anyKeyHeld = false;
+			else
+				_anyKeyUp = false;
+		}
 	}
 
 	public function destroy ()
 	{
+		_anyKeyDown = false;
+		_anyKeyHeld = false;
+		_anyKeyUp = false;
 		_keysPressed = null;
 		_charsPressed = null;
 		_keysHeld = null;
@@ -85,6 +112,8 @@ class WynInput
 
 	private function onKeyDown (key:Key, char:String):Void
 	{
+		_anyKeyDown = true;
+
 		if (key == Key.CHAR)
 		{
 			_charsPressed[char] = true;
@@ -98,6 +127,8 @@ class WynInput
 	}
 	private function onKeyUp (key:Key, char:String):Void
 	{
+		_anyKeyUp = true;
+
 		if (key == Key.CHAR)
 		{
 			_charsPressed[char] = false;
@@ -151,6 +182,18 @@ class WynInput
 
 		// Reset all notifier arrays
 		reset();
+	}
+	public static function isAnyKeyDown ():Bool
+	{
+		return instance._anyKeyDown;
+	}
+	public static function isAnyKeyHeld ():Bool
+	{
+		return instance._anyKeyHeld;
+	}
+	public static function isAnyKeyUp ():Bool
+	{
+		return instance._anyKeyUp;
 	}
 	public static function isKeyDown (key:Key, char:String=""):Bool
 	{
