@@ -73,12 +73,12 @@ class WynSprite extends WynObject
 		animator = new WynAnimator(this);
 	}
 
-	override public function update (dt:Float)
+	override public function update ()
 	{
-		super.update(dt);
+		super.update();
 
 		// update animation
-		animator.update(dt);
+		animator.update();
 
 		// update frame index
 		updateAnimator();

@@ -31,14 +31,14 @@ class WynParticle extends WynSprite
 		this.isStaticPosition = isStaticPosition;
 	}
 
-	override public function update (dt:Float)
+	override public function update ()
 	{
-		super.update(dt);
+		super.update();
 
 		// Only animate scale/alpha and flag to kill if lifespan is not zero.
 		if (lifespan > 0)
 		{
-			lifeElapsed += dt;
+			lifeElapsed += Wyngine.dt;
 
 			updateParticle();
 

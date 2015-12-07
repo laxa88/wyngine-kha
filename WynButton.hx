@@ -52,9 +52,9 @@ class WynButton extends WynSprite
 		_exitListeners = [];
 	}
 
-	override public function update (dt:Float)
+	override public function update ()
 	{
-		super.update(dt);
+		super.update();
 
 		if (!active)
 			return;

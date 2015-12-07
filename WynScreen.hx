@@ -27,7 +27,7 @@ class WynScreen extends WynGroup<WynObject>
 		height = Wyngine.G.gameHeight;
 	}
 
-	public function tryUpdate (dt:Float)
+	public function tryUpdate ()
 	{
 		// Referenced from Flixel:
 		// Instead of calling update() directly, Wyngine will call tryUpdate().
@@ -39,7 +39,7 @@ class WynScreen extends WynGroup<WynObject>
 		{
 			// Only update this screen if it's persistent, or if
 			// this is the only screen visible.
-			update(dt);
+			update();
 		}
 
 		if (requestSubScreenReset)
@@ -50,13 +50,13 @@ class WynScreen extends WynGroup<WynObject>
 		else if (currSubScreen != null)
 		{
 			// Update subscreen if it exists
-			currSubScreen.tryUpdate(dt);
+			currSubScreen.tryUpdate();
 		}
 	}
 
-	override public function update (dt:Float)
+	override public function update ()
 	{
-		super.update(dt);
+		super.update();
 	}
 
 	override public function render (c:WynCamera)

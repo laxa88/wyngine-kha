@@ -28,9 +28,9 @@ class WynSubScreen extends WynScreen
 		closeCallback = null;
 	}
 
-	override public function update (dt:Float)
+	override public function update ()
 	{
-		super.update(dt);
+		super.update();
 	}
 
 	override public function render (c:WynCamera)

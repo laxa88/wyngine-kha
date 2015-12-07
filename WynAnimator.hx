@@ -34,7 +34,7 @@ class WynAnimator
 		_frameIndex = 0;
 	}
 
-	public function update (dt:Float)
+	public function update ()
 	{
 		// This keeps track of frame being played for
 		// the current animation. The animation itself
@@ -49,7 +49,7 @@ class WynAnimator
 		if (_currAnim == null)
 			return;
 
-		_frameElapsed += dt * _speed;
+		_frameElapsed += Wyngine.dt * _speed;
 
 		// If frame elapsed more than frame rate, update
 		// frame to next index. The use of "while" ensures

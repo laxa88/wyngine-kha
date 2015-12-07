@@ -25,9 +25,9 @@ class WynText extends WynSprite
 		text = t;
 	}
 
-	public override function update (dt:Float)
+	public override function update ()
 	{
-		super.update(dt);
+		super.update();
 
 		// Only redraw the text if the text changed,
 		// to save on draw calls.

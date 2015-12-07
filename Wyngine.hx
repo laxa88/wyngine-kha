@@ -87,9 +87,10 @@ class Wyngine extends Game
 	var _oldDt:Float;
 	var _newDt:Float;
 	var _fpsList:Array<Float> = [0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0];
-	public var realDt:Float; // actual delta time between each update
-	public var dt:Float; // constant 1/60fps delta time
-	public var fps:Int; // fps for debug purposes
+	public static var realDt:Float; // actual delta time between each update
+	public static var rawDt:Float; // constant 1/60fps delta time (unaffected by pause)
+	public static var dt:Float; // affected by pause
+	public static var fps:Int; // fps for debug purposes
 
 
 
@@ -287,20 +288,20 @@ class Wyngine extends Game
 		// Get elapsed time
 		_oldDt = _newDt;
 		_newDt = Scheduler.time();
-		dt = (_newDt - _oldDt);
+		rawDt = (_newDt - _oldDt);
 
 		// Get FPS
 		updateFps();
 
 		// Get dt based on whether it's paused or not
-		var _dt = dt * ((paused) ? 0 : 1);
+		dt = rawDt * ((paused) ? 0 : 1);
 
 		// Update inputs
 		input.update();
 		touch.update();
 		mouse.update();
 		//audio.update(); // no need for this yet
-		tween.update(_dt);
+		tween.update();
 
 		// Update each camera if they have effects, such as
 		// shake, flash, fade...
@@ -308,11 +309,11 @@ class Wyngine extends Game
 		for (i in 0 ... cameras.length)
 		{
 			cam = cameras[i];
-			cam.update(_dt);
+			cam.update();
 		}
 
 		// Main game update goes here
-		currentScreen.tryUpdate(dt);
+		currentScreen.tryUpdate();
 	}
 
 	function updateFps ()

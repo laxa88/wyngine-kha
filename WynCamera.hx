@@ -95,7 +95,7 @@ class WynCamera
 	 * This is called from Wyngine to update animations, such as
 	 * camera shake, flash, etc.
 	 */
-	public function update (dt:Float)
+	public function update ()
 	{
 		// Handle camera shake logic
 		if (intensity > 0)
@@ -103,7 +103,7 @@ class WynCamera
 			var point:FastVector2 = WynUtil.randomInCircle().mult(intensity);
 			shakeX = (shakeHorizontal) ? point.x : 0;
 			shakeY = (shakeVertical) ? point.y : 0;
-			intensity -= dt * weakenRate;
+			intensity -= Wyngine.dt * weakenRate;
 
 			if (intensity <= 0)
 			{
@@ -115,8 +115,8 @@ class WynCamera
 		// Handle flash, fadein, fadeout logic
 		if (isFading || curtainDuration > 0)
 		{
-			curtainDuration -= dt;
-			curtainAlpha += (curtainFadeDirection * (dt / curtainDuration)); // fade forward or back
+			curtainDuration -= Wyngine.dt;
+			curtainAlpha += (curtainFadeDirection * (Wyngine.dt / curtainDuration)); // fade forward or back
 
 			if (curtainDuration <= 0)
 			{

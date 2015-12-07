@@ -231,9 +231,9 @@ class WynBitmapText extends WynSprite
 		fontCache.set(fontName, font);
 	}
 
-	override public function update (dt:Float)
+	override public function update ()
 	{
-		super.update(dt);
+		super.update();
 
 		// Don't proceed if font not loaded
 		if (font == null)

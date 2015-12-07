@@ -23,9 +23,9 @@ class WynGroup<T:WynObject> extends WynObject
 		objectType = WynObject.GROUP;
 	}
 
-	override public function update (dt:Float)
+	override public function update ()
 	{
-		super.update(dt);
+		super.update();
 
 		// Instead of doing "for (o in members)", we use a single
 		// storage variable for looping, to keep things casted to
@@ -38,7 +38,7 @@ class WynGroup<T:WynObject> extends WynObject
 			o = members[i++];
 
 			if (o != null && o.exists && o.active)
-				o.update(dt);
+				o.update();
 		}
 	}
 

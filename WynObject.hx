@@ -76,19 +76,19 @@ class WynObject
 		objectType = WynObject.OBJECT;
 	}
 
-	public function update (dt:Float)
+	public function update ()
 	{
 		// Update physics
-		velocity.x = WynUtil.computeVelocity(dt, velocity.x, acceleration.x, drag.x, maxVelocity.x);
-		velocity.y = WynUtil.computeVelocity(dt, velocity.y, acceleration.y, drag.y, maxVelocity.y);
+		velocity.x = WynUtil.computeVelocity(Wyngine.dt, velocity.x, acceleration.x, drag.x, maxVelocity.x);
+		velocity.y = WynUtil.computeVelocity(Wyngine.dt, velocity.y, acceleration.y, drag.y, maxVelocity.y);
 		oldX = x;
 		oldY = y;
-		x += dt * velocity.x;
-		y += dt * velocity.y;
+		x += Wyngine.dt * velocity.x;
+		y += Wyngine.dt * velocity.y;
 
 		// Update rotation
-		angularVelocity = WynUtil.computeVelocity(dt, angularVelocity, angularAcceleration, angularDrag, angularMaxVelocity);
-		angle += dt * angularVelocity;
+		angularVelocity = WynUtil.computeVelocity(Wyngine.dt, angularVelocity, angularAcceleration, angularDrag, angularMaxVelocity);
+		angle += Wyngine.dt * angularVelocity;
 	}
 
 	public function render (c:WynCamera)

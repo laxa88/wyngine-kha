@@ -88,7 +88,7 @@ class WynTween
 		queue = [];
 	}
 
-	public function update (dt:Float)
+	public function update ()
 	{
 		// reusable variables
 		var i = 0;
@@ -108,7 +108,7 @@ class WynTween
 			}
 
 			// Update elapsed
-			tween.elapsed += dt;
+			tween.elapsed += Wyngine.dt;
 			if (tween.elapsed >= tween.duration)
 				tween.elapsed = tween.duration;
 
