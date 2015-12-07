@@ -47,4 +47,4 @@ https://trello.com/b/LAOdvBzt/wyngine
 
 # NOTES
 
-Wyngine is currently based on legacy Kha code. The most recent (as of December 5 2015) is still unstable and mostly broken, so I have not updated Wyngine to to sync with them yet.
+Wyngine is currently based on legacy Kha code. The most recent (as of December 5 2015) is still unstable and mostly broken, so I have not updated Wyngine to sync with them yet.

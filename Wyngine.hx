@@ -109,6 +109,7 @@ class Wyngine extends Game
 		G = this;
 
 		this.zoom = zoom;
+		_newDt = Scheduler.time();
 
 		// Switch to screen after we're done
 		switchScreen(startScreen);
