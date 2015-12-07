@@ -55,7 +55,8 @@ typedef Line = {
 
 typedef Options = {
 	@:optional var color:Color;
-	@:optional var align:Int;
+	@:optional var halign:Int;
+	@:optional var valign:Int;
 }
 
 class WynBitmapText extends WynSprite
@@ -64,9 +65,13 @@ class WynBitmapText extends WynSprite
 	// https://github.com/RafaelOliveira/BitmapText/blob/master/lib/bitmapText/BitmapText.hx
 
 	// compile-time variables
-	public static inline var ALIGN_LEFT:Int = 0;
-	public static inline var ALIGN_MIDDLE:Int = 1;
-	public static inline var ALIGN_RIGHT:Int = 2;
+	public static inline var HALIGN_LEFT:Int = 0;
+	public static inline var HALIGN_MIDDLE:Int = 1;
+	public static inline var HALIGN_RIGHT:Int = 2;
+
+	public static inline var VALIGN_TOP:Int = 0;
+	public static inline var VALIGN_CENTER:Int = 1;
+	public static inline var VALIGN_BOTTOM:Int = 2;
 
 	static var spaceCharCode:Int = " ".charCodeAt(0);
 
@@ -78,7 +83,8 @@ class WynBitmapText extends WynSprite
 	var _cursor:FastVector2 = new FastVector2();
 
 	public var font(default, null):Font;
-	public var align:Int = ALIGN_LEFT;
+	public var halign:Int = HALIGN_LEFT;
+	public var valign:Int = VALIGN_TOP;
 	public var trimEnds:Bool = true; // trims trailing space characters
 	public var trimAll:Bool = true; // trims ALL space characters (including mid-sentence)
 
@@ -120,8 +126,11 @@ class WynBitmapText extends WynSprite
 			if (option.color != null)
 				color = option.color;
 
-			if (option.align != null)
-				align = option.align;
+			if (option.halign != null)
+				halign = option.halign;
+
+			if (option.valign != null)
+				valign = option.valign;
 		}
 	}
 
@@ -250,17 +259,24 @@ class WynBitmapText extends WynSprite
 		image.g2.begin(true, 0x00000000);
 		image.g2.color = color;
 
+		switch (valign)
+		{
+			case VALIGN_TOP: _cursor.y = 0;
+			case VALIGN_CENTER: _cursor.y = (imageHeight/2) - (lines.length*font.lineHeight/2);
+			case VALIGN_BOTTOM: _cursor.y = imageHeight - font.lineHeight;
+		}
+
 		for (line in lines)
 		{
 			// NOTE:
 			// Based on image.width and each line.width, we just
 			// offset the starting cursor.x to make it look like
 			// it's aligned to the correct side.
-			switch (align)
+			switch (halign)
 			{
-				case ALIGN_LEFT: _cursor.x = 0;
-				case ALIGN_RIGHT: _cursor.x = image.width - line.width;
-				case ALIGN_MIDDLE: _cursor.x = (image.width/2) - (line.width/2);
+				case HALIGN_LEFT: _cursor.x = 0;
+				case HALIGN_RIGHT: _cursor.x = image.width - line.width;
+				case HALIGN_MIDDLE: _cursor.x = (image.width/2) - (line.width/2);
 			}
 
 			var lineText:String = line.text;
@@ -554,40 +570,6 @@ class WynBitmapText extends WynSprite
 		}
 
 		return linesArray;
-	}
-
-	/**
-	 * Trims the line - removes spaces from the end of the text.
-	 */
-	function trimLastLine (lines:Array<Line>)
-	{
-		// Get last char. I'm writing 4 lines for readability sake.
-		var lastLine:Line = lines[lines.length - 1];
-		var i = lastLine.text.length-1;
-		var char:String = lastLine.text.charAt(i);
-
-		// If the last character is a space, remove it,
-		// and reduce the width of the line.
-		while (char == " ")
-		{
-			// Remove this space character
-			lastLine.text = lastLine.text.substr(0, lastLine.text.length-1);
-			lastLine.width -= font.spaceWidth;
-
-			// Move one character backwards and check again
-			i--;
-			char = lastLine.text.charAt(i);
-		}
-
-		// Trim from the front as well
-		char = lastLine.text.charAt(0);
-		while (char == " ")
-		{
-			lastLine.text = lastLine.text.substr(1);
-			lastLine.width -= font.spaceWidth;
-
-			char = lastLine.text.charAt(0);
-		}
 	}
 
 	override public function render (c:WynCamera)
