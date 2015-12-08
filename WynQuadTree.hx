@@ -423,7 +423,7 @@ class WynQuadTree
 		for (i in 0 ... 4)
 		{
 			if (_nodes[i] != null)
-				hit = _nodes[i].execute();
+				hit = hit || _nodes[i].execute();
 		}
 
 		// If at least one of the above compared list items
