@@ -212,6 +212,12 @@ class Wyngine extends Game
 				// Canvas size is unaffected by browser size
 				canvasW = kha.Sys.khanvas.width;
 				canvasH = kha.Sys.khanvas.height;
+
+				// FIX:
+				// When khanvas has "height: 100%", the width gets screwed up a lot
+				// Always make sure the ratio is maintained.
+				var ratio = windowWidth / windowHeight;
+				kha.Sys.khanvas.width = cast (canvasH * ratio);
 			}
 
 			// Every time the canvas resizes, the origin will be displaced,
