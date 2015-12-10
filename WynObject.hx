@@ -335,12 +335,12 @@ class WynObject
 
 	private function get_cx () : Float
 	{
-		return (x + width/2 - offset.x);
+		return (x + width/2 + offset.x);
 	}
 
 	private function get_cy () : Float
 	{
-		return (y + height/2 - offset.y);
+		return (y + height/2 + offset.y);
 	}
 
 	private function set_cx (val:Float) : Float

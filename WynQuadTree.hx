@@ -460,6 +460,9 @@ class WynQuadTree
 		{
 			var _object2:WynObject = _listI[i];
 
+			if (_object == _object2)
+				continue;
+
 			thisHit = _object.collide(_object2);
 			if (thisHit)
 			{
