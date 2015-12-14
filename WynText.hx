@@ -2,7 +2,7 @@ package wyn;
 
 import kha.Image;
 import kha.Color;
-import kha.Loader;
+import kha.Assets;
 import kha.Font;
 import kha.FontStyle;
 import kha.graphics2.Graphics;
@@ -10,16 +10,18 @@ import kha.graphics2.Graphics;
 class WynText extends WynSprite
 {
 	public var font:Font;
+	public var fontSize:Int;
 	public var text:String = "";
 	var _prevText:String = "";
 
 
 
-	public function new (t:String, name:String, size:Int, x:Float=0, y:Float=0, w:Int=200, h:Int=100, bold:Bool=false, italic:Bool=false, underlined:Bool=false)
+	public function new (t:String, f:Font, fs:Int, x:Float=0, y:Float=0, w:Int=200, h:Int=100)
 	{
 		super(x, y, w, h);
 
-		setFont(name, size, bold, italic, underlined);
+		setFont(f);
+		setSize(fs);
 		createEmptyImage(w, h, true);
 
 		text = t;
@@ -45,11 +47,21 @@ class WynText extends WynSprite
 		super.render(c);
 	}
 
-	public function setFont (name:String, size:Int, bold:Bool=false, italic:Bool=false, underlined:Bool=false)
+	public function setFont (f:Font)
 	{
-		// Make sure the size is available as in project.kha
-		font = Loader.the.loadFont(name, new FontStyle(bold, italic, underlined), size);
+		font = f;
 	}
+
+	public function setSize (fs:Int)
+	{
+		fontSize = fs;
+	}
+
+	// public function loadFont (name:String, size:Int, bold:Bool=false, italic:Bool=false, underlined:Bool=false)
+	// {
+	// 	// Make sure the size is available as in project.kha
+	// 	font = Loader.the.loadFont(name, new FontStyle(bold, italic, underlined), size);
+	// }
 
 	function updateText ()
 	{
@@ -58,6 +70,7 @@ class WynText extends WynSprite
 		// Update the text once
 		image.g2.begin(true, Color.fromValue(0x00000000));
 		image.g2.font = font;
+		image.g2.fontSize = fontSize;
 		image.g2.color = color; // white
 		image.g2.drawString(text, 0, 0);
 		image.g2.end();

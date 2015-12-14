@@ -2,7 +2,7 @@ package wyn;
 
 import kha.Color;
 import kha.Image;
-import kha.Loader;
+import kha.Assets;
 import kha.math.FastMatrix3;
 import kha.math.FastVector2;
 import kha.graphics2.Graphics;
@@ -265,16 +265,17 @@ class WynSprite extends WynObject
 	}
 
 	/**
-	 * Load image via kha's internal image loader. Make
-	 * sure you loaded the room that contains this image,
-	 * in project.kha.
+	 * Set the image after it's loaded.
+	 *
+	 * Example:
+	 * If the image is "my-png_image.png", then for img parameter, you pass:
+	 * Assets.images.my_png_image
 	 */
-	public function loadImage (name:String, frameW:Int, frameH:Int)
+	public function setImage (img:Image, frameW:Int, frameH:Int)
 	{
 		_spriteType = SINGLE;
 
-		// Image name is set from project.kha
-		image = Loader.the.getImage(name);
+		image = img;
 
 		// Update variables
 		frameWidth = frameW;
@@ -290,12 +291,15 @@ class WynSprite extends WynObject
 		// NOTE: does not adjust hitbox offset
 	}
 
-	public function load9SliceImage (name:String, ?data:SliceData)
+	/**
+	 * Refer to setImage() for similar usage of img parameter.
+	 */
+	public function set9SliceImage (img:Image, data:SliceData)
 	{
 		_spriteType = WynSprite.SINGLE9SLICE;
 
 		// This is the original image which we'll use as a base for 9-slicing.
-		originalImage = Loader.the.getImage(name);
+		originalImage = img;
 
 		// Rather than create an image that fits width/height exactly,
 		// We create a full-screen image as the "max size" for the 9-slice.
@@ -303,29 +307,12 @@ class WynSprite extends WynObject
 		// doing a createRenderTarget each time.
 		image = Image.createRenderTarget(Wyngine.G.gameWidth, Wyngine.G.gameHeight);
 
-		if (data != null)
-		{
-			// Draw the slice directly onto the image, if there's
-			// the slice data. Otherwise, we're gonna just draw the whole
-			// original image and scale it.
-			sliceData = data;
+		sliceData = data;
 
-			imageWidth = cast width;
-			imageHeight = cast height;
+		imageWidth = cast width;
+		imageHeight = cast height;
 
-			drawSlice(originalImage, image, sliceData);
-		}
-		else
-		{
-			imageWidth = image.width;
-			imageHeight = image.height;
-
-			// If no slice data is given, then we'll scale and fit the whole
-			// originalImage onto the final image.
-			image.g2.begin(true, Color.fromValue(0x00000000));
-			image.g2.drawScaledImage(originalImage, 0, 0, imageWidth, imageHeight);
-			image.g2.end();
-		}
+		drawSlice(originalImage, image, sliceData);
 	}
 
 	/**
@@ -338,6 +325,11 @@ class WynSprite extends WynObject
 			return;
 
 		var g:Graphics = target.g2;
+
+		if (data.borderLeft == null) data.borderLeft = 0;
+		if (data.borderRight == null) data.borderRight = 0;
+		if (data.borderTop == null) data.borderTop = 0;
+		if (data.borderBottom == null) data.borderBottom = 0;
 
 		// If the total of 3-slices horizontally or vertically
 		// is longer than the actual button's size, Then we'll have
@@ -430,20 +422,6 @@ class WynSprite extends WynObject
 			);
 
 		g.end();
-	}
-
-	/**
-	 * Not sure if this will not work on an existing image
-	 * because in Khasteroids, the image width/height do not reset.
-	 * NOTE: doing this does not reset the animation
-	 * and frame x/y/width/height values, remember to
-	 * manually update them.
-	 */
-	public function setImage (img:Image)
-	{
-		image = img;
-
-		// NOTE: does not adjust hitbox offset
 	}
 
 	public function playAnim (name:String, reset:Bool=false)

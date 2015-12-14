@@ -2,7 +2,7 @@ package wyn;
 
 import haxe.xml.Fast;
 import kha.Blob;
-import kha.Loader;
+import kha.Assets;
 
 // Stopped here
 // - clean up xml reading

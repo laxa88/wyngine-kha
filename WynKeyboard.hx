@@ -3,9 +3,9 @@ package wyn;
 import kha.Key;
 import kha.input.Keyboard;
 
-class WynInput
+class WynKeyboard
 {
-	public static var instance:WynInput;
+	public static var instance:WynKeyboard;
 
 	private var _anyKeyDown:Bool = false;
 	private var _anyKeyHeld:Bool = false;
@@ -106,7 +106,7 @@ class WynInput
 
 	/**
 	 * These are callbacks for kha.Keyboard keyDown and keyUp events.
-	 * Callbacks will be processed, and stored into WynInput's 
+	 * Callbacks will be processed, and stored into WynKeyboard's 
 	 * char or key's press/held/released boolean arrays.
 	 */
 
@@ -170,15 +170,15 @@ class WynInput
 
 	/**
 	 * These public static methods allow you to easily call the API, e.g.
-	 * 		WynInput.init()
-	 * 		WynInput.isKeyDown()
+	 * 		WynKeyboard.init()
+	 * 		WynKeyboard.isKeyDown()
 	 * 		... and so on
 	 */
 
 	public static function init ()
 	{
 		// Init instance
-		instance = new WynInput();
+		instance = new WynKeyboard();
 
 		// Reset all notifier arrays
 		reset();

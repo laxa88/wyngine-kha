@@ -1,18 +1,16 @@
 package wyn;
 
-import kha.Loader;
-import kha.Music;
+import kha.Assets;
 import kha.Sound;
 import kha.audio1.Audio;
-import kha.audio1.MusicChannel;
-import kha.audio1.SoundChannel;
+import kha.audio1.AudioChannel;
 
 class WynAudio
 {
 	public static var instance:WynAudio;
-	private var _musics:Map<String, Music>;
+	private var _musics:Map<String, Sound>;
 	private var _sounds:Map<String, Sound>;
-	private var _bgm:Map<String, MusicChannel>;
+	private var _bgm:Map<String, AudioChannel>;
 
 
 
@@ -20,9 +18,9 @@ class WynAudio
 	{
 		if (instance == null)
 		{
-			_musics = new Map<String, Music>();
+			_musics = new Map<String, Sound>();
 			_sounds = new Map<String, Sound>();
-			_bgm = new Map<String, MusicChannel>();
+			_bgm = new Map<String, AudioChannel>();
 			instance = this;
 		}
 		else
@@ -47,9 +45,9 @@ class WynAudio
 		for (item in _bgm)
 			item.stop();
 
-		_musics = new Map<String, Music>();
+		_musics = new Map<String, Sound>();
 		_sounds = new Map<String, Sound>();
-		_bgm = new Map<String, MusicChannel>();
+		_bgm = new Map<String, AudioChannel>();
 	}
 
 	public function _playMusic (name:String, volume:Float=1.0, repeat:Bool=true)
@@ -57,11 +55,11 @@ class WynAudio
 		// TODO volume doesn't work
 
 		if (_musics[name] == null)
-			_musics[name] = Loader.the.getMusic(name);
+			_musics[name] = null;
 
 		if (_bgm[name] == null)
 		{
-			var channel:MusicChannel = Audio.playMusic(_musics[name], repeat);
+			var channel:AudioChannel = Audio.play(_musics[name], repeat);
 			channel.volume = 0.1;
 			_bgm[name] = channel;
 		}
@@ -97,9 +95,9 @@ class WynAudio
 	public function _playSound (name:String, volume:Float=1.0)
 	{
 		if (_sounds[name] == null)
-			_sounds[name] = Loader.the.getSound(name);
+			_sounds[name] = null;
 
-		var channel:SoundChannel = Audio.playSound(_sounds[name]);
+		var channel:AudioChannel = Audio.play(_sounds[name]);
 		channel.volume = volume;
 	}
 

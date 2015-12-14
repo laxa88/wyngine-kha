@@ -116,7 +116,7 @@ class WynScreen extends WynGroup<WynObject>
 			// If the subscreen covers the main screen, don't
 			// let the input interfere with the subscreen upon creation
 			if (!persistentUpdate)
-				WynInput.reset();
+				WynKeyboard.reset();
 
 			if (!currSubScreen._created)
 			{

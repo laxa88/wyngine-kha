@@ -2,7 +2,7 @@ package wyn;
 
 import kha.Color;
 import kha.Image;
-import kha.Loader;
+import kha.Assets;
 import kha.graphics2.Graphics;
 
 class WynButton extends WynSprite
@@ -172,12 +172,12 @@ class WynButton extends WynSprite
 	 * sure you loaded the room that contains this image,
 	 * in project.kha.
 	 */
-	public function loadButtonImage (name:String, frameW:Int, frameH:Int, ?up:WynSprite.SliceData, ?hover:WynSprite.SliceData, ?down:WynSprite.SliceData)
+	public function setButtonImage (img:Image, frameW:Int, frameH:Int, ?up:WynSprite.SliceData, ?hover:WynSprite.SliceData, ?down:WynSprite.SliceData)
 	{
 		_spriteType = WynSprite.BUTTON;
 
-		// Image name is set from project.kha
-		image = Loader.the.getImage(name);
+		// Same as WynSprite
+		image = img;
 
 		// Set default variables in case there is no button data
 		frameWidth = imageWidth = frameW;
@@ -197,7 +197,7 @@ class WynButton extends WynSprite
 	 * frameWidth/frameHeight whenever width/height is changed, much like
 	 * how WynSprite's 9-slice image works.
 	 */ 
-	public function load9SliceButtonImage (name:String, ?up:WynSprite.SliceData, ?hover:WynSprite.SliceData, ?down:WynSprite.SliceData)
+	public function set9SliceButtonImage (img:Image, ?up:WynSprite.SliceData, ?hover:WynSprite.SliceData, ?down:WynSprite.SliceData)
 	{
 		_spriteType = WynSprite.BUTTON9SLICE;
 
@@ -207,7 +207,7 @@ class WynButton extends WynSprite
 		downData = down;
 
 		// Refer to WynSprite.load9SliceImage for comments on this part
-		originalImage = Loader.the.getImage(name);
+		originalImage = img;
 		image = Image.createRenderTarget(Wyngine.G.gameWidth, Wyngine.G.gameHeight);
 
 		// Note: image's frame X/Y/Width/Height never changes; we use the

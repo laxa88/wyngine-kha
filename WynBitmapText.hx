@@ -2,7 +2,7 @@ package wyn;
 
 import kha.Image;
 import kha.Color;
-import kha.Loader;
+import kha.Assets;
 import kha.Blob;
 import kha.math.FastVector2;
 import haxe.xml.Fast;
@@ -91,65 +91,48 @@ class WynBitmapText extends WynSprite
 
 
 	/**
-	 * Loads the bitmap font from Loader. Make sure you added it in project.kha.
-	 * TODO: options parameter
+	 * Loads the bitmap font from cache. Remember to call loadFont first before
+	 * creating new WynBitmapTexts.
 	 */
 	public function new (str:String, fontName:String, x:Float=0, y:Float=0, w:Int=200, h:Int=100, ?option:Options)
 	{
 		super(x, y, w, h);
 
-		text = str;
-
 		if (fontCache != null && fontCache.exists(fontName))
 		{
+			text = str;
+
 			font = fontCache.get(fontName);
 			createEmptyImage(w, h, true);
+
+			if (option != null)
+			{
+				if (option.color != null)
+					color = option.color;
+
+				if (option.halign != null)
+					halign = option.halign;
+
+				if (option.valign != null)
+					valign = option.valign;
+			}
 		}
 		else
 		{
-			loadFont(fontName);
-
-			// Try to assign again once we're done loading font.
-			if (fontCache != null && fontCache.exists(fontName))
-			{
-				font = fontCache.get(fontName);
-				createEmptyImage(w, h, true);
-			}
-			else
-			{
-				trace('Failed to init WynBitmapText with "${fontName}"');
-			}
-		}
-
-		if (option != null)
-		{
-			if (option.color != null)
-				color = option.color;
-
-			if (option.halign != null)
-				halign = option.halign;
-
-			if (option.valign != null)
-				valign = option.valign;
+			// If the fontCache or fontName doesn't exist, fail silently!
+			trace('Failed to init WynBitmapText with "${fontName}"');
 		}
 	}
 
-	public static function loadFont (fontName:String)
+	/**
+	 * Do this first before creating new WynBitmapText, because we
+	 * need to process the font data before using.
+	 */
+	public static function loadFont (fontName:String, fontImage:Image, fontData:Blob)
 	{
 		// NOTE: You can't do ${fontName} using double-quotes! ("")
 		// You have to use single quotes! ('')
 
-		var image = Loader.the.getImage('${fontName}.png');
-		var data = Loader.the.getBlob('${fontName}.fnt');
-
-		if (image != null && data != null)
-			processFont(fontName, image, data);
-		else
-			trace('font "${fontName}" not found!');
-	}
-
-	inline static function processFont (fontName:String, image:Image, fntData:Blob)
-	{
 		// We'll store each letter's data into a dictionary here later.
 		var letters = new Map<Int, Letter>();
 
@@ -157,7 +140,7 @@ class WynBitmapText extends WynSprite
 		// var xml = new haxe.xml.Fast(Xml.parse(data.toString()).firstElement());
 
 		// For readability sake, I've written them seperately
-		var blobString:String = fntData.toString();
+		var blobString:String = fontData.toString();
 		var fullXml:Xml = Xml.parse(blobString);
 		var fontNode:Xml = fullXml.firstElement();
 		var data = new Fast(fontNode);
@@ -223,7 +206,7 @@ class WynBitmapText extends WynSprite
 			size: Std.parseInt(data.node.info.att.size), // this original size this font's image was exported as
 			lineHeight: Std.parseInt(data.node.common.att.lineHeight), // original vertical padding between texts
 			spaceWidth: spaceWidth, // remember, this is only for space character
-			image: image, // the font image sheet
+			image: fontImage, // the font image sheet
 			letters: letters // each letter's data
 		}
 

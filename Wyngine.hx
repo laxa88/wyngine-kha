@@ -1,16 +1,16 @@
 package wyn;
 
-import kha.Sys;
-import kha.Game;
+import kha.SystemImpl;
 import kha.Color;
 import kha.Image;
-import kha.Loader;
+import kha.Assets;
 import kha.Scheduler;
 import kha.Framebuffer;
 import kha.Scaler;
 import kha.ScreenCanvas;
 import kha.math.Random;
 import kha.graphics2.Graphics;
+import kha.graphics2.ImageScaleQuality;
 import kha.graphics4.Graphics2;
 
 /**
@@ -21,8 +21,11 @@ import kha.graphics4.Graphics2;
  * your game in it.
  */
 
-class Wyngine extends Game
+class Wyngine
 {
+	// Don't update or render until assets are done loading.
+	var init = false;
+
 	public static inline var FIT_NONE:Int = 0;
 	public static inline var FIT_WIDTH:Int = 1;
 	public static inline var FIT_HEIGHT:Int = 2;
@@ -32,7 +35,6 @@ class Wyngine extends Game
 	public static var DEBUG_QUAD:Bool = false; // Flag true to see image/collider/quadtree boxes
 
 	public static var G:Wyngine; // static reference
-	public static var totalMemory(get, null):Int;
 
 	// Don't draw too many debug squares -- it'll freeze the game.
 	// Keep track of draw count every render() and stop drawing if
@@ -54,7 +56,7 @@ class Wyngine extends Game
 	public var gameOffsetX(default, null):Int = 0; // used for HTML5 where canvas can be scaled
 	public var gameOffsetY(default, null):Int = 0;
 	public var gameScale(default, null):Float = 1;
-	public var isFullscreen:Bool = false; // for HTML5, whether the canvas fills the entire visible browser size
+	public var isFullscreen(default, set):Bool = false; // for HTML5, whether the canvas fills the entire visible browser size
 
 	public var oriWidth(default, null):Int = 0;
 	public var oriHeight(default, null):Int = 0;
@@ -62,17 +64,15 @@ class Wyngine extends Game
 	public var windowHeight(default, null):Int = 0;
 	public var gameWidth(default, null):Int = 0; // Game's scaled resolution size
 	public var gameHeight(default, null):Int = 0;
-	public var loadPercentage(get, null):Float = 0;
 
 	// Cameras are basically one or more image buffers
 	// rendered onto the main Framebuffer.
-	// TODO multiple cameras
 	public var bilinearFiltering(default, set):Bool = false;
 	public var buffer(default, null):Image;
 	public var framebuffer(default, null):Framebuffer;
 	public var bgColor(default, set):Color;
 	public var cameras(default, null):Array<WynCamera>;
-	var input:WynInput;
+	var input:WynKeyboard;
 	var touch:WynTouch;
 	var mouse:WynMouse;
 	var tween:WynTween;
@@ -100,29 +100,28 @@ class Wyngine extends Game
 	 * @param 	zoom 	If window = 640x480, then if zoom=2,
 	 * 					then output resolution is 320x240.
 	 */
-	public function new (startScreen:Class<WynScreen>, zoom:Float)
+	public function new (startScreen:Class<WynScreen>, gameZoom:Float)
 	{
-		super("Wyngine");
-
 		trace("Wyngine new");
 
 		// Set reference first thing first.
 		G = this;
 
-		this.zoom = zoom;
+		zoom = gameZoom;
 		_newDt = Scheduler.time();
+		nextScreen = startScreen;
 
-		// Switch to screen after we're done
-		switchScreen(startScreen);
+		Assets.loadEverything(onLoadEverything);
 	}
 
-	override public function init ()
+	function onLoadEverything ()
 	{
-		trace("Wyngine init");
+		// Enable update and render
+		init = true;
 
 		#if js
 			// Prevents mobile touches from scrolling/scaling the screen.
-			kha.Sys.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
+			SystemImpl.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
 				e.preventDefault();
 			});
 		#end
@@ -131,6 +130,7 @@ class Wyngine extends Game
 		// screen for HTML5 pages
 		oriWidth = ScreenCanvas.the.width;
 		oriHeight = ScreenCanvas.the.height;
+		trace("### ori " + oriWidth + " , " + oriHeight);
 
 		// By default, random numbers are seeded. Set
 		// a new seed after init if necessary.
@@ -144,8 +144,10 @@ class Wyngine extends Game
 		// window (or HTML5 canvas) size, and update the buffer too.
 		windowWidth = ScreenCanvas.the.width;
 		windowHeight = ScreenCanvas.the.height;
+		trace("### window " + windowWidth + " , " + windowHeight);
 		gameWidth = Std.int(windowWidth / zoom);
 		gameHeight = Std.int(windowHeight / zoom);
+		trace("### game : " + gameWidth + " , " + gameHeight);
 		buffer = Image.createRenderTarget(gameWidth, gameHeight);
 
 		// Initialise the default main camera
@@ -153,26 +155,30 @@ class Wyngine extends Game
 
 		// Initialise engine variables
 		WynCache.init();
-		WynInput.init();
+		WynKeyboard.init();
 		WynTouch.init();
 		WynMouse.init();
 		WynAudio.init();
 		WynTween.init();
 
 		// quick reference
-		input = WynInput.instance;
+		input = WynKeyboard.instance;
 		touch = WynTouch.instance;
 		mouse = WynMouse.instance;
 		tween = WynTween.instance;
 
 		// Start with the originally specified zoom
 		setGameZoom(zoom);
+
+		// Init the screen once
+		initScreen();
+
+		// Switch to screen after we're done
+		switchScreen(nextScreen);
 	}
 
-	public function initMobileMode (fullscreen:Bool)
+	function initScreen ()
 	{
-		isFullscreen = fullscreen;
-
 		#if js
 			// Makes sure that any further resize will trigger this
 			js.Browser.window.addEventListener("resize", resizeBrowserGameScreen);
@@ -204,20 +210,20 @@ class Wyngine extends Game
 			if (isFullscreen)
 			{
 				// Canvas size is same as browser size
-				canvasW = kha.Sys.khanvas.width = js.Browser.window.innerWidth;
-				canvasH = kha.Sys.khanvas.height = js.Browser.window.innerHeight;
+				canvasW = SystemImpl.khanvas.width = js.Browser.window.innerWidth;
+				canvasH = SystemImpl.khanvas.height = js.Browser.window.innerHeight;
 			}
 			else
 			{
 				// Canvas size is unaffected by browser size
-				canvasW = kha.Sys.khanvas.width;
-				canvasH = kha.Sys.khanvas.height;
+				canvasW = SystemImpl.khanvas.width;
+				canvasH = SystemImpl.khanvas.height;
 
 				// FIX:
 				// When khanvas has "height: 100%", the width gets screwed up a lot
 				// Always make sure the ratio is maintained.
 				var ratio = windowWidth / windowHeight;
-				kha.Sys.khanvas.width = cast (canvasH * ratio);
+				SystemImpl.khanvas.width = cast (canvasH * ratio);
 			}
 
 			// Every time the canvas resizes, the origin will be displaced,
@@ -254,6 +260,7 @@ class Wyngine extends Game
 
 		// This scale determines the WynMouse gameX/gameY
 		gameScale = gameWidth / (windowWidth * screenRatioMin);
+		trace("game scale : " + gameScale);
 
 		// Instead of resizing the camera, just do a callback
 		// to current screen so the user can handle it manually.
@@ -267,11 +274,14 @@ class Wyngine extends Game
 		cameras.push(new WynCamera(0, 0, gameWidth, gameHeight, Color.Black));
 	}
 
-	override public function update ()
+	public function update ()
 	{
 		// NOTE: Kha already updates at 60fps (0.166ms elapse rate)
 		// but we're getting the value here for other uses like
 		// movement and animation.
+
+		if (!init)
+			return;
 
 		// Switch to the new screen in this cycle
 		if (thisScreen != nextScreen)
@@ -337,9 +347,11 @@ class Wyngine extends Game
 		fps = Math.round(total/20.0);
 	}
 
-	override public function render (frame:Framebuffer)
+	public function render (frame:Framebuffer)
 	{
 		// TODO: shaders
+		if (!init)
+			return;
 
 		// Assign the buffer for modification thru Wyngine later
 		if (framebuffer == null)
@@ -407,38 +419,12 @@ class Wyngine extends Game
 		g = frame.g2;
 		g.begin(true, bgColor);
 
-		Scaler.scale(buffer, frame, Sys.screenRotation);
+		Scaler.scale(buffer, frame, SystemImpl.getScreenRotation());
 
 		g.end();
 
 		// Reset at end of every cycle
 		DRAW_COUNT = 0;
-	}
-
-	override public function onForeground():Void
-	{
-		// TODO
-		trace("onForeground");
-	}
-	override public function onResume():Void
-	{
-		// TODO
-		trace("onResume");
-	}
-	override public function onPause():Void
-	{
-		// TODO
-		trace("onPause");
-	}
-	override public function onBackground():Void
-	{
-		// TODO
-		trace("onBackground");
-	}
-	override public function onShutdown():Void
-	{
-		// TODO
-		trace("onShutdown");
 	}
 
 	/**
@@ -497,15 +483,6 @@ class Wyngine extends Game
 		// we can switch in the next frame. This prevents situations where a
 		// new screen may immediately call switchScreen(), causing problems.
 		nextScreen = targetScreen;
-	}
-
-	/**
-	 * This is just a method that abstracts away kha's method,
-	 * for convenience sake.
-	 */
-	public function loadAssets (name:String, callback:Void->Void)
-	{
-		Loader.the.loadRoom(name, callback);
 	}
 
 	public function togglePause ()
@@ -596,11 +573,6 @@ class Wyngine extends Game
 
 
 
-	private function get_loadPercentage () : Float
-	{
-		return Loader.the.getLoadPercentage();
-	}
-
 	private function set_bgColor (val:Color) : Color
 	{
 		// NOTE:
@@ -614,47 +586,36 @@ class Wyngine extends Game
 
 	private function set_bilinearFiltering (val:Bool) : Bool
 	{
-		bilinearFiltering = val;
+		var quality = (val) ? ImageScaleQuality.High : ImageScaleQuality.Low;
 
 		#if js
 			// For HTML5 canvas
 			var g2:Graphics2;
-
 			if (framebuffer != null)
 			{
 				g2 = cast(framebuffer.g2, kha.graphics4.Graphics2);
 				if (g2 != null)
-					g2.setBilinearFiltering(bilinearFiltering);
+					g2.imageScaleQuality = quality;
 			}
-
 			// Update all cameras
 			for (cam in cameras)
 			{
 				g2 = cast(cam.buffer.g2, kha.graphics4.Graphics2);
 				if (g2 != null)
-					g2.setBilinearFiltering(bilinearFiltering);
+					g2.imageScaleQuality = quality;
 			}
 		#end
 
 		return val;
 	}
 
-	/**
-	 * Refer to:
-	 * https://github.com/openfl/openfl/blob/master/openfl/system/System.hx
-	 * https://developer.mozilla.org/en-US/docs/Web/API/Window/performance
-	 */
-	@:noCompletion private static function get_totalMemory () : Int
+	private function set_isFullscreen (val:Bool) : Bool
 	{
-		// NOTE:
-		// For now, HTML5 doesn't give the value we want.
-		// I don't know how to get memory for other platforms.
+		// set the full screen mode and then resize the browser again.
+		isFullscreen = val;
+		resizeBrowserGameScreen();
 
-		#if flash
-		return flash.system.System.totalMemory;
-		#else
-		return -1;
-		#end
+		return isFullscreen;
 	}
 
 	/**
