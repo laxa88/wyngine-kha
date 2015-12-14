@@ -8,9 +8,7 @@ import kha.audio1.AudioChannel;
 class WynAudio
 {
 	public static var instance:WynAudio;
-	private var _musics:Map<String, Sound>;
-	private var _sounds:Map<String, Sound>;
-	private var _bgm:Map<String, AudioChannel>;
+	private var _sounds:Map<Sound, AudioChannel>;
 
 
 
@@ -18,9 +16,7 @@ class WynAudio
 	{
 		if (instance == null)
 		{
-			_musics = new Map<String, Sound>();
-			_sounds = new Map<String, Sound>();
-			_bgm = new Map<String, AudioChannel>();
+			_sounds = new Map<Sound, AudioChannel>();
 			instance = this;
 		}
 		else
@@ -36,69 +32,63 @@ class WynAudio
 
 	public function _reset ()
 	{
-		for (item in _musics)
-			item.unload();
-
+		// Just stop the sounds for now
 		for (item in _sounds)
-			item.unload();
-
-		for (item in _bgm)
 			item.stop();
 
-		_musics = new Map<String, Sound>();
-		_sounds = new Map<String, Sound>();
-		_bgm = new Map<String, AudioChannel>();
+		_sounds = new Map<Sound, AudioChannel>();
 	}
 
-	public function _playMusic (name:String, volume:Float=1.0, repeat:Bool=true)
+	public function _setVolume (file:Sound, volume:Float)
 	{
-		// TODO volume doesn't work
-
-		if (_musics[name] == null)
-			_musics[name] = null;
-
-		if (_bgm[name] == null)
+		if (_sounds[file] != null)
+			_sounds[file].volume = volume;
+	}
+	public function _pause (file:Sound)
+	{
+		if (_sounds[file] != null)
+			_sounds[file].pause();
+	}
+	public function _stop (file:Sound)
+	{
+		if (_sounds[file] != null)
+			_sounds[file].stop();
+	}
+	public function _play (file:Sound, volume:Float=1.0, ?loop:Bool, ?stream:Bool, restart:Bool=true) : AudioChannel
+	{
+		if (_sounds[file] == null)
 		{
-			var channel:AudioChannel = Audio.play(_musics[name], repeat);
-			channel.volume = 0.1;
-			_bgm[name] = channel;
+			// Create new channel if it doesn't exist, and store it in dictionary.
+			var channel:AudioChannel = Audio.play(file, loop, stream);
+			channel.volume = volume;
+			_sounds[file] = channel;
 		}
 		else
 		{
-			_bgm[name].play();
+			if (_sounds[file].finished)
+			{
+				// If the music has finished, then just play a new channel and overwrite the slot.
+				var channel:AudioChannel = Audio.play(file, loop, stream);
+				channel.volume = volume;
+				_sounds[file] = channel;
+			}
+			else
+			{
+				// Otherwise, try to resume.
+				_sounds[file].play();
+			}
 		}
+
+		// Return the AudioChannel for further tinkering, if possible.
+		return _sounds[file];
 	}
-
-	public function _setMusicVolume (name:String, volume:Float)
+	public function _playOnce (file:Sound, volume:Float=1.0) : AudioChannel
 	{
-		// TODO volume doesn't work
-		
-		if (_bgm[name] != null)
-		{
-			_bgm[name].volume = volume;
-			_bgm[name].play();
-		}
-	}
-
-	public function _pauseMusic (name:String)
-	{
-		if (_bgm[name] != null)
-			_bgm[name].pause();
-	}
-
-	public function _stopMusic (name:String)
-	{
-		if (_bgm[name] != null)
-			_bgm[name].stop();
-	}
-
-	public function _playSound (name:String, volume:Float=1.0)
-	{
-		if (_sounds[name] == null)
-			_sounds[name] = null;
-
-		var channel:AudioChannel = Audio.play(_sounds[name]);
+		// Plays a new sound without storing into dictionary.
+		var channel:AudioChannel = Audio.play(file);
 		channel.volume = volume;
+
+		return channel;
 	}
 
 	/**
@@ -117,24 +107,25 @@ class WynAudio
 	{
 		instance._reset();
 	}
-	public static function playMusic (name:String, volume:Float=1.0, repeat:Bool=true)
+	
+	public static function setVolume (file:Sound, volume:Float)
 	{
-		instance._playMusic(name, volume, repeat);
+		instance._setVolume(file, volume);
 	}
-	public static function setMusicVolume (name:String, volume:Float)
+	public static function pause (file:Sound)
 	{
-		instance._setMusicVolume(name, volume);
+		instance._pause(file);
 	}
-	public static function pauseMusic (name:String)
+	public static function stop (file:Sound)
 	{
-		instance._pauseMusic(name);
+		instance._stop(file);
 	}
-	public static function stopMusic (name:String)
+	public static function play (file:Sound, volume:Float=1.0, ?loop:Bool, ?stream:Bool, restart:Bool=true) : AudioChannel
 	{
-		instance._stopMusic(name);
+		return instance._play(file, restart, volume, loop, stream);
 	}
-	public static function playSound (name:String, volume:Float=1.0)
+	public static function playOnce (file:Sound, volume:Float=1.0) : AudioChannel
 	{
-		instance._playSound(name, volume);
+		return instance._playOnce(file, volume);
 	}
 }
