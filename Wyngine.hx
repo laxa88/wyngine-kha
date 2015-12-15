@@ -209,7 +209,7 @@ class Wyngine
 			// and <p> have zero margin and zero padding.
 			if (isFullscreen)
 			{
-				// Canvas size is same as browser size
+				// Canvas size is same as browser size -- directly modify khanvas too
 				canvasW = SystemImpl.khanvas.width = js.Browser.window.innerWidth;
 				canvasH = SystemImpl.khanvas.height = js.Browser.window.innerHeight;
 			}
@@ -231,10 +231,8 @@ class Wyngine
 
 		#else
 
-			// TODO
-			// this may not apply to cpp targets, need to check later
-			canvasW = kha.Sys.w;
-			canvasH = kha.Sys.h;
+			canvasW = kha.SystemImpl.getPixelWidth();
+			canvasH = kha.SystemImpl.getPixelHeight();
 
 		#end
 
@@ -260,7 +258,6 @@ class Wyngine
 
 		// This scale determines the WynMouse gameX/gameY
 		gameScale = gameWidth / (windowWidth * screenRatioMin);
-		trace("game scale : " + gameScale);
 
 		// Instead of resizing the camera, just do a callback
 		// to current screen so the user can handle it manually.

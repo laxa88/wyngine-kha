@@ -122,7 +122,7 @@ class WynAudio
 	}
 	public static function play (file:Sound, volume:Float=1.0, ?loop:Bool, ?stream:Bool, restart:Bool=true) : AudioChannel
 	{
-		return instance._play(file, restart, volume, loop, stream);
+		return instance._play(file, volume, loop, stream, restart);
 	}
 	public static function playOnce (file:Sound, volume:Float=1.0) : AudioChannel
 	{

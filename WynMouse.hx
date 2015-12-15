@@ -41,6 +41,8 @@ class WynMouse
 	public static inline var END:Int = 2;
 
 	public static var instance:WynMouse;
+	public static var mouseX(default, null):Int = 0;
+	public static var mouseY(default, null):Int = 0;
 	public static var windowX(default, null):Int = 0;
 	public static var windowY(default, null):Int = 0;
 	public static var gameX(default, null):Int = 0;
@@ -236,8 +238,11 @@ class WynMouse
 	function updateMouseData (x:Int, y:Int)
 	{
 		// Get mouse pos in window (with offset, based on bufferImage's position)
-		windowX = x - Wyngine.G.screenOffsetX;
-		windowY = y - Wyngine.G.screenOffsetY;
+		mouseX = x;
+		mouseY = y;
+
+		windowX = mouseX - Wyngine.G.screenOffsetX;
+		windowY = mouseY - Wyngine.G.screenOffsetY;
 
 		// Get mouse pos in game world (with offset)
 		gameX = Math.floor(windowX * Wyngine.G.gameScale);
