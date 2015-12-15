@@ -142,16 +142,7 @@ class Wyngine
 
 		// Update the game size variables according to the
 		// window (or HTML5 canvas) size, and update the buffer too.
-		windowWidth = ScreenCanvas.the.width;
-		windowHeight = ScreenCanvas.the.height;
-		trace("### window " + windowWidth + " , " + windowHeight);
-		gameWidth = Std.int(windowWidth / zoom);
-		gameHeight = Std.int(windowHeight / zoom);
-		trace("### game : " + gameWidth + " , " + gameHeight);
-		buffer = Image.createRenderTarget(gameWidth, gameHeight);
-
-		// Initialise the default main camera
-		resetCameras();
+		setGameSize(ScreenCanvas.the.width, ScreenCanvas.the.height);
 
 		// Initialise engine variables
 		WynCache.init();
@@ -166,12 +157,6 @@ class Wyngine
 		touch = WynTouch.instance;
 		mouse = WynMouse.instance;
 		tween = WynTween.instance;
-
-		// Start with the originally specified zoom
-		setGameZoom(zoom);
-
-		// Init the screen once
-		initScreen();
 
 		// Switch to screen after we're done
 		switchScreen(nextScreen);
@@ -488,6 +473,29 @@ class Wyngine
 	}
 
 
+
+	public function setGameSize (windowW:Int, windowH:Int)
+	{
+		windowWidth = windowW;
+		windowHeight = windowH;
+		trace("### window " + windowWidth + " , " + windowHeight);
+
+		gameWidth = Std.int(windowWidth / zoom);
+		gameHeight = Std.int(windowHeight / zoom);
+		trace("### game : " + gameWidth + " , " + gameHeight);
+
+		// Refresh buffer size
+		buffer = Image.createRenderTarget(gameWidth, gameHeight);
+
+		// Initialise the default main camera
+		resetCameras();
+
+		// Start with the originally specified zoom
+		setGameZoom(zoom);
+
+		// Init the screen once
+		initScreen();
+	}
 
 	/**
 	 * Instead of setting camera zoom, you can set the screen's zoom,
