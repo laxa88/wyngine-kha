@@ -230,6 +230,9 @@ class Wyngine
 		var w = gameWidth * zoom * screenRatioMin;
 		var h = gameHeight * zoom * screenRatioMin;
 
+		// reset before updating
+		screenOffsetX = gameOffsetX = screenOffsetY = gameOffsetY = 0;
+
 		if (screenRatioW > screenRatioH)
 		{
 			screenOffsetX = Math.floor((canvasW - w) / 2);
