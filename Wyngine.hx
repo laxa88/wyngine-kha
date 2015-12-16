@@ -144,6 +144,15 @@ class Wyngine
 		// window (or HTML5 canvas) size, and update the buffer too.
 		setGameSize(ScreenCanvas.the.width, ScreenCanvas.the.height);
 
+		// Init the screen once
+		#if js
+			// Makes sure that any further resize will trigger this
+			js.Browser.window.addEventListener("resize", resizeBrowserGameScreen);
+		#end
+
+		// Call resize once
+		resizeBrowserGameScreen();
+
 		// Initialise engine variables
 		WynCache.init();
 		WynKeyboard.init();
@@ -160,20 +169,6 @@ class Wyngine
 
 		// Switch to screen after we're done
 		switchScreen(nextScreen);
-	}
-
-	function initScreen ()
-	{
-		#if js
-			// Makes sure that any further resize will trigger this
-			js.Browser.window.addEventListener("resize", resizeBrowserGameScreen);
-		#end
-
-		// Call resize once
-		resizeBrowserGameScreen();
-
-		// resets to one full-screen camera
-		resetCameras();
 	}
 
 	/**
@@ -495,9 +490,6 @@ class Wyngine
 
 		// Start with the originally specified zoom
 		setGameZoom(zoom);
-
-		// Init the screen once
-		initScreen();
 	}
 
 	/**
@@ -621,6 +613,7 @@ class Wyngine
 	{
 		// set the full screen mode and then resize the browser again.
 		isFullscreen = val;
+
 		resizeBrowserGameScreen();
 
 		return isFullscreen;
