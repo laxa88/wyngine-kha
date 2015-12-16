@@ -143,7 +143,7 @@ class WynCamera
 			var g = buffer.g2;
 			var oldOpacity = g.opacity;
 			var oldColor = g.color;
-			g.color = Color.White;
+			g.color = curtainColor;
 			g.opacity = curtainAlpha;
 			g.drawScaledImage(curtainImage, 0, 0, width, height);
 			g.opacity = oldOpacity;
