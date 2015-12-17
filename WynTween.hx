@@ -174,7 +174,12 @@ class WynTween
 			}
 
 			if (tween.elapsed >= tween.duration)
+			{
+				if (tween.callback != null)
+					tween.callback();
+
 				queue.remove(tween);
+			}
 			else
 				i++;
 		}
