@@ -12,6 +12,7 @@ class WynScreen extends WynGroup<WynObject>
 	public var persistentUpdate:Bool = false; // set true to update when inactive
 	public var persistentRender:Bool = true; // set true to render when inactive
 	public var currSubScreen:WynSubScreen;
+	public var prevSubScreen:WynSubScreen;
 	var requestSubScreenReset:Bool = false;
 	var requestedSubScreen:WynSubScreen;
 
@@ -45,10 +46,22 @@ class WynScreen extends WynGroup<WynObject>
 			requestSubScreenReset = false;
 			resetSubScreen();
 		}
-		else if (currSubScreen != null)
+		else
 		{
 			// Update subscreen if it exists
-			currSubScreen.tryUpdate();
+			if (prevSubScreen != null)
+			{
+				prevSubScreen.tryUpdate();
+
+				if (prevSubScreen._dead)
+				{
+					prevSubScreen.destroy();
+					prevSubScreen = null;
+				}
+			}
+
+			if (currSubScreen != null)
+				currSubScreen.tryUpdate();
 		}
 	}
 
@@ -66,11 +79,12 @@ class WynScreen extends WynGroup<WynObject>
 			super.render(c);
 		}
 
+		// Render subscreen if it exists
+		if (prevSubScreen != null)
+			prevSubScreen.render(c);
+
 		if (currSubScreen != null)
-		{
-			// Render subscreen if it exists
 			currSubScreen.render(c);
-		}
 	}
 
 	override public function destroy ()
@@ -89,7 +103,7 @@ class WynScreen extends WynGroup<WynObject>
 		requestedSubScreen = subScreen;
 	}
 
-	public function closeSubState ()
+	public function closeSubScreen ()
 	{
 		requestSubScreenReset = true;
 	}
@@ -98,13 +112,14 @@ class WynScreen extends WynGroup<WynObject>
 	{
 		if (currSubScreen != null)
 		{
-			if (currSubScreen.closeCallback != null)
-				currSubScreen.closeCallback();
-
-			currSubScreen.destroy();
+			// Let subscreen handle its own closing, to allow transitions.
+			// Don't forget to set _dead to true when done, otherwise the
+			// subscreen will not be removed.
+			currSubScreen.doClose();
 		}
 
-		// Assign subscreen, if any
+		// Assign subscreen, if any.
+		prevSubScreen = currSubScreen;
 		currSubScreen = requestedSubScreen;
 		requestedSubScreen = null;
 
@@ -116,11 +131,12 @@ class WynScreen extends WynGroup<WynObject>
 			if (!persistentUpdate)
 				WynKeyboard.reset();
 
+			// Check the flag so we only create the subscreen once.
 			if (!currSubScreen._created)
 			{
 				currSubScreen._created = true;
 				currSubScreen._parentScreen = this;
-				currSubScreen.onOpen();
+				currSubScreen.doOpen();
 			}
 		}
 	}
