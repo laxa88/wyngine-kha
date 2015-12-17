@@ -56,7 +56,7 @@ class Wyngine
 	public var gameOffsetX(default, null):Int = 0; // used for HTML5 where canvas can be scaled
 	public var gameOffsetY(default, null):Int = 0;
 	public var gameScale(default, null):Float = 1;
-	public var isFullscreen(default, set):Bool = false; // for HTML5, whether the canvas fills the entire visible browser size
+	public var isStretchKhanvas(default, set):Bool = false; // for HTML5, whether the canvas fills the entire visible browser size
 
 	public var oriWidth(default, null):Int = 0;
 	public var oriHeight(default, null):Int = 0;
@@ -187,7 +187,7 @@ class Wyngine
 			// NOTE: if there's unnecessary padding, make sure
 			// to modify the index.html so that the <html>, <body>
 			// and <p> have zero margin and zero padding.
-			if (isFullscreen)
+			if (isStretchKhanvas)
 			{
 				// Canvas size is same as browser size -- directly modify khanvas too
 				canvasW = SystemImpl.khanvas.width = js.Browser.window.innerWidth;
@@ -472,6 +472,16 @@ class Wyngine
 
 
 
+	/**
+	 * Do this in your starting WynScreen.
+	 * This re-adjusts size of the khanvas (html5) to ensure that the
+	 * resolution stays fixed across all screen sizes.
+	 *
+	 * Without doing this, what will happen is:
+	 * - style: #khanvas { height: 100% }
+	 * - in ipad, screen objects will appear smaller
+	 * - in note4, screen objects will appear bigger
+	 */
 	public function setGameSize (windowW:Int, windowH:Int)
 	{
 		windowWidth = windowW;
@@ -612,14 +622,17 @@ class Wyngine
 		return val;
 	}
 
-	private function set_isFullscreen (val:Bool) : Bool
+	/**
+	 * Sets html5 screen to stretch to whole browser. Does not actually
+	 * enter full screen.
+	 */
+	private function set_isStretchKhanvas (val:Bool) : Bool
 	{
-		// set the full screen mode and then resize the browser again.
-		isFullscreen = val;
+		isStretchKhanvas = val;
 
 		resizeBrowserGameScreen();
 
-		return isFullscreen;
+		return isStretchKhanvas;
 	}
 
 	/**
