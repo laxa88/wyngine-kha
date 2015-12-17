@@ -490,6 +490,9 @@ class Wyngine
 
 		// Start with the originally specified zoom
 		setGameZoom(zoom);
+
+		// Update the browser offsets for mouse position to sync up.
+		resizeBrowserGameScreen();
 	}
 
 	/**

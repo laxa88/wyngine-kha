@@ -17,14 +17,12 @@ class WynScreen extends WynGroup<WynObject>
 
 
 
+	/**
+	 * A screen doesn't have a size. The rendering (and thus, its size) is done on the WynCamera.
+	 */
 	public function new ()
 	{
 		super();
-
-		x = 0;
-		y = 0;
-		width = Wyngine.G.gameWidth;
-		height = Wyngine.G.gameHeight;
 	}
 
 	public function tryUpdate ()
