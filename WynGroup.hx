@@ -27,6 +27,9 @@ class WynGroup<T:WynObject> extends WynObject
 	{
 		super.update();
 
+		if (!active)
+			return;
+
 		// Instead of doing "for (o in members)", we use a single
 		// storage variable for looping, to keep things casted to
 		// the root class (WynObject).
