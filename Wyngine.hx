@@ -1,6 +1,6 @@
 package wyn;
 
-import kha.SystemImpl;
+import kha.System;
 import kha.Color;
 import kha.Image;
 import kha.Assets;
@@ -121,7 +121,7 @@ class Wyngine
 
 		#if js
 			// Prevents mobile touches from scrolling/scaling the screen.
-			SystemImpl.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
+			kha.SystemImpl.khanvas.addEventListener("touchstart", function (e:js.html.Event) {
 				e.preventDefault();
 			});
 		#end
@@ -190,20 +190,20 @@ class Wyngine
 			if (isStretchKhanvas)
 			{
 				// Canvas size is same as browser size -- directly modify khanvas too
-				canvasW = SystemImpl.khanvas.width = js.Browser.window.innerWidth;
-				canvasH = SystemImpl.khanvas.height = js.Browser.window.innerHeight;
+				canvasW = kha.SystemImpl.khanvas.width = js.Browser.window.innerWidth;
+				canvasH = kha.SystemImpl.khanvas.height = js.Browser.window.innerHeight;
 			}
 			else
 			{
 				// Canvas size is unaffected by browser size
-				canvasW = SystemImpl.khanvas.width;
-				canvasH = SystemImpl.khanvas.height;
+				canvasW = kha.SystemImpl.khanvas.width;
+				canvasH = kha.SystemImpl.khanvas.height;
 
 				// FIX:
 				// When khanvas has "height: 100%", the width gets screwed up a lot
 				// Always make sure the ratio is maintained.
 				var ratio = windowWidth / windowHeight;
-				SystemImpl.khanvas.width = cast (canvasH * ratio);
+				kha.SystemImpl.khanvas.width = cast (canvasH * ratio);
 			}
 
 			// Every time the canvas resizes, the origin will be displaced,
@@ -211,8 +211,8 @@ class Wyngine
 
 		#else
 
-			canvasW = kha.SystemImpl.getPixelWidth();
-			canvasH = kha.SystemImpl.getPixelHeight();
+			canvasW = System.pixelWidth;
+			canvasH = System.pixelHeight;
 
 		#end
 
@@ -399,7 +399,7 @@ class Wyngine
 		g = frame.g2;
 		g.begin(true, bgColor);
 
-		Scaler.scale(buffer, frame, SystemImpl.getScreenRotation());
+		Scaler.scale(buffer, frame, System.screenRotation);
 
 		g.end();
 
