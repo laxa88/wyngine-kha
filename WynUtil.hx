@@ -7,9 +7,10 @@ class WynUtil
 {
 	/**
 	 * Applies accel/drag/maxVelocity to velocity, then returns the new velocity.
-	 * 		- If there's velocity, don't use drag.
+	 * 		- If there's accel, don't use drag.
 	 * 		- Else, if there's drag, compute velocity toward zero.
 	 * 		- Finally, clamp the max velocity if given.
+	 * Returns the new velocity.
 	 */
 	public static function computeVelocity (dt:Float, vel:Float, accel:Float, drag:Float, max:Float = 0) : Float
 	{
