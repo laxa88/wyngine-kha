@@ -32,10 +32,10 @@ class WynButton extends WynSprite
 	var hoverData:WynSprite.SliceData;
 	var downData:WynSprite.SliceData;
 
-	var _downListeners:Array<Void->Void>;
-	var _upListeners:Array<Void->Void>;
-	var _enterListeners:Array<Void->Void>;
-	var _exitListeners:Array<Void->Void>;
+	var _downListeners:Array<WynButton->Void>;
+	var _upListeners:Array<WynButton->Void>;
+	var _enterListeners:Array<WynButton->Void>;
+	var _exitListeners:Array<WynButton->Void>;
 
 	var _buttonState:Int;
 	var _prevState:Int;
@@ -81,13 +81,13 @@ class WynButton extends WynSprite
 				if (WynMouse.isMouseDown(0))
 				{
 					for (listener in _downListeners)
-						listener();
+						listener(this);
 				}
 
 				if (WynMouse.isMouseUp(0))
 				{
 					for (listener in _upListeners)
-						listener();
+						listener(this);
 				}
 				
 				if (WynMouse.isMouse(0))
@@ -105,7 +105,7 @@ class WynButton extends WynSprite
 				(_prevState == WynButton.UP || _prevState == WynButton.NONE))
 			{
 				for (listener in _enterListeners)
-					listener();
+					listener(this);
 			}
 
 			// Mouse moved out of button
@@ -113,7 +113,7 @@ class WynButton extends WynSprite
 				(_prevState == WynButton.HOVER || _prevState == WynButton.DOWN))
 			{
 				for (listener in _exitListeners)
-					listener();
+					listener(this);
 
 				// Reset state
 				state = WynButton.UP;
@@ -140,7 +140,7 @@ class WynButton extends WynSprite
 	/**
 	 * Add event listeners for down, up, enter and exit mouse states.
 	 */
-	public function notify (?downFunc:Void->Void, ?upFunc:Void->Void, ?enterFunc:Void->Void, ?exitFunc:Void->Void)
+	public function notify (?downFunc:WynButton->Void, ?upFunc:WynButton->Void, ?enterFunc:WynButton->Void, ?exitFunc:WynButton->Void)
 	{
 		if (downFunc != null)
 		{
