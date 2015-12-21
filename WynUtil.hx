@@ -83,6 +83,7 @@ class WynUtil
 
 	/**
 	 * Kha only has Int version, so get a float one
+	 * Note: min and max are inclusive.
 	 */
 	public inline static function randomFloat (min:Float, max:Float) : Float
 	{
@@ -102,6 +103,33 @@ class WynUtil
 			else
 			{
 				r = Math.random() * (max - min);
+				return (min + r);
+			}
+		}
+	}
+
+	/**
+	 * Great for getting random array index.
+	 * Note: min and max are inclusive.
+	 */
+	public inline static function randomInt (min:Int, max:Int) : Int
+	{
+		if (min == max)
+		{
+			return min;
+		}
+		else
+		{
+			var r = 0;
+			if (min > max)
+			{
+				// If min is larger than max, revert the calculation
+				r = Math.round(Math.random() * (min - max));
+				return (max + r);
+			}
+			else
+			{
+				r = Math.round(Math.random() * (max - min));
 				return (min + r);
 			}
 		}
