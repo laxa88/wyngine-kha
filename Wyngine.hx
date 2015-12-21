@@ -40,7 +40,7 @@ class Wyngine
 	// Keep track of draw count every render() and stop drawing if
 	// it breaks a threshold.
 	public static inline var DRAW_COUNT_MAX:Int = 500;
-	public static var DRAW_COUNT:Int;
+	public static var DRAW_COUNT:Int = 0;
 
 	public var zoom(default, null):Float = 1;
 	var thisScreen:Class<WynScreen>; // curr screen, checks against nextScreen
@@ -82,15 +82,15 @@ class Wyngine
 	var _quadtree:WynQuadTree;
 
 	// Debug - fps
-	var _oldRealDt:Float;
-	var _newRealDt:Float;
-	var _oldDt:Float;
-	var _newDt:Float;
+	var _oldRealDt:Float = 0;
+	var _newRealDt:Float = 0;
+	var _oldDt:Float = 0;
+	var _newDt:Float = 0;
 	var _fpsList:Array<Float> = [0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0];
-	public static var realDt:Float; // actual delta time between each update
-	public static var rawDt:Float; // constant 1/60fps delta time (unaffected by pause)
-	public static var dt:Float; // affected by pause
-	public static var fps:Int; // fps for debug purposes
+	public static var realDt:Float = 0; // actual delta time between each update
+	public static var rawDt:Float = 0; // constant 1/60fps delta time (unaffected by pause)
+	public static var dt:Float = 0; // affected by pause
+	public static var fps:Int = 0; // fps for debug purposes
 
 
 
