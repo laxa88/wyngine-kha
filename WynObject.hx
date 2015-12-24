@@ -10,8 +10,9 @@ class WynObject
 	public var angle:Float = 0; // used by sprites
 	public var render:Graphics->Void;
 	public var components:Array<WynComponent>;
-	public var active:Bool = true;
-	public var visible:Bool = true;
+	public var active:Bool = true; // affects alive and visible
+	public var alive:Bool = true; // affects update
+	public var visible:Bool = true; // affects render
 
 	public function new ()
 	{
@@ -20,6 +21,9 @@ class WynObject
 	
 	public function update ()
 	{
+		if (!active)
+			return;
+		
 		for (c in components)
 			c.update();
 	}
@@ -45,24 +49,24 @@ class WynObject
 		components.remove(c);
 	}
 
-	public function getComponent (componentType:Class<WynComponent>) : WynComponent
+	public function getComponent<T> (componentType:Class<T>) : T
 	{
 		for (c in components)
 		{
 			if (Std.is(c, componentType))
-				return c;
+				return cast c;
 		}
 
 		return null;
 	}
 
-	public function getComponents (componentType:Class<WynComponent>) : Array<WynComponent>
+	public function getComponents<T> (componentType:Class<T>) : Array<T>
 	{
-		var arr:Array<WynComponent> = [];
+		var arr:Array<T> = [];
 		for (c in components)
 		{
 			if (Std.is(c, componentType))
-				arr.push(c);
+				arr.push(cast c);
 		}
 
 		return arr;

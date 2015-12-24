@@ -11,7 +11,8 @@ class WynKeyboard extends WynManager
 	static var keysDown:Map<String, Bool>;
 	static var keysHeld:Map<String, Bool>;
 	static var keysUp:Map<String, Bool>;
-	static var keyCount:Int = 0;
+	static var keysCount:Int = 0;
+	static var keysJustPressed:Bool = false;
 
 	public function new ()
 	{
@@ -31,6 +32,8 @@ class WynKeyboard extends WynManager
 
 		for (key in keysUp.keys())
 			keysUp.remove(key);
+
+		keysJustPressed = false;
 	}
 
 	override public function reset ()
@@ -38,13 +41,13 @@ class WynKeyboard extends WynManager
 		super.reset();
 
 		for (key in keysDown.keys())
-			keysDown[key] = false;
+			keysDown.remove(key);
 
 		for (key in keysHeld.keys())
-			keysHeld[key] = false;
+			keysHeld.remove(key);
 
 		for (key in keysUp.keys())
-			keysUp[key] = false;
+			keysUp.remove(key);
 	}
 
 
@@ -55,16 +58,18 @@ class WynKeyboard extends WynManager
 
 		if (key == Key.CHAR)
 		{
-			keysDown.set(char, false);
-			keysHeld.set(char, false);
+			keysDown.set(char, true);
+			keysHeld.set(char, true);
 		}
 		else
 		{
-			keysDown.set(key.getName().toLowerCase(), false);
-			keysHeld.set(key.getName().toLowerCase(), false);
+			keysDown.set(key.getName().toLowerCase(), true);
+			keysHeld.set(key.getName().toLowerCase(), true);
 		}
 
-		keyCount++;
+		keysCount++;
+
+		keysJustPressed = true;
 	}
 
 	function onKeyUp (key:Key, char:String)
@@ -73,16 +78,16 @@ class WynKeyboard extends WynManager
 
 		if (key == Key.CHAR)
 		{
-			keysUp.set(char, false);
+			keysUp.set(char, true);
 			keysHeld.set(char, false);
 		}
 		else
 		{
-			keysUp.set(key.getName().toLowerCase(), false);
+			keysUp.set(key.getName().toLowerCase(), true);
 			keysHeld.set(key.getName().toLowerCase(), false);
 		}
 
-		keyCount--;
+		keysCount--;
 	}
 
 	inline public static function isDown (key:String) : Bool
@@ -102,6 +107,11 @@ class WynKeyboard extends WynManager
 
 	inline public static function isAny () : Bool
 	{
-		return (keyCount > 0);
+		return (keysCount > 0);
+	}
+
+	inline public static function isAnyDown () : Bool
+	{
+		return keysJustPressed;
 	}
 }
