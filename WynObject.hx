@@ -5,10 +5,9 @@ import kha.graphics2.Graphics;
 
 class WynObject
 {
-	public var x:Int = 0;
-	public var y:Int = 0;
-	public var width:Int = 0;
-	public var height:Int = 0;
+	public var x:Float = 0;
+	public var y:Float = 0;
+	public var angle:Float = 0; // used by sprites
 	public var render:Graphics->Void;
 	public var components:Array<WynComponent>;
 	public var active:Bool = true;
@@ -39,5 +38,33 @@ class WynObject
 			c.parent = this;
 			c.init();
 		}
+	}
+
+	public function removeComponent (c:WynComponent)
+	{
+		components.remove(c);
+	}
+
+	public function getComponent (componentType:Class<WynComponent>) : WynComponent
+	{
+		for (c in components)
+		{
+			if (Std.is(c, componentType))
+				return c;
+		}
+
+		return null;
+	}
+
+	public function getComponents (componentType:Class<WynComponent>) : Array<WynComponent>
+	{
+		var arr:Array<WynComponent> = [];
+		for (c in components)
+		{
+			if (Std.is(c, componentType))
+				arr.push(c);
+		}
+
+		return arr;
 	}
 }

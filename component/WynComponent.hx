@@ -9,5 +9,5 @@ class WynComponent
 	public function new () : Void {}
 	public function init () : Void {}
 	public function update () : Void {}
-	public function destroy () : Void {}
+	public function destroy () : Void { parent = null; active = false; }
 }

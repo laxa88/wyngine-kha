@@ -5,29 +5,37 @@ import kha.graphics2.Graphics;
 
 class WynSprite extends WynComponent
 {
+	public static var DEBUG:Bool = false;
 	public var image:Image;
 	public var region:Region;
+	public var width:Int = 0;
+	public var height:Int = 0;
 
-	public function new ()
+	public function new (w:Int, h:Int)
 	{
 		super();
+
+		width = w;
+		height = h;
 	}
 
 	override public function init ()
 	{
+		if (parent.render != null)
+			trace("Warning: replace an existing render method.");
+
 		parent.render = render;
 	}
 
-	public function setImage (img:Image, sx:Int, sy:Int, sw:Int, sh:Int)
+	override public function destroy ()
 	{
-		image = img;
-		region = {
-			sx : sx,
-			sy : sy,
-			sw : sw,
-			sh : sh
-		};
+		super.destroy();
+
+		image = null;
+		region = null;
 	}
+
+
 
 	public function render (g:Graphics)
 	{
@@ -38,15 +46,25 @@ class WynSprite extends WynComponent
 			region.sx, region.sy,
 			region.sw, region.sh,
 			parent.x, parent.y,
-			parent.width, parent.height);
+			width, height);
+
+		// if (DEBUG)
+		// {
+		// 	g.color = 0xFFFF0000;
+		// 	g.drawRect(parent.x, parent.y, width, height);
+		// 	g.color = 0xFFFFFFFF;
+		// }
 	}
 
-	override public function destroy ()
+	public function setImage (img:Image, frameX:Int, frameY:Int, frameW:Int, frameH:Int)
 	{
-		super.destroy();
-
-		image = null;
-		region = null;
+		image = img;
+		region = {
+			sx : frameX,
+			sy : frameY,
+			sw : frameW,
+			sh : frameH
+		};
 	}
 }
 
