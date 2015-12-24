@@ -32,12 +32,28 @@ class WynScene
 		}
 	}
 
-	public function add (o:WynObject)
+	inline public function addAt (o:WynObject, index:Int)
 	{
-		objects.push(o);
+		objects.insert(index, o);
 	}
 
-	public function remove (o:WynObject)
+	inline public function addToFront (o:WynObject, offset:Int=0)
+	{
+		if (offset==0)
+			objects.push(o);
+		else
+			objects.insert(offset, o);
+	}
+
+	inline public function addToBack (o:WynObject, offset:Int=0)
+	{
+		if (offset==0)
+			objects.unshift(o);
+		else
+			objects.insert(objects.length-offset, o);
+	}
+
+	inline public function remove (o:WynObject)
 	{
 		objects.remove(o);
 	}
