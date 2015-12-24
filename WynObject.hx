@@ -8,7 +8,7 @@ class WynObject
 	public var x:Float = 0;
 	public var y:Float = 0;
 	public var angle:Float = 0; // used by sprites
-	public var render:Graphics->Void;
+	public var renderers:Array<Graphics->Void>;
 	public var components:Array<WynComponent>;
 	public var active:Bool = true; // affects alive and visible
 	public var alive:Bool = true; // affects update
@@ -16,6 +16,7 @@ class WynObject
 
 	public function new ()
 	{
+		renderers = [];
 		components = [];
 	}
 	
@@ -30,7 +31,8 @@ class WynObject
 
 	public function destroy ()
 	{
-		render = null;
+		renderers = [];
+		components = [];
 	}
 
 	public function addComponent (c:WynComponent)
@@ -70,5 +72,16 @@ class WynObject
 		}
 
 		return arr;
+	}
+
+	inline public function addRenderer (renderer:Graphics->Void)
+	{
+		if (renderers.indexOf(renderer) == -1)
+			renderers.push(renderer);
+	}
+
+	inline public function removeRenderer (renderer:Graphics->Void)
+	{
+		renderers.remove(renderer);
 	}
 }

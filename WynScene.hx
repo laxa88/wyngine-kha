@@ -24,8 +24,11 @@ class WynScene
 	{
 		for (o in objects)
 		{
-			if (o.render != null && o.active && o.visible)
-				o.render(g);
+			for (r in o.renderers)
+			{
+				if (o.active && o.visible)
+					r(g);
+			}
 		}
 	}
 

@@ -35,11 +35,6 @@ class WynPhysics extends WynComponent
 		parent.angle += Wyngine.dt * angularVelocity;
 	}
 
-	override public function destroy ()
-	{
-		super.destroy();
-	}
-
 
 
 	inline public function setVelocity (x:Float, y:Float)

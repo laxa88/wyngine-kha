@@ -21,15 +21,14 @@ class WynSprite extends WynComponent
 
 	override public function init ()
 	{
-		if (parent.render != null)
-			trace("Warning: replace an existing render method.");
-
-		parent.render = render;
+		parent.addRenderer(render);
 	}
 
 	override public function destroy ()
 	{
 		super.destroy();
+
+		parent.removeRenderer(render);
 
 		image = null;
 		region = null;
