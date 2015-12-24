@@ -247,7 +247,7 @@ class WynObject
 		return (dx * dx + dy * dy) < Math.pow(radius + other.radius, 2);
 	}
 
-	public function setHitbox (offsetX:Float, offsetY:Float, w:Float, h:Float)
+	public inline function setHitbox (offsetX:Float, offsetY:Float, w:Float, h:Float)
 	{
 		hitboxType = WynObject.HITBOX;
 		offset.x = offsetX;
@@ -257,7 +257,7 @@ class WynObject
 		// radius = 0;
 	}
 
-	public function setHitcircle (offsetX:Float, offsetY:Float, r:Float)
+	public inline function setHitcircle (offsetX:Float, offsetY:Float, r:Float)
 	{
 		hitboxType = WynObject.HITCIRCLE;
 		offset.x = offsetX;
@@ -267,13 +267,13 @@ class WynObject
 		radius = r;
 	}
 
-	public function setCenterPosition (x:Float, y:Float)
+	public inline function setCenterPosition (x:Float, y:Float)
 	{
 		cx = x;
 		cy = y;
 	}
 
-	public function getCenterPosition () : FastVector2
+	public inline function getCenterPosition () : FastVector2
 	{
 		return new FastVector2(cx, cy);
 	}
@@ -281,7 +281,7 @@ class WynObject
 	/**
 	 * Useful for resetting position quickly in one line
 	 */
-	public function setPosition (x:Float, y:Float)
+	public inline function setPosition (x:Float, y:Float)
 	{
 		this.x = x;
 		this.y = y;
@@ -298,7 +298,7 @@ class WynObject
 	 * - set scrollFactor to [0,0] for UI elements
 	 * - set scrollFactor for backgrounds images to values < 1 for parallax effect
 	 */
-	public function setScrollFactor (x:Float, y:Float)
+	public inline function setScrollFactor (x:Float, y:Float)
 	{
 		scrollFactorX = x;
 		scrollFactorY = y;
