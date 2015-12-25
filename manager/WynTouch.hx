@@ -4,10 +4,8 @@ import kha.input.Surface;
 
 class WynTouch extends WynManager
 {
-	public static var x:Int = 0;
-	public static var y:Int = 0;
-	public static var dx:Int = 0;
-	public static var dy:Int = 0;
+	public static var init:Bool = false;
+	public static var touches:Map<Int, TouchData>;
 
 	static var touchDown:Map<Int, Bool>;
 	static var touchHeld:Map<Int, Bool>;
@@ -25,6 +23,8 @@ class WynTouch extends WynManager
 
 		Surface.get().notify(onTouchStart, onTouchEnd, onTouchMove);
 
+		touches = new Map<Int, TouchData>();
+
 		touchDown = new Map<Int, Bool>();
 		touchHeld = new Map<Int, Bool>();
 		touchUp = new Map<Int, Bool>();
@@ -32,6 +32,8 @@ class WynTouch extends WynManager
 		startListener = [];
 		endListener = [];
 		moveListener = [];
+
+		init = true;
 	}
 
 	override public function update ()
@@ -48,6 +50,9 @@ class WynTouch extends WynManager
 	override public function reset ()
 	{
 		super.reset();
+
+		for (key in touches.keys())
+			touches.remove(key);
 
 		for (key in touchDown.keys())
 			touchDown.remove(key);
@@ -77,6 +82,8 @@ class WynTouch extends WynManager
 
 		// trace("onTouchStart : " + index + " , " + x + " , " + y);
 
+		updateTouches(index, x, y);
+
 		touchDown.set(index, true);
 		touchHeld.set(index, true);
 
@@ -92,6 +99,8 @@ class WynTouch extends WynManager
 
 		// trace("onTouchEnd : " + index + " , " + x + " , " + y);
 
+		touches.remove(index);
+
 		touchUp.set(index, true);
 		touchHeld.remove(index);
 
@@ -103,14 +112,29 @@ class WynTouch extends WynManager
 		for (listener in moveListener)
 			listener(index, x, y);
 
-		// manually get delta
-		WynTouch.dx = x - WynTouch.x;
-		WynTouch.dy = y - WynTouch.y;
-
-		WynTouch.x = x;
-		WynTouch.y = y;
+		updateTouches(index, x, y);
 
 		// trace("onTouchMove : " + index + " , " + x + " , " + y + " , " + dx + " , " + dy);
+	}
+
+	inline function updateTouches (index:Int, x:Int, y:Int)
+	{
+		if (touches.exists(index))
+		{
+			touches[index].dx = x - touches[index].x;
+			touches[index].dy = y - touches[index].y;
+			touches[index].x = x;
+			touches[index].y = y;
+		}
+		else
+		{
+			touches.set(index, {
+				x : x,
+				y : y,
+				dx : 0,
+				dy : 0
+			});
+		}
 	}
 
 	inline public static function isDown (index:Int=0)
@@ -128,12 +152,12 @@ class WynTouch extends WynManager
 		return touchUp.exists(index);
 	}
 
-	inline public static function isAny (index:Int=0)
+	inline public static function isAny ()
 	{
 		return (touchCount > 0);
 	}
 
-	inline public static function isAnyDown (index:Int=0)
+	inline public static function isAnyDown ()
 	{
 		return touchJustPressed;
 	}
