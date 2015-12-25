@@ -11,14 +11,6 @@ class WynCollider extends WynComponent;
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
 
-	override public function init ()
-	{
-	}
-
-	override public function update ()
-	{
-	}
-
 	override public function destroy ()
 	{
 		super.destroy();
@@ -28,6 +20,9 @@ class WynCollider extends WynComponent;
 
 	public function collide (other:WynCollider) : Bool
 	{
+		if (!active)
+			return false;
+
 		// no need to check if there's no size
 		if (parent.width == 0 || parent.height == 0 ||
 			other.width == 0 || other.height == 0)
