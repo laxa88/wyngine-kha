@@ -6,6 +6,7 @@ import kha.graphics2.Graphics;
 class WynSprite extends WynComponent
 {
 	public static var DEBUG:Bool = false;
+	
 	public var image:Image;
 	public var region:Region;
 	public var width:Int = 0;
@@ -65,11 +66,4 @@ class WynSprite extends WynComponent
 			sh : frameH
 		};
 	}
-}
-
-typedef Region = {
-	var sx:Int;
-	var sy:Int;
-	var sw:Int;
-	var sh:Int;
 }
