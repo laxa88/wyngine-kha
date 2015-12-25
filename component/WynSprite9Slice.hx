@@ -3,7 +3,7 @@ package wyn.component;
 import kha.Image;
 import kha.graphics2.Graphics;
 
-class WynSprite9Slice extends WynComponent
+class WynSprite9Slice extends WynSprite
 {
 	// Notes:
 	// This component draws each section of the 9-slice directly on the backbuffer.
@@ -14,46 +14,23 @@ class WynSprite9Slice extends WynComponent
 	// - Instead, directly drawing means no new draw calls, but 9 additional drawScaledSubImage() calls
 	// - Test result: direct drawing is about 2x faster than using new image.
 
-	public static var DEBUG:Bool = false;
-
-	var originImage:Image;
 	var sliceData:SliceData;
-	public var width:Int = 0;
-	public var height:Int = 0;
-	public var offsetX:Int = 0;
-	public var offsetY:Int = 0;
-
-	public function new (w:Int, h:Int) : Void
-	{
-		super();
-
-		width = w;
-		height = h;
-	}
-
-	override public function init () : Void
-	{
-		parent.addRenderer(render);
-	}
 
 	override public function destroy () : Void
 	{
 		super.destroy();
 
-		parent.removeRenderer(render);
-
-		originImage = null;
 		sliceData = null;
 	}
 
 
 
-	public function render (g:Graphics)
+	override public function render (g:Graphics)
 	{
-		if (originImage == null || sliceData == null)
+		if (image == null || sliceData == null)
 			return;
 
-		draw9Slice(originImage, g);
+		draw9Slice(image, g);
 
 		// if (DEBUG)
 		// {
@@ -67,8 +44,6 @@ class WynSprite9Slice extends WynComponent
 	{
 		if (sliceData == null)
 			return;
-
-		// var g:Graphics = target.g2;
 
 		if (sliceData.borderLeft == null) sliceData.borderLeft = 0;
 		if (sliceData.borderRight == null) sliceData.borderRight = 0;
@@ -108,83 +83,64 @@ class WynSprite9Slice extends WynComponent
 		if (destH < sliceData.borderTop + sliceData.borderBottom)
 			ratioH = destH / (sliceData.borderTop + sliceData.borderBottom);
 
-		// begin drawing
-		// g.begin(true, 0x00000000);
-
-		// g.fillRect(0,0,1,1);
-
 		// top-left border
-		g.drawScaledSubImage(originImage,
+		g.drawScaledSubImage(origin,
 			sx, sy, sliceData.borderLeft, sliceData.borderTop, // source
 			dx, dy, sliceData.borderLeft*ratioW, sliceData.borderTop*ratioH // destination
 			);
 
 		// top border
-		g.drawScaledSubImage(originImage,
+		g.drawScaledSubImage(origin,
 			sliceData.borderLeft, sy, sw, sliceData.borderTop,
 			dx+(sliceData.borderLeft*ratioW), dy, dw, sliceData.borderTop*ratioH
 			);
 
 		// top-right border
-		g.drawScaledSubImage(originImage,
+		g.drawScaledSubImage(origin,
 			sliceData.width-sliceData.borderRight, sy, sliceData.borderRight, sliceData.borderTop,
 			dx+(destW-sliceData.borderRight*ratioW), dy, sliceData.borderRight*ratioW, sliceData.borderTop*ratioH
 			);
 
 		// middle-left border
-		g.drawScaledSubImage(originImage,
+		g.drawScaledSubImage(origin,
 			sx, sy+sliceData.borderTop, sliceData.borderLeft, sh,
 			dx, dy+(sliceData.borderTop*ratioH), sliceData.borderLeft*ratioW, dh
 			);
 
 		// middle
-		g.drawScaledSubImage(originImage,
+		g.drawScaledSubImage(origin,
 			sliceData.borderLeft, sy+sliceData.borderTop, sw, sh,
 			dx+(sliceData.borderLeft*ratioW), dy+(sliceData.borderTop*ratioH), dw, dh
 			);
 
 		// middle-right border
-		g.drawScaledSubImage(originImage,
+		g.drawScaledSubImage(origin,
 			sliceData.width-sliceData.borderRight, sy+sliceData.borderTop, sliceData.borderRight, sh,
 			dx+(destW-sliceData.borderRight*ratioW), dy+(sliceData.borderTop*ratioH), sliceData.borderRight*ratioW, dh
 			);
 
 		// bottom-left border
-		g.drawScaledSubImage(originImage,
+		g.drawScaledSubImage(origin,
 			sx, sy+sliceData.height-sliceData.borderBottom, sliceData.borderLeft, sliceData.borderBottom,
 			dx, dy+(destH-sliceData.borderBottom*ratioH), sliceData.borderLeft*ratioW, sliceData.borderBottom*ratioH
 			);
 
 		// bottom
-		g.drawScaledSubImage(originImage,
+		g.drawScaledSubImage(origin,
 			sliceData.borderLeft, sy+sliceData.height-sliceData.borderBottom, sw, sliceData.borderBottom,
 			dx+(sliceData.borderLeft*ratioW), dy+(destH-sliceData.borderBottom*ratioH), dw, sliceData.borderBottom*ratioH
 			);
 
 		// bottom-right border
-		g.drawScaledSubImage(originImage,
+		g.drawScaledSubImage(origin,
 			sliceData.width-sliceData.borderRight, sy+sliceData.height-sliceData.borderBottom, sliceData.borderRight, sliceData.borderBottom,
 			dx+(destW-sliceData.borderRight*ratioW), dy+(destH-sliceData.borderBottom*ratioH), sliceData.borderRight*ratioW, sliceData.borderBottom*ratioH
 			);
-
-		g.end();
 	}
 
-	public function setImage (img:Image, data:SliceData)
+	public function set9SliceImage (img:Image, data:SliceData)
 	{
-		originImage = img;
+		image = img;
 		sliceData = data;
-	}
-
-	inline public function setSize (w:Int, h:Int)
-	{
-		width = w;
-		height = h;
-	}
-
-	inline public function setOffset (x:Int, y:Int)
-	{
-		offsetX = x;
-		offsetY = y;
 	}
 }
