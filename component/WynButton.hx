@@ -108,7 +108,7 @@ class WynButton extends WynComponent
 		}
 
 		// If the state changed, check for enter/exit events
-		if (state != prevState)
+		if (state != currState)
 		{
 			// Mouse moved into button
 			if ((state == STATE_OVER || state == STATE_DOWN) &&
