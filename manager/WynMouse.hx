@@ -58,6 +58,7 @@ class WynMouse extends WynManager
 		// trace("onMouseStart : " + index + " , " + x + " , " + y);
 
 		mouseDown.set(index, true);
+		mouseHeld.set(index, true);
 
 		mouseCount++;
 
@@ -69,6 +70,7 @@ class WynMouse extends WynManager
 		// trace("onMouseEnd : " + index + " , " + x + " , " + y);
 
 		mouseUp.set(index, true);
+		mouseHeld.remove(index);
 
 		mouseCount--;
 	}
