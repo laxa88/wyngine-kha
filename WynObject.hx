@@ -14,8 +14,11 @@ class WynObject
 	public var alive:Bool = true; // affects update
 	public var visible:Bool = true; // affects render
 
-	public function new ()
+	public function new (x:Float=0, y:Float=0)
 	{
+		this.x = x;
+		this.y = y;
+
 		renderers = [];
 		components = [];
 	}
@@ -34,6 +37,8 @@ class WynObject
 		renderers = [];
 		components = [];
 	}
+
+
 
 	public function addComponent (c:WynComponent)
 	{
@@ -83,5 +88,11 @@ class WynObject
 	inline public function removeRenderer (renderer:Graphics->Void)
 	{
 		renderers.remove(renderer);
+	}
+
+	inline public function setPosition (x:Float, y:Float)
+	{
+		this.x = x;
+		this.y = y;
 	}
 }
