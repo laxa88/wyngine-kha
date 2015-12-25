@@ -121,16 +121,16 @@ class WynTouch extends WynManager
 	{
 		if (touches.exists(index))
 		{
-			touches[index].dx = x - touches[index].x;
-			touches[index].dy = y - touches[index].y;
-			touches[index].x = x;
-			touches[index].y = y;
+			touches[index].dx = Std.int((x - touches[index].x) * Wyngine.gameScale);
+			touches[index].dy = Std.int((y - touches[index].y) * Wyngine.gameScale);
+			touches[index].x = Std.int(x * Wyngine.gameScale);
+			touches[index].y = Std.int(y * Wyngine.gameScale);
 		}
 		else
 		{
 			touches.set(index, {
-				x : x,
-				y : y,
+				x : Std.int(x * Wyngine.gameScale),
+				y : Std.int(y * Wyngine.gameScale),
 				dx : 0,
 				dy : 0
 			});

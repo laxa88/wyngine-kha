@@ -109,10 +109,10 @@ class WynMouse extends WynManager
 
 		// trace("onMouseMove : " + x + " , " + y + " , " + dx + " , " + dy);
 
-		WynMouse.x = x;
-		WynMouse.y = y;
-		WynMouse.dx = dx;
-		WynMouse.dy = dy;
+		WynMouse.x = Std.int(x * Wyngine.gameScale);
+		WynMouse.y = Std.int(y * Wyngine.gameScale);
+		WynMouse.dx = Std.int(dx * Wyngine.gameScale);
+		WynMouse.dy = Std.int(dy * Wyngine.gameScale);
 	}
 
 	function onMouseWheel (delta:Int)
