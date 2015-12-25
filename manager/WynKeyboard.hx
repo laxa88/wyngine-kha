@@ -14,6 +14,9 @@ class WynKeyboard extends WynManager
 	static var keysCount:Int = 0;
 	static var keysJustPressed:Bool = false;
 
+	static var downListener:Array<String->Void>;
+	static var upListener:Array<String->Void>;
+
 	public function new ()
 	{
 		super();
@@ -23,6 +26,9 @@ class WynKeyboard extends WynManager
 		keysDown = new Map<String, Bool>();
 		keysHeld = new Map<String, Bool>();
 		keysUp = new Map<String, Bool>();
+
+		downListener = [];
+		upListener = [];
 	}
 
 	override public function update ()
@@ -48,12 +54,21 @@ class WynKeyboard extends WynManager
 
 		for (key in keysUp.keys())
 			keysUp.remove(key);
+
+		while (downListener.length > 0)
+			downListener.pop();
+
+		while (upListener.length > 0)
+			upListener.pop();
 	}
 
 
 
 	function onKeyDown (key:Key, char:String)
 	{
+		for (listener in downListener)
+			listener(key.getName().toLowerCase());
+
 		// trace("down : " + key + " , " + char);
 
 		if (key == Key.CHAR)
@@ -74,6 +89,9 @@ class WynKeyboard extends WynManager
 
 	function onKeyUp (key:Key, char:String)
 	{
+		for (listener in upListener)
+			listener(key.getName().toLowerCase());
+
 		// trace("up : " + key + " , " + char);
 
 		if (key == Key.CHAR)
@@ -113,5 +131,27 @@ class WynKeyboard extends WynManager
 	inline public static function isAnyDown () : Bool
 	{
 		return keysJustPressed;
+	}
+
+	inline public static function notifyDown (func:String->Void)
+	{
+		if (downListener.indexOf(func) == -1)
+			downListener.push(func);
+	}
+
+	inline public static function notifyUp (func:String->Void)
+	{
+		if (upListener.indexOf(func) == -1)
+			upListener.push(func);
+	}
+
+	inline public static function removeDown (func:String->Void)
+	{
+		downListener.remove(func);
+	}
+
+	inline public static function removeUp (func:String->Void)
+	{
+		upListener.remove(func);
 	}
 }
