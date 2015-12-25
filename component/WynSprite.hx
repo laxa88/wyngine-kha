@@ -58,14 +58,14 @@ class WynSprite extends WynComponent
 		// }
 	}
 
-	public function setImage (img:Image, frameX:Int, frameY:Int, frameW:Int, frameH:Int)
+	public function setImage (img:Image, data:SliceData)
 	{
 		image = img;
 		region = {
-			sx : frameX,
-			sy : frameY,
-			sw : frameW,
-			sh : frameH
+			sx : data.x,
+			sy : data.y,
+			sw : data.width,
+			sh : data.height
 		};
 	}
 

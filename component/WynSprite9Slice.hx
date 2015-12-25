@@ -138,7 +138,7 @@ class WynSprite9Slice extends WynSprite
 			);
 	}
 
-	public function set9SliceImage (img:Image, data:SliceData)
+	override public function setImage (img:Image, data:SliceData)
 	{
 		image = img;
 		sliceData = data;
