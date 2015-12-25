@@ -4,6 +4,8 @@ import kha.input.Mouse;
 
 class WynMouse extends WynManager
 {
+	public static var init:Bool = false;
+
 	public static var x:Int = 0;
 	public static var y:Int = 0;
 	public static var dx:Int = 0;
@@ -32,6 +34,8 @@ class WynMouse extends WynManager
 		startListener = [];
 		endListener = [];
 		moveListener = [];
+
+		init = true;
 	}
 
 	override public function update ()
@@ -117,27 +121,27 @@ class WynMouse extends WynManager
 		trace("onMouseWheel : " + delta);
 	}
 
-	inline public static function isDown (index:Int=0)
+	inline public static function isDown (index:Int=0) : Bool
 	{
-		mouseDown.exists(index);
+		return mouseDown.exists(index);
 	}
 
-	inline public static function isHeld (index:Int=0)
+	inline public static function isHeld (index:Int=0) : Bool
 	{
-		mouseHeld.exists(index);
+		return mouseHeld.exists(index);
 	}
 
-	inline public static function isUp (index:Int=0)
+	inline public static function isUp (index:Int=0) : Bool
 	{
-		mouseUp.exists(index);
+		return mouseUp.exists(index);
 	}
 
-	inline public static function isAny (index:Int=0)
+	inline public static function isAny () : Bool
 	{
 		return (mouseCount > 0);
 	}
 
-	inline public static function isAnyDown (index:Int=0)
+	inline public static function isAnyDown () : Bool
 	{
 		return mouseJustPressed;
 	}
