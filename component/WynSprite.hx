@@ -6,11 +6,13 @@ import kha.graphics2.Graphics;
 class WynSprite extends WynComponent
 {
 	public static var DEBUG:Bool = false;
-	
+
 	public var image:Image;
 	public var region:Region;
 	public var width:Int = 0;
 	public var height:Int = 0;
+	public var offsetX:Int = 0;
+	public var offsetY:Int = 0;
 
 	public function new (w:Int, h:Int)
 	{
@@ -45,7 +47,7 @@ class WynSprite extends WynComponent
 		g.drawScaledSubImage(image,
 			region.sx, region.sy,
 			region.sw, region.sh,
-			parent.x, parent.y,
+			parent.x + offsetX, parent.y + offsetY,
 			width, height);
 
 		// if (DEBUG)
@@ -65,5 +67,17 @@ class WynSprite extends WynComponent
 			sw : frameW,
 			sh : frameH
 		};
+	}
+
+	inline public function setSize (w:Int, h:Int)
+	{
+		width = w;
+		height = h;
+	}
+
+	inline public function setOffset (x:Int, y:Int)
+	{
+		offsetX = x;
+		offsetY = y;
 	}
 }

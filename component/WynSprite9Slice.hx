@@ -5,13 +5,23 @@ import kha.graphics2.Graphics;
 
 class WynSprite9Slice extends WynComponent
 {
+	// Notes:
+	// This component draws each section of the 9-slice directly on the backbuffer.
+	//
+	// Reason:
+	// - If we draw the 9-slice result onto one new image, it invokes 1 new draw call.
+	// - If there's 100 9-slice images, this means 100 draw calls.
+	// - Instead, directly drawing means no new draw calls, but 9 additional drawScaledSubImage() calls
+	// - Test result: direct drawing is about 2x faster than using new image.
+
 	public static var DEBUG:Bool = false;
 
 	var originImage:Image;
-	var image:Image;
 	var sliceData:SliceData;
-	public var width(default, set):Int = 0;
-	public var height(default, set):Int = 0;
+	public var width:Int = 0;
+	public var height:Int = 0;
+	public var offsetX:Int = 0;
+	public var offsetY:Int = 0;
 
 	public function new (w:Int, h:Int) : Void
 	{
@@ -33,7 +43,6 @@ class WynSprite9Slice extends WynComponent
 		parent.removeRenderer(render);
 
 		originImage = null;
-		image = null;
 		sliceData = null;
 	}
 
@@ -41,14 +50,10 @@ class WynSprite9Slice extends WynComponent
 
 	public function render (g:Graphics)
 	{
-		if (originImage == null || image == null || sliceData == null)
+		if (originImage == null || sliceData == null)
 			return;
 
-		g.drawScaledSubImage(image,
-			0, 0,
-			width, height,
-			parent.x, parent.y,
-			width, height);
+		draw9Slice(originImage, g);
 
 		// if (DEBUG)
 		// {
@@ -58,23 +63,12 @@ class WynSprite9Slice extends WynComponent
 		// }
 	}
 
-	public function setImage (img:Image, data:SliceData)
-	{
-		originImage = img;
-
-		image = Image.createRenderTarget(width, height);
-
-		sliceData = data;
-
-		draw9Slice();
-	}
-
-	function draw9Slice ()
+	inline function draw9Slice (origin:Image, g:Graphics)
 	{
 		if (sliceData == null)
 			return;
 
-		var g:Graphics = image.g2;
+		// var g:Graphics = target.g2;
 
 		if (sliceData.borderLeft == null) sliceData.borderLeft = 0;
 		if (sliceData.borderRight == null) sliceData.borderRight = 0;
@@ -94,6 +88,8 @@ class WynSprite9Slice extends WynComponent
 		var sy = sliceData.y;
 		var sw = sliceData.width - sliceData.borderLeft - sliceData.borderRight;
 		var sh = sliceData.height - sliceData.borderTop - sliceData.borderBottom;
+		var dx = parent.x + offsetX;
+		var dy = parent.y + offsetY;
 		var dw = destW - sliceData.borderLeft - sliceData.borderRight;
 		var dh = destH - sliceData.borderTop - sliceData.borderBottom;
 		// Width and height cannot be less than zero.
@@ -113,88 +109,82 @@ class WynSprite9Slice extends WynComponent
 			ratioH = destH / (sliceData.borderTop + sliceData.borderBottom);
 
 		// begin drawing
-		g.begin(true, 0x00000000);
+		// g.begin(true, 0x00000000);
 
 		// g.fillRect(0,0,1,1);
 
 		// top-left border
 		g.drawScaledSubImage(originImage,
 			sx, sy, sliceData.borderLeft, sliceData.borderTop, // source
-			0, 0, sliceData.borderLeft*ratioW, sliceData.borderTop*ratioH // destination
+			dx, dy, sliceData.borderLeft*ratioW, sliceData.borderTop*ratioH // destination
 			);
 
 		// top border
 		g.drawScaledSubImage(originImage,
 			sliceData.borderLeft, sy, sw, sliceData.borderTop,
-			sliceData.borderLeft*ratioW, 0, dw, sliceData.borderTop*ratioH
+			dx+(sliceData.borderLeft*ratioW), dy, dw, sliceData.borderTop*ratioH
 			);
 
 		// top-right border
 		g.drawScaledSubImage(originImage,
 			sliceData.width-sliceData.borderRight, sy, sliceData.borderRight, sliceData.borderTop,
-			destW-sliceData.borderRight*ratioW, 0, sliceData.borderRight*ratioW, sliceData.borderTop*ratioH
+			dx+(destW-sliceData.borderRight*ratioW), dy, sliceData.borderRight*ratioW, sliceData.borderTop*ratioH
 			);
 
 		// middle-left border
 		g.drawScaledSubImage(originImage,
 			sx, sy+sliceData.borderTop, sliceData.borderLeft, sh,
-			0, sliceData.borderTop*ratioH, sliceData.borderLeft*ratioW, dh
+			dx, dy+(sliceData.borderTop*ratioH), sliceData.borderLeft*ratioW, dh
 			);
 
 		// middle
 		g.drawScaledSubImage(originImage,
 			sliceData.borderLeft, sy+sliceData.borderTop, sw, sh,
-			sliceData.borderLeft*ratioW, sliceData.borderTop*ratioH, dw, dh
+			dx+(sliceData.borderLeft*ratioW), dy+(sliceData.borderTop*ratioH), dw, dh
 			);
 
 		// middle-right border
 		g.drawScaledSubImage(originImage,
 			sliceData.width-sliceData.borderRight, sy+sliceData.borderTop, sliceData.borderRight, sh,
-			destW-sliceData.borderRight*ratioW, sliceData.borderTop*ratioH, sliceData.borderRight*ratioW, dh
+			dx+(destW-sliceData.borderRight*ratioW), dy+(sliceData.borderTop*ratioH), sliceData.borderRight*ratioW, dh
 			);
 
 		// bottom-left border
 		g.drawScaledSubImage(originImage,
 			sx, sy+sliceData.height-sliceData.borderBottom, sliceData.borderLeft, sliceData.borderBottom,
-			0, destH-sliceData.borderBottom*ratioH, sliceData.borderLeft*ratioW, sliceData.borderBottom*ratioH
+			dx, dy+(destH-sliceData.borderBottom*ratioH), sliceData.borderLeft*ratioW, sliceData.borderBottom*ratioH
 			);
 
 		// bottom
 		g.drawScaledSubImage(originImage,
 			sliceData.borderLeft, sy+sliceData.height-sliceData.borderBottom, sw, sliceData.borderBottom,
-			sliceData.borderLeft*ratioW, destH-sliceData.borderBottom*ratioH, dw, sliceData.borderBottom*ratioH
+			dx+(sliceData.borderLeft*ratioW), dy+(destH-sliceData.borderBottom*ratioH), dw, sliceData.borderBottom*ratioH
 			);
 
 		// bottom-right border
 		g.drawScaledSubImage(originImage,
 			sliceData.width-sliceData.borderRight, sy+sliceData.height-sliceData.borderBottom, sliceData.borderRight, sliceData.borderBottom,
-			destW-sliceData.borderRight*ratioW, destH-sliceData.borderBottom*ratioH, sliceData.borderRight*ratioW, sliceData.borderBottom*ratioH
+			dx+(destW-sliceData.borderRight*ratioW), dy+(destH-sliceData.borderBottom*ratioH), sliceData.borderRight*ratioW, sliceData.borderBottom*ratioH
 			);
 
 		g.end();
 	}
 
-	private function set_width (val:Int) : Int
+	public function setImage (img:Image, data:SliceData)
 	{
-		if (width != val)
-		{
-			width = val;
-			image = Image.createRenderTarget(width, height);
-			draw9Slice();
-		}
-
-		return width;
+		originImage = img;
+		sliceData = data;
 	}
 
-	private function set_height (val:Int) : Int
+	inline public function setSize (w:Int, h:Int)
 	{
-		if (height != val)
-		{
-			height = val;
-			image = Image.createRenderTarget(width, height);
-			draw9Slice();
-		}
+		width = w;
+		height = h;
+	}
 
-		return height;
+	inline public function setOffset (x:Int, y:Int)
+	{
+		offsetX = x;
+		offsetY = y;
 	}
 }
