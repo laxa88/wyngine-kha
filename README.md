@@ -7,6 +7,10 @@ The current philosphy I'm trying to follow for the engine is: "If it's fancy, th
 
 The API may change drastically as I learn new techs and apply them into the overall structure of the engine. Please use at your own risk! When the engine is ready, you will see a "Getting Started" section below. If not, please be patient :)
 
+# Wyngine 0.3 (update: 27 December 2015)
+
+Overhauled framework completely, straying from Flixel-based structure. Wyngine is now component-based, similar to Unity. Existing classes are converted to components which can be added or removed from base WynObjects. This allows for WynObjects to be lightweight and customisable -- without any redundant properties like physics, sprites or hitboxes if the game doesn't require any.
+
 # Wyngine 0.2 (update: 14 December 2015)
 
 Due to Kha's submodule reliance, legacy Wyngine no longer works with Kha unless you know which commit to revert to for both Kha and its submodules.
