@@ -7,6 +7,7 @@ class WynObject
 {
 	// These are mostly for reference purposes.
 	// The only thing they affect are x/y positions.
+	public var screen:WynScreen;
 	public var parent:WynObject;
 	public var children:Array<WynObject> = [];
 
@@ -14,10 +15,14 @@ class WynObject
 	public var active:Bool = true; // affects update
 	public var visible:Bool = true; // affects render
 
-	public var x(default, set):Float = 0;
-	public var y(default, set):Float = 0;
+	public var x(get, set):Float;
+	public var y(get, set):Float;
+	var _x:Float = 0;
+	var _y:Float = 0;
 	public var localX(default, null):Float = 0;
 	public var localY(default, null):Float = 0;
+	public var scrollFactorX:Float = 1;
+	public var scrollFactorY:Float = 1;
 	public var angle:Float = 0; // used by sprites, doesn't affect parent/children
 	public var renderers:Array<Graphics->Void> = [];
 	public var components:Array<WynComponent> = [];
@@ -132,33 +137,49 @@ class WynObject
 
 	private static var delta:Float; // for reusable purposes
 
+	private function get_x () : Float
+	{
+		if (screen != null)
+			return _x + (screen.scrollX * scrollFactorX);
+		else
+			return _x;
+	}
+
+	private function get_y () : Float
+	{
+		if (screen != null)
+			return _y + (screen.scrollY * scrollFactorY);
+		else
+			return _y;
+	}
+
 	private function set_x (val:Float) : Float
 	{
-		delta = val - x;
+		delta = val - _x;
 
 		for (c in children)
 			c.x += delta;
 
 		if (parent != null)
-			localX = x - parent.x;
+			localX = _x - parent.x;
 		else
-			localX = x;
+			localX = _x;
 
-		return x = val;
+		return _x = val;
 	}
 
 	private function set_y (val:Float) : Float
 	{
-		delta = val - y;
+		delta = val - _y;
 
 		for (c in children)
 			c.y += delta;
 
 		if (parent != null)
-			localY = y - parent.y;
+			localY = _y - parent.y;
 		else
-			localY = y;
+			localY = _y;
 
-		return y = val;
+		return _y = val;
 	}
 }

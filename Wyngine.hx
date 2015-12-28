@@ -14,14 +14,17 @@ class Wyngine
 
 	static var currTime:Float = 0;
 	static var prevTime:Float = 0;
-	static var scene:WynScene;
+	static var screens:Array<WynScreen>;
 	static var managers:Array<WynManager>;
+	static var currScreen:WynScreen;
+	static var screensLen:Int;
 
 	inline public static function setup (width:Int, height:Int)
 	{
 		gameWidth = width;
 		gameHeight = height;
 
+		screens = [];
 		managers = [];
 
 		currTime = Scheduler.time();
@@ -71,8 +74,22 @@ class Wyngine
 		dt = currTime - prevTime;
 
 		// Update scene object and their components
-		if (scene != null)
-			scene.update();
+		// render from back to front (index 0 to last)
+		screensLen = screens.length;
+		for (i in 0 ... screensLen)
+		{
+			currScreen = screens[i];
+
+			if (i < screensLen-1)
+			{
+				if (currScreen.persistentUpdate)
+					currScreen.update();
+			}
+			else
+			{
+				currScreen.update();
+			}
+		}
 
 		// Allow each manager to process events before calling update.
 		for (m in managers)
@@ -84,13 +101,28 @@ class Wyngine
 
 	inline public static function render (g:Graphics)
 	{
-		if (scene != null)
-			scene.render(g);
+		// render from back to front (index 0 to last)
+		screensLen = screens.length;
+		for (i in 0 ... screensLen)
+		{
+			currScreen = screens[i];
+
+			if (i < screensLen-1)
+			{
+				if (currScreen.persistentRender)
+					currScreen.render(g);
+			}
+			else
+			{
+				currScreen.render(g);
+			}
+		}
 	}
 
-	inline public static function setScene (newScene:WynScene)
+	inline public static function addScreen (screen:WynScreen)
 	{
-		scene = newScene;
+		if (screens.indexOf(screen) == -1)
+			screens.push(screen);
 	}
 
 	inline public static function addManager (manager:WynManager)
