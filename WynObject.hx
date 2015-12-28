@@ -5,12 +5,19 @@ import kha.graphics2.Graphics;
 
 class WynObject
 {
-	public var x:Float = 0;
-	public var y:Float = 0;
-	public var angle:Float = 0; // used by sprites
-	public var renderers:Array<Graphics->Void>;
-	public var components:Array<WynComponent>;
-	public var active:Bool = true; // affects alive and visible
+	// These are mostly for reference purposes.
+	// The only thing they affect are x/y positions.
+	public var parent:WynObject;
+	public var children:Array<WynObject> = [];
+
+	public var x(default, set):Float = 0;
+	public var y(default, set):Float = 0;
+	public var localX(default, null):Float = 0;
+	public var localY(default, null):Float = 0;
+	public var angle:Float = 0; // used by sprites, doesn't affect parent/children
+	public var renderers:Array<Graphics->Void> = [];
+	public var components:Array<WynComponent> = [];
+	public var active:Bool = true; // overrides "alive" and "visible"
 	public var alive:Bool = true; // affects update
 	public var visible:Bool = true; // affects render
 
@@ -18,9 +25,6 @@ class WynObject
 	{
 		this.x = x;
 		this.y = y;
-
-		renderers = [];
-		components = [];
 	}
 	
 	public function update ()
@@ -94,5 +98,37 @@ class WynObject
 	{
 		this.x = x;
 		this.y = y;
+	}
+
+	private static var delta:Float; // for reusable purposes
+
+	private function set_x (val:Float) : Float
+	{
+		delta = val - x;
+
+		for (c in children)
+			c.x += delta;
+
+		if (parent != null)
+			localX = x - parent.x;
+		else
+			localX = x;
+
+		return x = val;
+	}
+
+	private function set_y (val:Float) : Float
+	{
+		delta = val - y;
+
+		for (c in children)
+			c.y += delta;
+
+		if (parent != null)
+			localY = y - parent.y;
+		else
+			localY = y;
+
+		return y = val;
 	}
 }
