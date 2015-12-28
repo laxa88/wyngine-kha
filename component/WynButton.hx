@@ -24,8 +24,8 @@ class WynButton extends WynComponent
 	public var sliceDataDown:SliceData;
 	public var width:Int = 0;
 	public var height:Int = 0;
-	public var offsetX:Int = 0;
-	public var offsetY:Int = 0;
+	public var offsetX:Float = 0;
+	public var offsetY:Float = 0;
 
 	var downListeners:Array<WynButton->Void>;
 	var upListeners:Array<WynButton->Void>;

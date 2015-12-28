@@ -140,7 +140,7 @@ class WynObject
 	private function get_x () : Float
 	{
 		if (screen != null)
-			return _x + (screen.scrollX * scrollFactorX);
+			return _x + (screen.scrollX - screen.shakeX) * scrollFactorX;
 		else
 			return _x;
 	}
@@ -148,7 +148,7 @@ class WynObject
 	private function get_y () : Float
 	{
 		if (screen != null)
-			return _y + (screen.scrollY * scrollFactorY);
+			return _y + (screen.scrollY - screen.shakeY) * scrollFactorY;
 		else
 			return _y;
 	}

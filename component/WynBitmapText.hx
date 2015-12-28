@@ -95,8 +95,8 @@ class WynBitmapText extends WynComponent
 	public var width:Int = 0;
 	public var height:Int = 0;
 	public var scale:Float = 1;
-	public var offsetX:Int = 0;
-	public var offsetY:Int = 0;
+	public var offsetX:Float = 0;
+	public var offsetY:Float = 0;
 	public var color:Color;
 
 

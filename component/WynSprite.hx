@@ -11,8 +11,8 @@ class WynSprite extends WynComponent
 	public var region:Region;
 	public var width:Int = 0;
 	public var height:Int = 0;
-	public var offsetX:Int = 0;
-	public var offsetY:Int = 0;
+	public var offsetX:Float = 0;
+	public var offsetY:Float = 0;
 
 	public function new (w:Int, h:Int)
 	{
