@@ -1,8 +1,9 @@
 package wyn.util;
 
-class WynPool
+class WynGroup
 {
-	// NOTE: Specifically handles WynObject pooling only!
+	// NOTE: Can be used as a container to handle multiple WynObject,
+	// or used primarily for object pooling.
 
 	public var members(default, null):Array<WynObject> = [];
 	public var length(default, null):Int = 0;
