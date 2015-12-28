@@ -15,7 +15,7 @@ class WynScene
 	{
 		for (o in objects)
 		{
-			if (o.active && o.alive)
+			if (o.enabled && o.active)
 				o.update();
 		}
 	}
@@ -26,7 +26,7 @@ class WynScene
 		{
 			for (r in o.renderers)
 			{
-				if (o.active && o.visible)
+				if (o.enabled && o.visible)
 					r(g);
 			}
 		}

@@ -6,6 +6,7 @@ import kha.graphics2.Graphics;
 
 class Wyngine
 {
+	public static var onResize:Void->Void;
 	public static var gameWidth:Int = 0;
 	public static var gameHeight:Int = 0;
 	public static var gameScale:Float = 1; // this value will adjust according to khanvas dimensions
@@ -41,6 +42,8 @@ class Wyngine
 				haxe.Timer.delay(function () {
 
 					refreshGameScale();
+					if (onResize != null)
+						onResize();
 
 				}, 100);
 			});

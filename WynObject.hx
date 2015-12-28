@@ -10,6 +10,10 @@ class WynObject
 	public var parent:WynObject;
 	public var children:Array<WynObject> = [];
 
+	public var enabled:Bool = true; // overrides "alive" and "visible"
+	public var active:Bool = true; // affects update
+	public var visible:Bool = true; // affects render
+
 	public var x(default, set):Float = 0;
 	public var y(default, set):Float = 0;
 	public var localX(default, null):Float = 0;
@@ -17,9 +21,6 @@ class WynObject
 	public var angle:Float = 0; // used by sprites, doesn't affect parent/children
 	public var renderers:Array<Graphics->Void> = [];
 	public var components:Array<WynComponent> = [];
-	public var active:Bool = true; // overrides "alive" and "visible"
-	public var alive:Bool = true; // affects update
-	public var visible:Bool = true; // affects render
 
 	public function new (x:Float=0, y:Float=0)
 	{
@@ -43,6 +44,18 @@ class WynObject
 	}
 
 
+
+	public function revive ()
+	{
+		// override for additional pooling purposes, e.g. set active or visibility
+		active = true;
+	}
+
+	public function kill ()
+	{
+		// override for additional pooling purposes, e.g. set active or visibility
+		active = false;
+	}
 
 	public function addComponent (c:WynComponent)
 	{
@@ -98,6 +111,23 @@ class WynObject
 	{
 		this.x = x;
 		this.y = y;
+	}
+
+	inline public function add (_child:WynObject)
+	{
+		_child.parent = this;
+		children.push(_child);
+	}
+
+	inline public function remove (_child:WynObject)
+	{
+		_child.parent = null;
+		children.remove(_child);
+	}
+
+	inline public function addTo (_parent:WynObject)
+	{
+		_parent.add(this);
 	}
 
 	private static var delta:Float; // for reusable purposes
