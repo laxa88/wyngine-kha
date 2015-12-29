@@ -1,30 +1,73 @@
 package wyn.component;
 
-class WynCollider extends WynComponent;
+import kha.graphics2.Graphics;
+import kha.graphics2.GraphicsExtension;
+
+class WynCollider extends WynComponent
 {
+	public static var DEBUG:Bool = false;
+
 	public static var HITBOX:Int = 0;
 	public static var HITCIRCLE:Int = 1;
 	public var colliderType:Int = HITBOX;
 	public var width:Int = 0;
 	public var height:Int = 0;
-	public var radius:Int = 0;
+	public var radius:Float = 0;
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
+
+
+
+	public function new (w:Int, h:Int)
+	{
+		super();
+
+		colliderType = HITBOX;
+
+		width = w;
+		height = h;
+	}
+
+	override public function init ()
+	{
+		if (DEBUG)
+			parent.addRenderer(debugRender);
+	}
 
 	override public function destroy ()
 	{
 		super.destroy();
+
+		if (DEBUG)
+			parent.removeRenderer(debugRender);
 	}
 
 
+
+	public function debugRender (g:Graphics)
+	{
+		// NOTE:
+		// color is default white
+
+		// rect is drawn from top-left
+		g.drawRect(parent.x + offsetX, parent.y + offsetY, width, height);
+
+		// circle is drawn from top-left, but in logic, x/y position
+		// is actually centered, so we need to adjust via (offset + radius)
+		GraphicsExtension.drawCircle(g, parent.x+radius+offsetX, parent.y+radius+offsetY, radius);
+	}
 
 	public function collide (other:WynCollider) : Bool
 	{
 		if (!active)
 			return false;
 
+		// don't compare with self...
+		if (other == this)
+			return false;
+
 		// no need to check if there's no size
-		if (parent.width == 0 || parent.height == 0 ||
+		if (width == 0 || height == 0 ||
 			other.width == 0 || other.height == 0)
 		{
 			return false;
@@ -58,6 +101,8 @@ class WynCollider extends WynComponent;
 
 	function collideRectWithRect (other:WynCollider) : Bool
 	{
+		// trace ("collideRectWithRect");
+
 		var hitHoriz:Bool = false;
 		var hitVert:Bool = false;
 		var thisX:Float = parent.x + offsetX;
@@ -80,6 +125,8 @@ class WynCollider extends WynComponent;
 
 	function collideRectWithCircle (other:WynCollider) : Bool
 	{
+		// trace ("collideRectWithCircle");
+
 		// Based on code from HaxePunk's Circle.hx
 		// https://github.com/HaxePunk/HaxePunk/blob/306f7cc50356a698859434641613b7c95bfbba4f/com/haxepunk/masks/Circle.hx
 
@@ -110,8 +157,10 @@ class WynCollider extends WynComponent;
 		return distanceToCorner <= _squaredRadius;
 	}
 
-	function collideCircleWithCircle (other:WynObject) : Bool
+	function collideCircleWithCircle (other:WynCollider) : Bool
 	{
+		// trace ("collideCircleWithCircle");
+
 		// Based on code from HaxePunk's Circle.hx
 		// https://github.com/HaxePunk/HaxePunk/blob/306f7cc50356a698859434641613b7c95bfbba4f/com/haxepunk/masks/Circle.hx
 
@@ -120,5 +169,20 @@ class WynCollider extends WynComponent;
 		var dy:Float = parent.y - other.parent.y;
 
 		return (dx * dx + dy * dy) < Math.pow(radius + other.radius, 2);
+	}
+
+	inline public function setOffset (ox:Float, oy:Float)
+	{
+		offsetX = ox;
+		offsetY = oy;
+	}
+
+	inline public function setHitCircle (_radius:Float)
+	{
+		radius = _radius;
+
+		setOffset(-_radius, -_radius);
+
+		colliderType = HITCIRCLE;
 	}
 }
