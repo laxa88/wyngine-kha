@@ -1,5 +1,7 @@
 package wyn.util;
 
+import kha.Image;
+import kha.Color;
 import kha.math.FastVector2;
 import kha.math.Random;
 
@@ -166,5 +168,25 @@ class WynUtil
 
 			return str.substr(0, str.length-precision) + '.' + str.substr(str.length-precision);
 		}
+	}
+
+	inline public static function createRectImage (w:Int, h:Int, c:Color) : Image
+	{
+		var img:Image = Image.createRenderTarget(w, h);
+		img.g2.begin(true, 0x00000000);
+		img.g2.color = c;
+		img.g2.drawRect(0, 0, w, h);
+		img.g2.end();
+		return img;
+	}
+
+	inline public static function createRectImageFilled (w:Int, h:Int, c:Color) : Image
+	{
+		var img:Image = Image.createRenderTarget(w, h);
+		img.g2.begin(true, 0x00000000);
+		img.g2.color = c;
+		img.g2.fillRect(0, 0, w, h);
+		img.g2.end();
+		return img;
 	}
 }
