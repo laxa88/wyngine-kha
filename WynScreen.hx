@@ -110,11 +110,22 @@ class WynScreen
 
 
 
-	public function shake (_intensity:Float=10, _weakenRate:Float=20, _shakeHorizontal:Bool=true, _shakeVertical:Bool=true)
+	inline public function shake (_intensity:Float=10, _weakenRate:Float=20, _shakeHorizontal:Bool=true, _shakeVertical:Bool=true)
 	{
 		intensity = _intensity;
 		weakenRate = _weakenRate;
 		shakeHorizontal = _shakeHorizontal;
 		shakeVertical = _shakeVertical;
+	}
+
+	inline public function cancelEffects ()
+	{
+		// cancel screenshake
+		shakeHorizontal = false;
+		shakeVertical = false;
+		intensity = 0;
+		weakenRate = 0;
+		shakeX = 0;
+		shakeY = 0;
 	}
 }
