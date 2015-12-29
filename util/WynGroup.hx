@@ -1,11 +1,11 @@
 package wyn.util;
 
-class WynGroup
+class WynGroup<T:WynObject>
 {
 	// NOTE: Can be used as a container to handle multiple WynObject,
 	// or used primarily for object pooling.
 
-	public var members(default, null):Array<WynObject> = [];
+	public var members(default, null):Array<T> = [];
 	public var length(default, null):Int = 0;
 	public var enabledCount(get, null):Int;
 	public var activeCount(get, null):Int;
@@ -16,7 +16,7 @@ class WynGroup
 
 	}
 
-	public function add (o:WynObject) : WynObject
+	public function add (o:T) : T
 	{
 		// What were you thinking?
 		if (o == null)
@@ -56,7 +56,7 @@ class WynGroup
 	 * the array element rather than splicing, so that
 	 * we can reuse the space when we use add() later.
 	 */
-	public function remove (o:WynObject) : WynObject
+	public function remove (o:T) : T
 	{
 		var index:Int = members.indexOf(o);
 
@@ -70,9 +70,9 @@ class WynGroup
 		return o;
 	}
 
-	public function recycle () : WynObject
+	public function recycle () : T
 	{
-		var member:WynObject = getFirstAvailable();
+		var member:T = getFirstAvailable();
 
 		// Automatically revive for reuse
 		if (member != null)
@@ -88,7 +88,7 @@ class WynGroup
 			m.kill();
 	}
 
-	public function getFirstAvailable () : WynObject
+	public function getFirstAvailable () : T
 	{
 		for (o in members)
 		{
@@ -113,7 +113,7 @@ class WynGroup
 		return -1;
 	}
 
-	public function getFirstEnabled () : WynObject
+	public function getFirstEnabled () : T
 	{
 		for (o in members)
 		{
@@ -130,7 +130,7 @@ class WynGroup
 	 * using at the beginning of a game reset.
 	 * Similar to HaxeFlixel.
 	 */
-	public function forEach (func:WynObject->Void)
+	public function forEach (func:T->Void)
 	{
 		for (o in members)
 		{
@@ -139,7 +139,7 @@ class WynGroup
 		}
 	}
 
-	public function forEachEnableds (func:WynObject->Void)
+	public function forEachEnabled (func:T->Void)
 	{
 		for (o in members)
 		{
@@ -148,7 +148,7 @@ class WynGroup
 		}
 	}
 
-	public function forEachActive (func:WynObject->Void)
+	public function forEachActive (func:T->Void)
 	{
 		for (o in members)
 		{
@@ -157,7 +157,7 @@ class WynGroup
 		}
 	}
 
-	public function forEachVisible (func:WynObject->Void)
+	public function forEachVisible (func:T->Void)
 	{
 		for (o in members)
 		{
