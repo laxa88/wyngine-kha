@@ -75,20 +75,31 @@ class Wyngine
 
 		// Update scene object and their components
 		// render from back to front (index 0 to last)
-		screensLen = screens.length;
-		for (i in 0 ... screensLen)
+		var i = 0;
+		while (i < screens.length)
 		{
 			currScreen = screens[i];
 
-			if (i < screensLen-1)
+			// remove screens that are inactive
+			if (!currScreen.alive)
 			{
-				if (currScreen.persistentUpdate)
-					currScreen.update();
+				screens.remove(currScreen);
+				i--;
 			}
 			else
 			{
-				currScreen.update();
+				if (i < screensLen-1)
+				{
+					if (currScreen.persistentUpdate)
+						currScreen.update();
+				}
+				else
+				{
+					currScreen.update();
+				}
 			}
+
+			i++;
 		}
 
 		// Allow each manager to process events before calling update.
@@ -122,7 +133,22 @@ class Wyngine
 	inline public static function addScreen (screen:WynScreen)
 	{
 		if (screens.indexOf(screen) == -1)
+		{
+			// add to list to immediately update/render the screen
 			screens.push(screen);
+
+			// begin opening
+			screen.open();
+		}
+	}
+
+	inline public static function removeScreen (screen:WynScreen)
+	{
+		if (screens.indexOf(screen) != -1)
+		{
+			// begin closing
+			screen.close();
+		}
 	}
 
 	inline public static function addManager (manager:WynManager)

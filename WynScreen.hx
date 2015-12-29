@@ -6,28 +6,42 @@ import wyn.util.WynUtil;
 
 class WynScreen
 {
+	// For debuggings
+	public static var ID:Int = 0;
+	public var id:Int;
+	public var name:String = "";
+
 	// If true, will continue to update/render even if covered by other screens
+	public var alive:Bool = false;
 	public var persistentUpdate:Bool = false;
 	public var persistentRender:Bool = false;
-	public var objects:Array<WynObject>;
+	var children:Array<WynObject>;
 
 	// for scrolling the screen.
 	public var scrollX:Float = 0;
 	public var scrollY:Float = 0;
 
 	// for screen shake
-	public var shakeHorizontal:Bool = false;
-	public var shakeVertical:Bool = false;
-	public var intensity:Float = 0;
-	public var weakenRate:Float = 0;
+	var shakeHorizontal:Bool = false;
+	var shakeVertical:Bool = false;
+	var intensity:Float = 0;
+	var weakenRate:Float = 0;
 	public var shakeX:Float = 0;
 	public var shakeY:Float = 0;
+
+	// for subscreens
+	public var openCallbacks:Array<Void->Void>;
+	public var closeCallbacks:Array<Void->Void>;
 
 
 
 	public function new ()
 	{
-		objects = [];
+		id = ++ID;
+
+		children = [];
+		openCallbacks = [];
+		closeCallbacks = [];
 	}
 	
 	public function update ()
@@ -48,7 +62,7 @@ class WynScreen
 		}
 
 		// handle object updates
-		for (o in objects)
+		for (o in children)
 		{
 			if (o.enabled && o.active)
 				o.update();
@@ -58,11 +72,11 @@ class WynScreen
 	public function render (g:Graphics)
 	{
 		// handle object renders
-		for (o in objects)
+		for (o in children)
 		{
-			for (r in o.renderers)
+			if (o.enabled && o.visible)
 			{
-				if (o.enabled && o.visible)
+				for (r in o.renderers)
 					r(g);
 			}
 		}
@@ -70,10 +84,13 @@ class WynScreen
 
 	public function destroy ()
 	{
-		for (o in objects)
+		for (o in children)
 			o.destroy();
 
-		objects = null;
+		children = null;
+
+		openCallbacks = [];
+		closeCallbacks = [];
 	}
 
 
@@ -81,31 +98,69 @@ class WynScreen
 	inline public function addAt (o:WynObject, index:Int)
 	{
 		o.screen = this;
-		objects.insert(index, o);
+		children.insert(index, o);
 	}
 
 	inline public function addToFront (o:WynObject, offset:Int=0)
 	{
 		o.screen = this;
 		if (offset==0)
-			objects.push(o);
+			children.push(o);
 		else
-			objects.insert(offset, o);
+			children.insert(offset, o);
 	}
 
 	inline public function addToBack (o:WynObject, offset:Int=0)
 	{
 		o.screen = this;
 		if (offset==0)
-			objects.unshift(o);
+			children.unshift(o);
 		else
-			objects.insert(objects.length-offset, o);
+			children.insert(children.length-offset, o);
 	}
 
 	inline public function remove (o:WynObject)
 	{
+		// remove target child from screen
 		o.screen = null;
-		objects.remove(o);
+		children.remove(o);
+	}
+
+
+
+	public function open ()
+	{
+		alive = true;
+
+		// override this to init or animate the screen before it appears
+		onOpen();
+	}
+
+	function onOpen ()
+	{
+		// override this if necessary
+
+		for (f in openCallbacks)
+			f();
+	}
+
+	public function close ()
+	{
+		// override this to init or animate the screen
+		onClose();
+	}
+
+	function onClose ()
+	{
+		// override this if necessary
+
+		for (f in closeCallbacks)
+			f();
+
+		// Wyngine will check for "alive" state -- if it's dead,
+		// will be removed from the queue
+
+		alive = false;
 	}
 
 
