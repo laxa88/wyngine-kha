@@ -6,8 +6,10 @@ import kha.Assets;
 import kha.Blob;
 import kha.graphics2.Graphics;
 import kha.math.FastVector2;
+import kha.math.FastMatrix3;
 import haxe.xml.Fast;
 import haxe.Utf8;
+import wyn.util.WynUtil;
 
 /**
 	Tip on how to generate Bitmap font, for Windows AND Mac:
@@ -94,6 +96,7 @@ class WynBitmapText extends WynComponent
 
 	public var width:Int = 0;
 	public var height:Int = 0;
+	public var alpha:Float = 1;
 	public var scale:Float = 1;
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
@@ -393,6 +396,24 @@ class WynBitmapText extends WynComponent
 			case VALIGN_BOTTOM: _cursor.y = height - font.lineHeight;
 		}
 
+		if (parent.angle != 0)
+		{
+			var ox = parent.x - (parent.screen.scrollX - parent.screen.shakeX) * parent.scrollFactorX + offsetX;
+			var oy = parent.y - (parent.screen.scrollY - parent.screen.shakeY) * parent.scrollFactorY + offsetY;
+
+			var rad = WynUtil.degToRad(parent.angle);
+				g.pushTransformation(g.transformation
+					// offset toward top-left, to center image on pivot point
+					.multmat(FastMatrix3.translation(ox + scale*width/2, oy + scale*height/2))
+					// rotate at pivot point
+					.multmat(FastMatrix3.rotation(rad))
+					// reverse offset
+					.multmat(FastMatrix3.translation(-ox - scale*width/2, -oy - scale*height/2)));
+		}
+
+		// Add opacity if any
+		if (alpha != 1) g.pushOpacity(alpha);
+
 		for (line in _lines)
 		{
 			// NOTE:
@@ -432,13 +453,13 @@ class WynBitmapText extends WynComponent
 							letter.y,
 							letter.width,
 							letter.height,
-							renderX,
-							renderY,
+							offsetX + renderX,
+							offsetY + renderY,
 							renderW,
 							renderH);
 
 						if (DEBUG)
-							g.drawRect(renderX, renderY, renderW, renderH);
+							g.drawRect(offsetX + renderX, offsetY + renderY, renderW, renderH);
 
 						// Add kerning if it exists. Also, we don't have to
 						// do this if we're already at the last character.
@@ -477,6 +498,12 @@ class WynBitmapText extends WynComponent
 			// the next line.
 			_cursor.y += font.lineHeight * scale;
 		}
+
+		// Finalise opacity
+		if (alpha != 1) g.popOpacity();
+
+		// Finalise the rotation
+		if (parent.angle != 0) g.popTransformation();
 	}
 
 	/**
@@ -567,6 +594,12 @@ class WynBitmapText extends WynComponent
 
 		// Add this font data to dictionary, finally.
 		fontCache.set(fontName, font);
+	}
+
+	inline public function setOffset (ox:Float, oy:Float)
+	{
+		offsetX = ox;
+		offsetY = oy;
 	}
 
 	private function get_lineHeight () : Int

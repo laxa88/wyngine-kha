@@ -2,9 +2,11 @@ package wyn.component;
 
 import kha.Image;
 import kha.graphics2.Graphics;
+import kha.math.FastMatrix3;
 import wyn.manager.WynMouse;
 import wyn.manager.WynTouch;
 import wyn.manager.TouchData;
+import wyn.util.WynUtil;
 
 class WynButton extends WynComponent
 {
@@ -24,6 +26,8 @@ class WynButton extends WynComponent
 	public var sliceDataDown:SliceData;
 	public var width:Int = 0;
 	public var height:Int = 0;
+	public var alpha:Float = 1;
+	public var scale:Float = 1;
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
 
@@ -191,11 +195,35 @@ class WynButton extends WynComponent
 		if (image == null || region == null)
 			return;
 
+		if (parent.angle != 0)
+		{
+			var ox = parent.x - (parent.screen.scrollX - parent.screen.shakeX) * parent.scrollFactorX + offsetX;
+			var oy = parent.y - (parent.screen.scrollY - parent.screen.shakeY) * parent.scrollFactorY + offsetY;
+
+			var rad = WynUtil.degToRad(parent.angle);
+				g.pushTransformation(g.transformation
+					// offset toward top-left, to center image on pivot point
+					.multmat(FastMatrix3.translation(ox + scale*width/2, oy + scale*height/2))
+					// rotate at pivot point
+					.multmat(FastMatrix3.rotation(rad))
+					// reverse offset
+					.multmat(FastMatrix3.translation(-ox - scale*width/2, -oy - scale*height/2)));
+		}
+
+		// Add opacity if any
+		if (alpha != 1) g.pushOpacity(alpha);
+
 		g.drawScaledSubImage(image,
 			region.sx, region.sy,
 			region.sw, region.sh,
 			parent.x + offsetX, parent.y + offsetY,
 			width, height);
+
+		// Finalise opacity
+		if (alpha != 1) g.popOpacity();
+
+		// Finalise the rotation
+		if (parent.angle != 0) g.popTransformation();
 
 		// if (DEBUG)
 		// {
@@ -205,7 +233,7 @@ class WynButton extends WynComponent
 		// }
 	}
 
-	public function setImage (img:Image, upData:SliceData, overData:SliceData, downData:SliceData)
+	inline public function setImage (img:Image, upData:SliceData, overData:SliceData, downData:SliceData)
 	{
 		image = img;
 
@@ -214,6 +242,12 @@ class WynButton extends WynComponent
 		sliceDataDown = downData;
 
 		setState(STATE_UP);
+	}
+
+	inline public function setOffset (ox:Float, oy:Float)
+	{
+		offsetX = ox;
+		offsetY = oy;
 	}
 
 	function setState (state:Int)
@@ -315,11 +349,5 @@ class WynButton extends WynComponent
 	{
 		width = w;
 		height = h;
-	}
-
-	inline public function setOffset (x:Int, y:Int)
-	{
-		offsetX = x;
-		offsetY = y;
 	}
 }

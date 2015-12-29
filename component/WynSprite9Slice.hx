@@ -2,6 +2,8 @@ package wyn.component;
 
 import kha.Image;
 import kha.graphics2.Graphics;
+import kha.math.FastMatrix3;
+import wyn.util.WynUtil;
 
 class WynSprite9Slice extends WynSprite
 {
@@ -83,6 +85,24 @@ class WynSprite9Slice extends WynSprite
 		if (destH < sliceData.borderTop + sliceData.borderBottom)
 			ratioH = destH / (sliceData.borderTop + sliceData.borderBottom);
 
+		if (parent.angle != 0)
+		{
+			var ox = parent.x - (parent.screen.scrollX - parent.screen.shakeX) * parent.scrollFactorX + offsetX;
+			var oy = parent.y - (parent.screen.scrollY - parent.screen.shakeY) * parent.scrollFactorY + offsetY;
+
+			var rad = WynUtil.degToRad(parent.angle);
+				g.pushTransformation(g.transformation
+					// offset toward top-left, to center image on pivot point
+					.multmat(FastMatrix3.translation(ox + scale*width/2, oy + scale*height/2))
+					// rotate at pivot point
+					.multmat(FastMatrix3.rotation(rad))
+					// reverse offset
+					.multmat(FastMatrix3.translation(-ox - scale*width/2, -oy - scale*height/2)));
+		}
+
+		// Add opacity if any
+		if (alpha != 1) g.pushOpacity(alpha);
+
 		// top-left border
 		g.drawScaledSubImage(origin,
 			sx, sy, sliceData.borderLeft, sliceData.borderTop, // source
@@ -136,6 +156,12 @@ class WynSprite9Slice extends WynSprite
 			sliceData.width-sliceData.borderRight, sy+sliceData.height-sliceData.borderBottom, sliceData.borderRight, sliceData.borderBottom,
 			dx+(destW-sliceData.borderRight*ratioW), dy+(destH-sliceData.borderBottom*ratioH), sliceData.borderRight*ratioW, sliceData.borderBottom*ratioH
 			);
+
+		// Finalise opacity
+		if (alpha != 1) g.popOpacity();
+
+		// Finalise the rotation
+		if (parent.angle != 0) g.popTransformation();
 	}
 
 	override public function setImage (img:Image, data:SliceData)

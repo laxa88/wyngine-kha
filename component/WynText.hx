@@ -56,6 +56,11 @@ class WynText extends WynComponent
 		g.font = font;
 		g.fontSize = fontSize;
 		g.color = color;
+
+		// NOTE
+		// Can't rotate text because we don't know the width/height
+		// and so... conveniently skip alpha as well
+
 		g.drawString(text, parent.x, parent.y);
 
 		g.color = oldColor;
