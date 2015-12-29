@@ -2,11 +2,16 @@ package wyn;
 
 import wyn.component.WynComponent;
 import kha.graphics2.Graphics;
+import kha.math.FastVector2;
 
 class WynObject
 {
 	// These are mostly for reference purposes.
 	// The only thing they affect are x/y positions.
+	static var ID = 0;
+	public var id:Int = -1;
+	public var name:String = ""; // for custom use, like tags or anything
+
 	public var screen:WynScreen;
 	public var parent:WynObject;
 	public var children:Array<WynObject> = [];
@@ -23,12 +28,18 @@ class WynObject
 	public var localY(default, null):Float = 0;
 	public var scrollFactorX:Float = 1;
 	public var scrollFactorY:Float = 1;
-	public var angle:Float = 0; // used by sprites, doesn't affect parent/children
+	public var angle:Float = 0;
 	public var renderers:Array<Graphics->Void> = [];
 	public var components:Array<WynComponent> = [];
 
+	static var delta:Float; // for reusable purposes
+
+
+
 	public function new (x:Float=0, y:Float=0)
 	{
+		id = ++ID;
+		
 		this.x = x;
 		this.y = y;
 	}
@@ -112,6 +123,11 @@ class WynObject
 		renderers.remove(renderer);
 	}
 
+	inline public function getPosition () : FastVector2
+	{
+		return new FastVector2(x, y);
+	}
+
 	inline public function setPosition (x:Float, y:Float)
 	{
 		this.x = x;
@@ -134,8 +150,6 @@ class WynObject
 	{
 		_parent.add(this);
 	}
-
-	private static var delta:Float; // for reusable purposes
 
 	private function get_x () : Float
 	{
