@@ -3,6 +3,7 @@ package wyn.component;
 import kha.Image;
 import kha.graphics2.Graphics;
 import kha.math.FastMatrix3;
+import wyn.util.WynUtil;
 
 class WynButton9Slice extends WynButton
 {

@@ -101,6 +101,7 @@ class WynBitmapText extends WynComponent
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
 	public var color:Color;
+	var tempColor:Color;
 
 
 
@@ -442,24 +443,27 @@ class WynBitmapText extends WynComponent
 					if (letter.id != spaceCharCode)
 					{
 						// If the letter is NOT a space, then render it.
-						var renderX = _cursor.x + letter.xoffset * scale;
-						var renderY = _cursor.y + letter.yoffset * scale;
+						var renderX = parent.x + offsetX + _cursor.x + letter.xoffset * scale;
+						var renderY = parent.y + offsetY + _cursor.y + letter.yoffset * scale;
 						var renderW = letter.width * scale;
 						var renderH = letter.height * scale;
 
+						tempColor = g.color;
+						g.color = color;
 						g.drawScaledSubImage(
 							font.image,
 							letter.x,
 							letter.y,
 							letter.width,
 							letter.height,
-							offsetX + renderX,
-							offsetY + renderY,
+							renderX,
+							renderY,
 							renderW,
 							renderH);
+						g.color = tempColor;
 
 						if (DEBUG)
-							g.drawRect(offsetX + renderX, offsetY + renderY, renderW, renderH);
+							g.drawRect(renderX, renderY, renderW, renderH);
 
 						// Add kerning if it exists. Also, we don't have to
 						// do this if we're already at the last character.
