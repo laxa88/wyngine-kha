@@ -1,6 +1,6 @@
 package wyn.util;
 
-class WynGroup<T:WynObject>
+class WynPool<T:WynObject>
 {
 	// NOTE: Can be used as a container to handle multiple WynObject,
 	// or used primarily for object pooling.
@@ -13,6 +13,8 @@ class WynGroup<T:WynObject>
 	public var enabledCount(get, null):Int;
 	public var activeCount(get, null):Int;
 	public var visibleCount(get, null):Int;
+
+
 
 	public function new ()
 	{
