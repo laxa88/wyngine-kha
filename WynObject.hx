@@ -12,6 +12,9 @@ class WynObject
 	public var id:Int = -1;
 	public var name:String = ""; // for custom use, like tags or anything
 
+	// NOTE:
+	// parent/children are only references for getting x/y/localX/localY.
+	// They do not affect each other's update() and render() methods.
 	public var screen:WynScreen;
 	public var parent:WynObject;
 	public var children:Array<WynObject> = [];
