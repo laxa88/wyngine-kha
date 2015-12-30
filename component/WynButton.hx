@@ -303,24 +303,36 @@ class WynButton extends WynComponent
 
 	inline public function notifyDown (func:WynButton->Void)
 	{
+		if (func == null)
+			return;
+
 		if (downListeners.indexOf(func) == -1)
 			downListeners.push(func);
 	}
 
 	inline public function notifyUp (func:WynButton->Void)
 	{
+		if (func == null)
+			return;
+
 		if (upListeners.indexOf(func) == -1)
 			upListeners.push(func);
 	}
 
 	inline public function notifyEnter (func:WynButton->Void)
 	{
+		if (func == null)
+			return;
+
 		if (enterListeners.indexOf(func) == -1)
 			enterListeners.push(func);
 	}
 
 	inline public function notifyExit (func:WynButton->Void)
 	{
+		if (func == null)
+			return;
+
 		if (exitListeners.indexOf(func) == -1)
 			exitListeners.push(func);
 	}
