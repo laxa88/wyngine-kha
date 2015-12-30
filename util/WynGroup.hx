@@ -5,6 +5,9 @@ class WynGroup<T:WynObject>
 	// NOTE: Can be used as a container to handle multiple WynObject,
 	// or used primarily for object pooling.
 
+	// NOTE 2: This is not a WynObject -- it's only a object pooler/manager.
+	// So you can't add it to the WynScreen directly.
+
 	public var members(default, null):Array<T> = [];
 	public var length(default, null):Int = 0;
 	public var enabledCount(get, null):Int;
