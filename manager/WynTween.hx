@@ -1,16 +1,6 @@
-package wyn.util;
+package wyn.manager;
 
-// typedef TweenData = {
-// 	var target:WynObject;
-// 	var prop:String;
-// 	var from:Float;
-// 	var to:Float;
-// 	var elapsed:Float;
-// 	var duration:Float;
-// 	var callback:Void->Void;
-// 	var ease:Int;
-// 	var paused:Bool;
-// }
+import wyn.util.WynMath;
 
 typedef TweenData = {
 	var target:Dynamic;
@@ -27,7 +17,7 @@ typedef PropData = {
 	@:optional var to:Float;
 }
 
-class WynTween
+class WynTween extends WynManager
 {
 	// props example:
 	//  - var props = { x: { to:50 }, y: { from:100, to:200 } }
@@ -78,17 +68,16 @@ class WynTween
 
 
 
-	public static function init ()
-	{
-		instance = new WynTween();
-	}
-
 	public function new ()
 	{
+		super();
+		
+		instance = this;
+
 		queue = [];
 	}
 
-	public function update ()
+	override public function update ()
 	{
 		// reusable variables
 		var i = 0;
@@ -183,6 +172,13 @@ class WynTween
 			else
 				i++;
 		}
+	}
+
+	override public function reset ()
+	{
+		super.reset();
+
+		queue = [];
 	}
 
 	/**
