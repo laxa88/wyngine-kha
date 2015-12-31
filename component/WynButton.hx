@@ -92,7 +92,7 @@ class WynButton extends WynComponent
 		{
 			if (isTouchWithinButton())
 			{
-				if (WynTouch.isDown())
+				if (WynTouch.isAnyDown())
 				{
 					for (listener in downListeners)
 						listener(this);
