@@ -58,8 +58,8 @@ typedef Line = {
 
 typedef Options = {
 	@:optional var color:Color;
-	@:optional var halign:Int;
-	@:optional var valign:Int;
+	@:optional var halign:HAlign;
+	@:optional var valign:VAlign;
 }
 
 class WynBitmapText extends WynComponent
@@ -68,15 +68,6 @@ class WynBitmapText extends WynComponent
 
 	// Based on RafaelOliveira's BitmapText for kha:
 	// https://github.com/RafaelOliveira/BitmapText/blob/master/lib/bitmapText/BitmapText.hx
-
-	// compile-time variables
-	public static inline var HALIGN_LEFT:Int = 0;
-	public static inline var HALIGN_MIDDLE:Int = 1;
-	public static inline var HALIGN_RIGHT:Int = 2;
-
-	public static inline var VALIGN_TOP:Int = 0;
-	public static inline var VALIGN_CENTER:Int = 1;
-	public static inline var VALIGN_BOTTOM:Int = 2;
 
 	static var spaceCharCode:Int = " ".charCodeAt(0);
 
@@ -89,8 +80,8 @@ class WynBitmapText extends WynComponent
 	var _lines:Array<Line>;
 
 	public var font(default, null):Font;
-	public var halign:Int = HALIGN_LEFT;
-	public var valign:Int = VALIGN_TOP;
+	public var halign:HAlign = HAlign.LEFT;
+	public var valign:VAlign = VAlign.TOP;
 	public var trimEnds:Bool = true; // trims trailing space characters
 	public var trimAll:Bool = true; // trims ALL space characters (including mid-sentence)
 
@@ -392,9 +383,9 @@ class WynBitmapText extends WynComponent
 
 		switch (valign)
 		{
-			case VALIGN_TOP: _cursor.y = 0;
-			case VALIGN_CENTER: _cursor.y = (height/2) - (_lines.length*font.lineHeight/2);
-			case VALIGN_BOTTOM: _cursor.y = height - font.lineHeight;
+			case VAlign.TOP: _cursor.y = 0;
+			case VAlign.CENTER: _cursor.y = (height/2) - (_lines.length*font.lineHeight/2);
+			case VAlign.BOTTOM: _cursor.y = height - font.lineHeight;
 		}
 
 		if (parent.angle != 0)
@@ -423,9 +414,9 @@ class WynBitmapText extends WynComponent
 			// it's aligned to the correct side.
 			switch (halign)
 			{
-				case HALIGN_LEFT: _cursor.x = 0;
-				case HALIGN_RIGHT: _cursor.x = width - line.width;
-				case HALIGN_MIDDLE: _cursor.x = (width/2) - (line.width/2);
+				case HAlign.LEFT: _cursor.x = 0;
+				case HAlign.RIGHT: _cursor.x = width - line.width;
+				case HAlign.MIDDLE: _cursor.x = (width/2) - (line.width/2);
 			}
 
 			var lineText:String = line.text;
