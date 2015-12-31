@@ -6,8 +6,6 @@ This is intended as an experimental, learning experience for me. I'm building an
 
 The current philosphy I'm trying to follow for the engine is: "If it's fancy, then we probably don't need it (yet)."
 
-The API may change drastically as I learn new techs and apply them into the overall structure of the engine. Please use at your own risk! When the engine is ready, you will see a "Getting Started" section below. If not, please be patient :)
-
 # Changelogs
 
 ### Wyngine 0.3 (update: 27 December 2015)
@@ -16,25 +14,28 @@ Overhauled; Wyngine is now component-based, similar to Unity. Existing classes a
 
 ### Features
 
-* Input
+* Main Objects
+  * Object
+  * Screen
+* Components
+    * Text
+    * Bitmap Text
+    * Button
+    * Button 9-slice
+    * Collider
+    * Physics
+    * Sprite
+    * Sprite 9-slice
+* Managers
+  * Audio
   * Keyboard
   * Mouse
-  * Touch (untested)
-* Audio
-  * Play BGM
-  * Play sound
-* Text
-  * Default Kha text
-  * Bitmap text
-* Images, 9-slice images
-* Buttons, 9-slice buttons
-* Simple physics (velocity, accel, decel)
-* Simple colliders (rect, circle)
-* Helper classes (Util, Math)
+  * Touch
+  * Tween
 
 ### Demos/games made with this version:
 
-* None
+* [Pollen (v3)](http://www.funfe.com/m/play/8/Challenge-It-)
 
 ---
 
@@ -44,7 +45,7 @@ Legacy Wyngine, based on updated version of Kha. Mostly Flixel-influenced. Code 
 
 ### Demos/games made with this version:
 
-* [Pollen (game)](http://coinflipstudios.com/pollen2)
+* [Pollen (v2)](http://coinflipstudios.com/pollen2)
 
 ---
 
@@ -61,7 +62,7 @@ Legacy Wyngine, based on previous version of Kha. Modelled after Flixel/HaxePunk
 * [KhaCamera (multiple cameras, scroll)](http://coinflipstudios.com/khacamera)
 * [KhaCamera (flash, fill, fadeIn, fadeOut)](http://coinflipstudios.com/khacamera2)
 * [KhaButton (image, 9-slice image, button, 9-slice button)](http://coinflipstudios.com/khabutton)
-* [Pollen (game)](http://coinflipstudios.com/pollen)
+* [Pollen (v1)](http://coinflipstudios.com/pollen)
 
 ---
 
