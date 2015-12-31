@@ -76,10 +76,10 @@ class WynMouse extends WynManager
 
 	function onMouseStart (index:Int, x:Int, y:Int)
 	{
+		updateMouseData(x, y, 0, 0);
+
 		for (listener in startListener)
 			listener(index, x, y);
-
-		// trace("onMouseStart : " + index + " , " + x + " , " + y);
 
 		mouseDown.set(index, true);
 		mouseHeld.set(index, true);
@@ -91,10 +91,10 @@ class WynMouse extends WynManager
 
 	function onMouseEnd (index:Int, x:Int, y:Int)
 	{
+		updateMouseData(x, y, 0, 0);
+
 		for (listener in endListener)
 			listener(index, x, y);
-
-		// trace("onMouseEnd : " + index + " , " + x + " , " + y);
 
 		mouseUp.set(index, true);
 		mouseHeld.remove(index);
@@ -104,10 +104,15 @@ class WynMouse extends WynManager
 
 	function onMouseMove (x:Int, y:Int, dx:Int, dy:Int)
 	{
+		updateMouseData(x, y, dx, dy);
+
 		for (listener in moveListener)
 			listener(x, y, dx, dy);
+	}
 
-		// trace("onMouseMove : " + x + " , " + y + " , " + dx + " , " + dy);
+	function updateMouseData (x:Int, y:Int, dx:Int, dy:Int)
+	{
+		// trace("updateMouseData : " + x + " , " + y + " , " + dx + " , " + dy);
 
 		WynMouse.x = Std.int(x * Wyngine.gameScale);
 		WynMouse.y = Std.int(y * Wyngine.gameScale);
