@@ -56,12 +56,6 @@ typedef Line = {
 	var width:Int;
 }
 
-typedef Options = {
-	@:optional var color:Color;
-	@:optional var halign:HAlign;
-	@:optional var valign:VAlign;
-}
-
 class WynBitmapText extends WynComponent
 {
 	public static var DEBUG:Bool = false;
@@ -91,8 +85,8 @@ class WynBitmapText extends WynComponent
 	public var scale:Float = 1;
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
-	public var color:Color;
-	var tempColor:Color;
+	public var color:Color = 0xFFFFFFFF; // default white
+	static var oldColor:Color; // for reusability
 
 
 
@@ -100,7 +94,7 @@ class WynBitmapText extends WynComponent
 	 * Loads the bitmap font from cache. Remember to call loadFont first before
 	 * creating new WynBitmapTexts.
 	 */
-	public function new (str:String, fontName:String, w:Int, h:Int, ?option:Options)
+	public function new (str:String, fontName:String, w:Int, h:Int, ?option:TextOptions)
 	{
 		super();
 
@@ -439,7 +433,7 @@ class WynBitmapText extends WynComponent
 						var renderW = letter.width * scale;
 						var renderH = letter.height * scale;
 
-						tempColor = g.color;
+						oldColor = g.color;
 						g.color = color;
 						g.drawScaledSubImage(
 							font.image,
@@ -451,7 +445,7 @@ class WynBitmapText extends WynComponent
 							renderY,
 							renderW,
 							renderH);
-						g.color = tempColor;
+						g.color = oldColor;
 
 						if (DEBUG)
 							g.drawRect(renderX, renderY, renderW, renderH);
