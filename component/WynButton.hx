@@ -16,8 +16,8 @@ class WynButton extends WynComponent
 	public static inline var STATE_UP:Int = 1;
 	public static inline var STATE_OVER:Int = 2;
 	public static inline var STATE_DOWN:Int = 3;
-	public var currState:Int = STATE_UP;
-	public var prevState:Int = STATE_UP;
+	public var currState:Int = STATE_NONE;
+	public var prevState:Int = STATE_NONE;
 
 	public var image:Image;
 	public var region:Region;
@@ -52,6 +52,8 @@ class WynButton extends WynComponent
 	override public function init ()
 	{
 		parent.addRenderer(render);
+
+		setState(STATE_UP);
 	}
 
 	override public function update ()
@@ -252,6 +254,14 @@ class WynButton extends WynComponent
 
 	function setState (state:Int)
 	{
+		// don't update if inactive
+		if (!active)
+			return;
+
+		// don't repeatedly reassign state
+		if (currState == state)
+			return;
+
 		prevState = currState;
 		currState = state;
 
@@ -361,5 +371,13 @@ class WynButton extends WynComponent
 	{
 		width = w;
 		height = h;
+	}
+
+	override private function set_active (val:Bool) : Bool
+	{
+		if (!val)
+			setState(STATE_UP);
+
+		return active = val;
 	}
 }

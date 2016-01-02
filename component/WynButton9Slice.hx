@@ -157,6 +157,14 @@ class WynButton9Slice extends WynButton
 
 	override function setState (state:Int)
 	{
+		// don't update if inactive
+		if (!active)
+			return;
+
+		// don't repeatedly reassign state
+		if (currState == state)
+			return;
+
 		prevState = currState;
 		currState = state;
 
