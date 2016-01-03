@@ -53,6 +53,11 @@ class Wyngine
 
 			refreshGameScale();
 
+			var wyn = 'background:#ff69b4;color:#ffffff';
+			var black = 'background:#ffffff;color:#000000';
+			var kha = 'background:#2073d0;color:#fdff00';
+			js.Browser.console.log('%cMade with %c wyngine %c\nPowered by %c kha ', black, wyn, black, kha);
+
 		#end
 	}
 
