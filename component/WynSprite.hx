@@ -90,12 +90,7 @@ class WynSprite extends WynComponent
 		// width = img.width;
 		// height = img.height;
 
-		region = {
-			x : data.x,
-			y : data.y,
-			w : data.w,
-			h : data.h
-		};
+		region = data;
 	}
 
 	inline public function setOffset (ox:Float, oy:Float)
