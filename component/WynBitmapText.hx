@@ -33,6 +33,7 @@ import wyn.util.WynUtil;
 
 typedef Font = {
 	var size:Int;
+	var outline:Int;
 	var lineHeight:Int;
 	var spaceWidth:Int;
 	var image:Image;
@@ -466,7 +467,7 @@ class WynBitmapText extends WynComponent
 						}
 
 						// Move cursor to next position, with padding.
-						_cursor.x += letter.xadvance * scale;
+						_cursor.x += (letter.xadvance + font.outline) * scale;
 					}
 					else
 					{
@@ -575,6 +576,7 @@ class WynBitmapText extends WynComponent
 		// Create new font data
 		var font:Font = {
 			size: Std.parseInt(data.node.info.att.size), // this original size this font's image was exported as
+			outline: Std.parseInt(data.node.info.att.outline), // outlines are considered padding too
 			lineHeight: Std.parseInt(data.node.common.att.lineHeight), // original vertical padding between texts
 			spaceWidth: spaceWidth, // remember, this is only for space character
 			image: fontImage, // the font image sheet
