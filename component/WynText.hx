@@ -106,13 +106,15 @@ class WynText extends WynComponent
 		switch (valign)
 		{
 			case VAlign.TOP:
-				// do nothing
+				ny = ty;
 
 			case VAlign.CENTER:
 				lineY = -(lines-1) * h / 2.0;
+				ny = ty - h/2;
 
 			case VAlign.BOTTOM:
 				lineY = -(lines-1) * h;
+				ny = ty - h;
 		}
 
 		for (line in texts)
@@ -129,18 +131,6 @@ class WynText extends WynComponent
 
 				case HAlign.RIGHT:
 					nx = tx - w;
-			}
-
-			switch (valign)
-			{
-				case VAlign.TOP:
-					ny = ty;
-
-				case VAlign.CENTER:
-					ny = ty - h/2;
-
-				case VAlign.BOTTOM:
-					ny = ty - h;
 			}
 
 			g.drawString(line, nx, ny + lineY);
