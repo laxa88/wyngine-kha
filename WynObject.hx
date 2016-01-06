@@ -31,7 +31,6 @@ class WynObject
 	public var localY(default, null):Float = 0;
 	public var scrollFactorX:Float = 1;
 	public var scrollFactorY:Float = 1;
-	public var angle:Float = 0;
 	public var renderers:Array<Graphics->Void> = [];
 	public var components:Array<WynComponent> = [];
 

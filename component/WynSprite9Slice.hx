@@ -74,12 +74,12 @@ class WynSprite9Slice extends WynSprite
 		if (destH < region.borderTop + region.borderBottom)
 			ratioH = destH / (region.borderTop + region.borderBottom);
 
-		if (parent.angle != 0)
+		if (angle != 0)
 		{
 			var ox = parent.x - (parent.screen.scrollX - parent.screen.shakeX) * parent.scrollFactorX + offsetX;
 			var oy = parent.y - (parent.screen.scrollY - parent.screen.shakeY) * parent.scrollFactorY + offsetY;
 
-			var rad = WynUtil.degToRad(parent.angle);
+			var rad = WynUtil.degToRad(angle);
 				g.pushTransformation(g.transformation
 					// offset toward top-left, to center image on pivot point
 					.multmat(FastMatrix3.translation(ox + scale*width/2, oy + scale*height/2))
@@ -150,6 +150,6 @@ class WynSprite9Slice extends WynSprite
 		if (alpha != 1) g.popOpacity();
 
 		// Finalise the rotation
-		if (parent.angle != 0) g.popTransformation();
+		if (angle != 0) g.popTransformation();
 	}
 }
