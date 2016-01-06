@@ -10,10 +10,8 @@ class WynAtlas
 {
 	static var atlasDict:Map<String, AtlasData> = new Map<String, AtlasData>();
 
-	public static function parseShoebox (atlasName:String, atlas:Image, xml:Blob)
+	public static function loadAtlasShoebox (atlasName:String, atlas:Image, xml:Blob)
 	{
-		trace("parseShoebox");
-
 		var blobString:String = xml.toString();
 		var fullXml:Xml = Xml.parse(blobString);
 		var firstNode:Xml = fullXml.firstElement(); // <TextureAtlas>
@@ -25,10 +23,10 @@ class WynAtlas
 		for (st in data.nodes.SubTexture)
 		{
 			var region:Region = {
-				sx: Std.parseInt(st.att.x),
-				sy: Std.parseInt(st.att.y),
-				sw: Std.parseInt(st.att.width),
-				sh: Std.parseInt(st.att.height)
+				x: Std.parseInt(st.att.x),
+				y: Std.parseInt(st.att.y),
+				w: Std.parseInt(st.att.width),
+				h: Std.parseInt(st.att.height)
 			};
 
 			subTexturesDict.set(st.att.name, region);
@@ -56,6 +54,7 @@ class WynAtlas
 				return atlasData.regionMap.get(subTextureName);
 		}
 
+		trace("getRegionByName not found : " + atlasName + " , " + subTextureName);
 		return null;
 	}
 
@@ -67,6 +66,7 @@ class WynAtlas
 			return atlasData.regionArr[index];
 		}
 
+		trace("getRegionByIndex not found : " + atlasName + " , " + index);
 		return null;
 	}
 }
