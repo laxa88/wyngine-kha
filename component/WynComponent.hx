@@ -4,6 +4,7 @@ import wyn.WynObject;
 
 class WynComponent
 {
+	public var tag:String = ""; // for custom identification
 	public var parent:WynObject;
 	public var active(default, set):Bool = true;
 	public function new () : Void {}

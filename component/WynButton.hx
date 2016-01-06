@@ -3,6 +3,7 @@ package wyn.component;
 import kha.Image;
 import kha.graphics2.Graphics;
 import kha.math.FastMatrix3;
+import wyn.Wyngine;
 import wyn.manager.WynMouse;
 import wyn.manager.WynTouch;
 import wyn.manager.TouchData;
@@ -21,9 +22,9 @@ class WynButton extends WynComponent
 
 	public var image:Image;
 	public var region:Region;
-	public var sliceDataUp:SliceData;
-	public var sliceDataOver:SliceData;
-	public var sliceDataDown:SliceData;
+	public var regionDataUp:Region;
+	public var regionDataOver:Region;
+	public var regionDataDown:Region;
 	public var width:Int = 0;
 	public var height:Int = 0;
 	public var alpha:Float = 1;
@@ -31,10 +32,10 @@ class WynButton extends WynComponent
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
 
-	var downListeners:Array<WynButton->Void>;
-	var upListeners:Array<WynButton->Void>;
-	var enterListeners:Array<WynButton->Void>;
-	var exitListeners:Array<WynButton->Void>;
+	var downListeners:Array<WynButton->Void> = [];
+	var upListeners:Array<WynButton->Void> = [];
+	var enterListeners:Array<WynButton->Void> = [];
+	var exitListeners:Array<WynButton->Void> = [];
 
 	public function new (w:Int, h:Int)
 	{
@@ -43,10 +44,8 @@ class WynButton extends WynComponent
 		width = w;
 		height = h;
 
-		downListeners = [];
-		upListeners = [];
-		enterListeners = [];
-		exitListeners = [];
+		// Make sure mouse position is scaled for button
+		Wyngine.refreshGameScale();
 	}
 
 	override public function init ()
@@ -188,6 +187,9 @@ class WynButton extends WynComponent
 
 		image = null;
 		region = null;
+		regionDataUp = null;
+		regionDataOver = null;
+		regionDataDown = null;
 	}
 
 
@@ -216,8 +218,8 @@ class WynButton extends WynComponent
 		if (alpha != 1) g.pushOpacity(alpha);
 
 		g.drawScaledSubImage(image,
-			region.sx, region.sy,
-			region.sw, region.sh,
+			region.x, region.y,
+			region.w, region.h,
 			parent.x + offsetX, parent.y + offsetY,
 			width, height);
 
@@ -235,13 +237,13 @@ class WynButton extends WynComponent
 		// }
 	}
 
-	inline public function setImage (img:Image, upData:SliceData, overData:SliceData, downData:SliceData)
+	inline public function setImage (img:Image, upData:Region, overData:Region, downData:Region)
 	{
 		image = img;
 
-		sliceDataUp = upData;
-		sliceDataOver = overData;
-		sliceDataDown = downData;
+		regionDataUp = upData;
+		regionDataOver = overData;
+		regionDataDown = downData;
 
 		setState(STATE_UP);
 	}
@@ -266,26 +268,25 @@ class WynButton extends WynComponent
 		currState = state;
 
 		// Default up state
-		var sliceData:SliceData = sliceDataUp;
+		var regionData:Region = regionDataUp;
 
 		switch (currState)
 		{
-			case STATE_NONE: sliceData = sliceDataUp;
+			case STATE_NONE: regionData = regionDataUp;
 
-			case STATE_UP: sliceData = sliceDataUp;
+			case STATE_UP: regionData = regionDataUp;
 
-			case STATE_OVER: sliceData = sliceDataOver;
+			case STATE_OVER: regionData = regionDataOver;
 
-			case STATE_DOWN: sliceData = sliceDataDown;
+			case STATE_DOWN: regionData = regionDataDown;
 		}
 
+		// For invisible buttons, we fallback on empty data
+		if (regionData == null)
+			regionData = { x:0, y:0, w:0, h:0 };
+
 		// update region
-		region = {
-			sx : sliceData.x,
-			sy : sliceData.y,
-			sw : sliceData.width,
-			sh : sliceData.height
-		};
+		region = regionData;
 	}
 
 	inline public function notify (onDown:WynButton->Void, onUp:WynButton->Void, onEnter:WynButton->Void, onExit:WynButton->Void)

@@ -67,8 +67,8 @@ class WynSprite extends WynComponent
 		if (alpha != 1) g.pushOpacity(alpha);
 
 		g.drawScaledSubImage(image,
-			region.sx, region.sy,
-			region.sw, region.sh,
+			region.x, region.y,
+			region.w, region.h,
 			parent.x + offsetX, parent.y + offsetY,
 			width * scale, height * scale);
 
@@ -82,7 +82,7 @@ class WynSprite extends WynComponent
 			g.drawRect(parent.x + offsetX, parent.y + offsetY, width, height);
 	}
 
-	inline public function setImage (img:Image, data:SliceData)
+	inline public function setImage (img:Image, data:Region)
 	{
 		image = img;
 
@@ -91,10 +91,10 @@ class WynSprite extends WynComponent
 		// height = img.height;
 
 		region = {
-			sx : data.x,
-			sy : data.y,
-			sw : data.width,
-			sh : data.height
+			x : data.x,
+			y : data.y,
+			w : data.w,
+			h : data.h
 		};
 	}
 
