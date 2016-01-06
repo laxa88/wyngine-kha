@@ -14,21 +14,23 @@ class Wyngine
 
 	static var currTime:Float = 0;
 	static var prevTime:Float = 0;
-	static var screens:Array<WynScreen>;
-	static var managers:Array<WynManager>;
+	static var screens:Array<WynScreen> = [];
+	static var managers:Array<WynManager> = [];
 	static var currScreen:WynScreen;
-	static var screensLen:Int;
+	static var screensLen:Int = 0;
 
 	inline public static function setup (width:Int, height:Int)
 	{
 		gameWidth = width;
 		gameHeight = height;
 
-		screens = [];
-		managers = [];
-
 		currTime = Scheduler.time();
 
+		setupHtml();
+	}
+
+	inline static function setupHtml ()
+	{
 		#if js
 
 			// Prevents mobile touches from scrolling/scaling the screen.
@@ -51,8 +53,6 @@ class Wyngine
 				}, 100);
 			});
 
-			refreshGameScale();
-
 			var wyn = 'background:#ff69b4;color:#ffffff';
 			var black = 'background:#ffffff;color:#000000';
 			var kha = 'background:#2073d0;color:#fdff00';
@@ -61,7 +61,7 @@ class Wyngine
 		#end
 	}
 
-	static function refreshGameScale ()
+	public static function refreshGameScale ()
 	{
 		var khanvasW = kha.System.pixelWidth;
 		var khanvasH = kha.System.pixelHeight;
@@ -69,6 +69,8 @@ class Wyngine
 		var ratioH = gameHeight / khanvasH;
 		var ratio = Math.min(ratioW, ratioH);
 		gameScale = ratio;
+
+		// trace("refresh scale : " + khanvasW + " , " + khanvasH + " , " + gameScale);
 	}
 
 	inline public static function update ()
@@ -139,6 +141,8 @@ class Wyngine
 	{
 		if (screens.indexOf(screen) == -1)
 		{
+			// trace("add screen : " + Type.getClassName(Type.getClass(screen)));
+
 			// add to list to immediately update/render the screen
 			screens.push(screen);
 
@@ -158,6 +162,8 @@ class Wyngine
 
 	inline public static function addManager (manager:WynManager)
 	{
+		// trace("add manager : " + Type.getClassName(Type.getClass(manager)));
+
 		managers.push(manager);
 	}
 }
