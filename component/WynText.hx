@@ -93,8 +93,8 @@ class WynText extends WynComponent
 		// Can't rotate text because we don't know the width/height
 		// and so... conveniently skip alpha as well
 
-		var tx:Float = parent.x;
-		var ty:Float = parent.y;
+		var tx:Float = parent.x + offsetX;
+		var ty:Float = parent.y + offsetY;
 		var w:Float = 0;
 		var h:Float = 0;
 		var nx:Float = 0;
@@ -122,7 +122,7 @@ class WynText extends WynComponent
 			switch (halign)
 			{
 				case HAlign.LEFT:
-					// do nothing
+					nx = tx;
 
 				case HAlign.MIDDLE:
 					nx = tx - w/2;
@@ -134,7 +134,7 @@ class WynText extends WynComponent
 			switch (valign)
 			{
 				case VAlign.TOP:
-					// do nothing
+					ny = ty;
 
 				case VAlign.CENTER:
 					ny = ty - h/2;
@@ -143,10 +143,10 @@ class WynText extends WynComponent
 					ny = ty - h;
 			}
 
-			g.drawString(line, nx + offsetX, ny + offsetY + lineY);
+			g.drawString(line, nx, ny + lineY);
 
 			if (DEBUG)
-				g.drawRect(nx + offsetX, ny + offsetY + lineY, w, h);
+				g.drawRect(nx, ny + lineY, w, h);
 
 			lineY += h;
 		}
