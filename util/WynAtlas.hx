@@ -58,6 +58,28 @@ class WynAtlas
 		return null;
 	}
 
+	public static function getRegionsByName (atlasName:String, subTextureNames:Array<String>) : Array<Region>
+	{
+		if (atlasDict.exists(atlasName))
+		{
+			var arr:Array<Region> = [];
+			var atlasData:AtlasData = atlasDict.get(atlasName);
+
+			for (name in subTextureNames)
+			{
+				if (atlasData.regionMap.exists(name))
+					arr.push(atlasData.regionMap.get(name));
+				else
+					trace("subTexture not found : " + name);
+			}
+
+			return arr;
+		}
+
+		trace("getRegionByNames not found : " + atlasName);
+		return null;
+	}
+
 	public static function getRegionByIndex (atlasName:String, index:Int) : Region
 	{
 		if (atlasDict.exists(atlasName))
