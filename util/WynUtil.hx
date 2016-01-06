@@ -135,7 +135,7 @@ class WynUtil
 		return Math.round( v * Math.pow(10, precision) ) / Math.pow(10, precision);
 	}
 
-	inline public static function roundToPrecisionString (v:Float, precision:Int) : String
+	inline public static function roundToPrecisionString (v:Float, precision:Int, separator:String='.') : String
 	{
 		var n = Math.round(v * Math.pow(10, precision));
 		var str = '' + n;
@@ -156,7 +156,7 @@ class WynUtil
 				len++;
 			}
 
-			return '0.' + str;
+			return '0' + separator + str;
 		}
 		else
 		{
@@ -166,7 +166,7 @@ class WynUtil
 			// len = 3
 			// return "5" + "." + "12"
 
-			return str.substr(0, str.length-precision) + '.' + str.substr(str.length-precision);
+			return str.substr(0, str.length-precision) + separator + str.substr(str.length-precision);
 		}
 	}
 
