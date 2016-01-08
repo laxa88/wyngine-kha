@@ -141,14 +141,15 @@ class Wyngine
 	{
 		if (screens.indexOf(screen) == -1)
 		{
-			// trace("add screen : " + Type.getClassName(Type.getClass(screen)));
-
 			// add to list to immediately update/render the screen
 			screens.push(screen);
-
-			// begin opening
-			screen.open();
 		}
+
+		// NOTE: it is possible that within current update, a screen
+		// is closed and re-opened. So, we open it anyway.
+
+		// begin opening
+		screen.open();
 	}
 
 	inline public static function removeScreen (screen:WynScreen)
