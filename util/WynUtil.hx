@@ -120,24 +120,31 @@ class WynUtil
 		return radToVector(degToRad(angle));
 	}
 
-	inline // public static function vectorToRad (v:FastVector2) : Float
-	// {
-	// 	// does this affect v directly?
-	// }
+	inline public static var ROUND:Int = 0;
+	inline public static var FLOOR:Int = 1;
+	inline public static var CEIL:Int = 2;
 
-	inline // public static function vectorToDeg (v:FastVector2) : Float
-	// {
-
-	// }
-
-	inline public static function roundToPrecision (v:Float, precision:Int) : Float
+	inline public static function roundToPrecision (v:Float, precision:Int, roundType:Int=FLOOR) : Float
 	{
-		return Math.round( v * Math.pow(10, precision) ) / Math.pow(10, precision);
+		if (roundType == ROUND)
+			return Math.round( v * Math.pow(10, precision) ) / Math.pow(10, precision);
+		else if (roundType == FLOOR)
+			return Math.floor( v * Math.pow(10, precision) ) / Math.pow(10, precision);
+		else // CEIL
+			return Math.ceil( v * Math.pow(10, precision) ) / Math.pow(10, precision);
 	}
 
-	inline public static function roundToPrecisionString (v:Float, precision:Int, separator:String='.') : String
+	inline public static function roundToPrecisionString (v:Float, precision:Int, separator:String='.', roundType:Int=FLOOR) : String
 	{
-		var n = Math.round(v * Math.pow(10, precision));
+		var n = 0;
+
+		if (roundType == ROUND)
+			n = Math.round(v * Math.pow(10, precision));
+		else if (roundType == FLOOR)
+			n = Math.floor(v * Math.pow(10, precision));
+		else // CEIL
+			n = Math.ceil(v * Math.pow(10, precision));
+
 		var str = '' + n;
 		var len = str.length;
 
