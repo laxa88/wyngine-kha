@@ -164,10 +164,10 @@ class WynTween extends WynManager
 
 			if (tween.elapsed >= tween.duration)
 			{
+				queue.remove(tween);
+
 				if (tween.callback != null)
 					tween.callback();
-
-				queue.remove(tween);
 			}
 			else
 				i++;
