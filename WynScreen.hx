@@ -10,12 +10,12 @@ class WynScreen
 	public static var ID:Int = 0;
 	public var id:Int;
 	public var name:String = "";
+	public var alive:Bool = false;
+	var children:Array<WynObject>;
 
 	// If true, will continue to update/render even if covered by other screens
-	public var alive:Bool = false;
 	public var persistentUpdate:Bool = false;
 	public var persistentRender:Bool = false;
-	var children:Array<WynObject>;
 
 	// for scrolling the screen.
 	public var scrollX:Float = 0;

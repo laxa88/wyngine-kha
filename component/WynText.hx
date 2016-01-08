@@ -83,6 +83,9 @@ class WynText extends WynComponent
 
 	public function render (g:Graphics)
 	{
+		if (!visible)
+			return;
+		
 		oldColor = g.color;
 
 		g.font = font;

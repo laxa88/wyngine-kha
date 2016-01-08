@@ -369,6 +369,9 @@ class WynBitmapText extends WynComponent
 
 	public function render (g:Graphics)
 	{
+		if (!visible)
+			return;
+
 		// For every letter in the text, render directly on buffer.
 		// In best case scenario where text doesn't change, it may be better to
 		// Robert says Kha can handle it.

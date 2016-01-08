@@ -9,6 +9,9 @@ class WynButton9Slice extends WynButton
 {
 	override public function render (g:Graphics)
 	{
+		if (!visible)
+			return;
+
 		if (image == null || region == null)
 			return;
 

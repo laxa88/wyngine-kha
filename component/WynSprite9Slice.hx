@@ -18,6 +18,9 @@ class WynSprite9Slice extends WynSprite
 
 	override public function render (g:Graphics)
 	{
+		if (!visible)
+			return;
+		
 		if (image == null || region == null)
 			return;
 

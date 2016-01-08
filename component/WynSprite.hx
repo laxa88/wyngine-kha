@@ -46,6 +46,9 @@ class WynSprite extends WynComponent
 
 	public function render (g:Graphics)
 	{
+		if (!visible)
+			return;
+
 		if (image == null || region == null)
 			return;
 
