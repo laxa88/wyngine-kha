@@ -13,9 +13,9 @@ class WynTouch extends WynManager
 	static var touchCount:Int = 0;
 	static var touchJustPressed:Bool = false;
 
-	static var startListener:Array<Int->Int->Int->Void>;
-	static var endListener:Array<Int->Int->Int->Void>;
-	static var moveListener:Array<Int->Int->Int->Void>;
+	static var startListener:Array<Int->Int->Int->Void> = [];
+	static var endListener:Array<Int->Int->Int->Void> = [];
+	static var moveListener:Array<Int->Int->Int->Void> = [];
 
 	public function new ()
 	{
@@ -121,16 +121,16 @@ class WynTouch extends WynManager
 	{
 		if (touches.exists(index))
 		{
-			touches[index].dx = Std.int((x - touches[index].x) * Wyngine.gameScale);
-			touches[index].dy = Std.int((y - touches[index].y) * Wyngine.gameScale);
-			touches[index].x = Std.int(x * Wyngine.gameScale);
-			touches[index].y = Std.int(y * Wyngine.gameScale);
+			touches[index].x = Std.int(x / Wyngine.gameScale - Wyngine.screenOffsetX);
+			touches[index].y = Std.int(y / Wyngine.gameScale - Wyngine.screenOffsetY);
+			touches[index].dx = Std.int((x - touches[index].x) / Wyngine.gameScale);
+			touches[index].dy = Std.int((y - touches[index].y) / Wyngine.gameScale);
 		}
 		else
 		{
 			touches.set(index, {
-				x : Std.int(x * Wyngine.gameScale),
-				y : Std.int(y * Wyngine.gameScale),
+				x : Std.int(x / Wyngine.gameScale - Wyngine.screenOffsetX),
+				y : Std.int(y / Wyngine.gameScale - Wyngine.screenOffsetY),
 				dx : 0,
 				dy : 0
 			});

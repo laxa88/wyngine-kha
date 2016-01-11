@@ -6,6 +6,8 @@ class WynMouse extends WynManager
 {
 	public static var init:Bool = false;
 
+	public static var rawX:Int = 0;
+	public static var rawY:Int = 0;
 	public static var x:Int = 0;
 	public static var y:Int = 0;
 	public static var dx:Int = 0;
@@ -114,10 +116,12 @@ class WynMouse extends WynManager
 	{
 		// trace("updateMouseData : " + x + " , " + y + " , " + dx + " , " + dy);
 
-		WynMouse.x = Std.int(x * Wyngine.gameScale);
-		WynMouse.y = Std.int(y * Wyngine.gameScale);
-		WynMouse.dx = Std.int(dx * Wyngine.gameScale);
-		WynMouse.dy = Std.int(dy * Wyngine.gameScale);
+		WynMouse.rawX = x;
+		WynMouse.rawY = y;
+		WynMouse.x = Std.int(x / Wyngine.gameScale - Wyngine.screenOffsetX);
+		WynMouse.y = Std.int(y / Wyngine.gameScale - Wyngine.screenOffsetY);
+		WynMouse.dx = Std.int(dx / Wyngine.gameScale);
+		WynMouse.dy = Std.int(dy / Wyngine.gameScale);
 	}
 
 	function onMouseWheel (delta:Int)

@@ -63,55 +63,35 @@ class WynButton extends WynComponent
 
 		// If the mouse is in or outside
 		var state = STATE_UP;
+		var mouseHit = isMouseWithinButton();
+		var touchHit = isTouchWithinButton();
 
 		// If the mouse is inside the button, check for
 		// mouse down or mouse over states.
-		if (WynMouse.init)
-		{
-			if (isMouseWithinButton())
-			{
-				// NOTE: down and up event may happen in the same update, so don't do if-else.
-				if (WynMouse.isDown())
-				{
-					for (listener in downListeners)
-						listener(this);
-				}
 
-				if (WynMouse.isUp())
-				{
-					for (listener in upListeners)
-						listener(this);
-				}
-				
-				if (WynMouse.isAny())
-					state = STATE_DOWN;
-				else
-					state = STATE_OVER;
-			}
+		// NOTE: touch events come first before mouse (in HTML5)
+
+		if ((touchHit && WynTouch.init && WynTouch.isAnyDown()) ||
+			(mouseHit && WynMouse.init && WynMouse.isDown()))
+		{
+			for (listener in downListeners)
+				listener(this);
 		}
 
-		if (WynTouch.init)
+		if ((touchHit && WynTouch.init && WynTouch.isUp()) ||
+			(mouseHit && WynMouse.init && WynMouse.isUp()))
 		{
-			if (isTouchWithinButton())
-			{
-				if (WynTouch.isAnyDown())
-				{
-					for (listener in downListeners)
-						listener(this);
-				}
-
-				if (WynTouch.isUp())
-				{
-					for (listener in upListeners)
-						listener(this);
-				}
-				
-				if (WynTouch.isAny())
-					state = STATE_DOWN;
-				else
-					state = STATE_OVER;
-			}
+			for (listener in upListeners)
+				listener(this);
 		}
+		
+		if ((touchHit && WynTouch.init && WynTouch.isAny()) ||
+			(mouseHit && WynMouse.init && WynMouse.isAny()))
+			state = STATE_DOWN;
+		else
+			state = STATE_OVER;
+
+
 
 		// If the state changed, check for enter/exit events
 		if (state != currState)
