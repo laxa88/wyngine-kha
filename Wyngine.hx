@@ -182,7 +182,8 @@ class Wyngine
 			i++;
 		}
 
-		// Allow each manager to process events before calling update.
+		// Events will always trigger first, and we want screens
+		// to react to the changes before the manager processes them.
 		for (m in managers)
 		{
 			if (m.active)
