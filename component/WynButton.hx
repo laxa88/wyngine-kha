@@ -7,11 +7,15 @@ import wyn.Wyngine;
 import wyn.manager.WynMouse;
 import wyn.manager.WynTouch;
 import wyn.manager.TouchData;
+import wyn.manager.TouchState;
 import wyn.util.WynUtil;
 
 class WynButton extends WynComponent
 {
 	public static var DEBUG:Bool = false;
+
+	static var MOUSE_ENABLED:Bool = false;
+	static var SURFACE_ENABLED:Bool = false;
 
 	public static inline var STATE_NONE:Int = 0;
 	public static inline var STATE_UP:Int = 1;
@@ -33,10 +37,15 @@ class WynButton extends WynComponent
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
 
+	var hitTouches:Map<Int, TouchData>;
+	var hitMouse:Bool = false;
+
 	var downListeners:Array<WynButton->Void> = [];
 	var upListeners:Array<WynButton->Void> = [];
 	var enterListeners:Array<WynButton->Void> = [];
 	var exitListeners:Array<WynButton->Void> = [];
+
+
 
 	public function new (w:Int, h:Int)
 	{
@@ -44,6 +53,8 @@ class WynButton extends WynComponent
 
 		width = w;
 		height = h;
+
+		hitTouches = new Map<Int, TouchData>();
 
 		// Make sure mouse position is scaled for button
 		Wyngine.refreshGameScale();
@@ -61,101 +72,139 @@ class WynButton extends WynComponent
 		if (!active)
 			return;
 
-		// If the mouse is in or outside
-		var state = STATE_UP;
-		var mouseHit = isMouseWithinButton();
-		var touchHit = isTouchWithinButton();
-
-		// If the mouse is inside the button, check for
-		// mouse down or mouse over states.
-
-		// NOTE: touch events come first before mouse (in HTML5)
-
-		if ((touchHit && WynTouch.init && WynTouch.isAnyDown()) ||
-			(mouseHit && WynMouse.init && WynMouse.isDown()))
+		if (WynMouse.init)
 		{
-			for (listener in downListeners)
-				listener(this);
+			updateMouse();
 		}
-
-		if ((touchHit && WynTouch.init && WynTouch.isUp()) ||
-			(mouseHit && WynMouse.init && WynMouse.isUp()))
+		else if (WynTouch.init)
 		{
-			for (listener in upListeners)
-				listener(this);
+			updateTouch();
 		}
-		
-		if ((touchHit && WynTouch.init && WynTouch.isAny()) ||
-			(mouseHit && WynMouse.init && WynMouse.isAny()))
-			state = STATE_DOWN;
-		else
-			state = STATE_OVER;
-
-
-
-		// If the state changed, check for enter/exit events
-		if (state != currState)
-		{
-			// Mouse moved into button
-			if ((state == STATE_OVER || state == STATE_DOWN) &&
-				(prevState == STATE_UP || prevState == STATE_NONE))
-			{
-				for (listener in enterListeners)
-					listener(this);
-			}
-
-			// Mouse moved out of button
-			if ((state == STATE_UP || state == STATE_NONE) &&
-				(prevState == STATE_OVER || prevState == STATE_DOWN))
-			{
-				for (listener in exitListeners)
-					listener(this);
-
-				// Reset state
-				state = STATE_UP;
-			}
-		}
-
-		setState(state);
 	}
 
-	inline function isMouseWithinButton () : Bool
+	inline function updateMouse ()
 	{
-		if (!WynMouse.init)
-			return false;
-
+		var state = STATE_UP;
 		var hitHoriz = false;
 		var hitVert = false;
 
 		if (WynMouse.x > parent.x + offsetX) hitHoriz = (WynMouse.x < parent.x + offsetX + width);
 		if (WynMouse.y > parent.y + offsetY) hitVert = (WynMouse.y < parent.y + offsetY + height);
+		
+		if (hitHoriz && hitVert)
+		{
+			state = STATE_OVER;
 
-		return (hitHoriz && hitVert);
+			if (!hitMouse)
+			{
+				for (listener in enterListeners)
+					listener(this);
+
+				hitMouse = true;
+			}
+
+			if (WynMouse.isDown())
+			{
+				for (listener in downListeners)
+					listener(this);
+
+				state = STATE_DOWN;
+			}
+
+			if (WynMouse.isHeld())
+			{
+				state = STATE_DOWN;
+			}
+			
+			if (WynMouse.isUp())
+			{
+				for (listener in upListeners)
+					listener(this);
+			}
+		}
+		else
+		{
+			if (hitMouse)
+			{
+				for (listener in exitListeners)
+					listener(this);
+
+				hitMouse = false;
+			}
+		}
+
+		// finalise the state
+		setState(state);
 	}
 
-	inline function isTouchWithinButton () : Bool
+	inline function updateTouch ()
 	{
-		if (!WynTouch.init)
-			return false;
-
-		var hit = false;
+		var state = STATE_UP;
 		var hitHoriz = false;
 		var hitVert = false;
-		var data:TouchData;
 
 		for (key in WynTouch.touches.keys())
 		{
-			data = WynTouch.touches[key];
+			var data = WynTouch.touches[key];
+
+			// For each touch, check if it's within the button area
 			if (data.x > parent.x + offsetX) hitHoriz = (data.x < parent.x + offsetX + width);
 			if (data.y > parent.y + offsetY) hitVert = (data.y < parent.y + offsetY + height);
 
-			hit = hit || (hitHoriz && hitVert);
+			// As long as any new touch hits a button, it cancels out
+			// other states such as OVER and UP
+			if (hitHoriz && hitVert)
+			{
+				if (!hitTouches.exists(key))
+				{
+					// If the touch doesn't exist, then this is the first
+					// time the touch enters the button (either thru tapping
+					// or dragging a finger into the button area).
+					for (listener in enterListeners)
+						listener(this);
+				}
+
+				hitTouches.set(key, data);
+
+				// NOTE: Remember, there is no OVER state
+				// for buttons when using touch.
+				state = STATE_DOWN;
+			}
+			else
+			{
+				if (hitTouches.exists(key))
+				{
+					hitTouches.remove(key);
+
+					// For every touch that previously existed but now
+					// isn't hitting the button, call the exit listener.
+					for (listener in exitListeners)
+						listener(this);
+				}
+			}
 
 			hitHoriz = false;
 			hitVert = false;
 		}
 
-		return hit;
+		for (key in hitTouches.keys())
+		{
+			var data = hitTouches[key];
+
+			if (data.state == TouchState.DOWN)
+			{
+				for (listener in downListeners)
+					listener(this);
+			}
+			else if (data.state == TouchState.UP)
+			{
+				for (listener in upListeners)
+					listener(this);
+			}
+		}
+
+		// finalise the state
+		setState(state);
 	}
 
 	override public function destroy ()

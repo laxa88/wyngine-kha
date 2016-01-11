@@ -5,4 +5,5 @@ typedef TouchData = {
 	var y:Int;
 	var dx:Int;
 	var dy:Int;
+	var state:TouchState;
 }

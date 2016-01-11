@@ -7,9 +7,6 @@ class WynTouch extends WynManager
 	public static var init:Bool = false;
 	public static var touches:Map<Int, TouchData>;
 
-	static var touchDown:Map<Int, Bool>;
-	static var touchHeld:Map<Int, Bool>;
-	static var touchUp:Map<Int, Bool>;
 	static var touchCount:Int = 0;
 	static var touchJustPressed:Bool = false;
 
@@ -25,10 +22,6 @@ class WynTouch extends WynManager
 
 		touches = new Map<Int, TouchData>();
 
-		touchDown = new Map<Int, Bool>();
-		touchHeld = new Map<Int, Bool>();
-		touchUp = new Map<Int, Bool>();
-
 		startListener = [];
 		endListener = [];
 		moveListener = [];
@@ -38,11 +31,19 @@ class WynTouch extends WynManager
 
 	override public function update ()
 	{
-		for (key in touchDown.keys())
-			touchDown.remove(key);
+		for (key in touches.keys())
+		{
+			var touch = touches[key];
 
-		for (key in touchUp.keys())
-			touchUp.remove(key);
+			if (touch.state == TouchState.DOWN)
+			{
+				touch.state = TouchState.HELD;
+			}
+			else if (touch.state == TouchState.UP)
+			{
+				touch.state = TouchState.NONE;
+			}
+		}
 
 		touchJustPressed = false;
 	}
@@ -53,15 +54,6 @@ class WynTouch extends WynManager
 
 		for (key in touches.keys())
 			touches.remove(key);
-
-		for (key in touchDown.keys())
-			touchDown.remove(key);
-
-		for (key in touchHeld.keys())
-			touchHeld.remove(key);
-
-		for (key in touchUp.keys())
-			touchUp.remove(key);
 
 		while (startListener.length > 0)
 			startListener.pop();
@@ -77,15 +69,17 @@ class WynTouch extends WynManager
 
 	function onTouchStart (index:Int, x:Int, y:Int)
 	{
+		// Every time a touch is detected, we assume the player is on
+		// mobile, so disable the mouse manager immediately.
+		WynMouse.init = false;
+
 		for (listener in startListener)
 			listener(index, x, y);
 
 		// trace("onTouchStart : " + index + " , " + x + " , " + y);
 
-		updateTouches(index, x, y);
-
-		touchDown.set(index, true);
-		touchHeld.set(index, true);
+		updateTouch(index, x, y);
+		touches[index].state = TouchState.DOWN;
 
 		touchCount++;
 
@@ -99,10 +93,8 @@ class WynTouch extends WynManager
 
 		// trace("onTouchEnd : " + index + " , " + x + " , " + y);
 
-		touches.remove(index);
-
-		touchUp.set(index, true);
-		touchHeld.remove(index);
+		updateTouch(index, x, y);
+		touches[index].state = TouchState.UP;
 
 		touchCount--;
 	}
@@ -112,12 +104,12 @@ class WynTouch extends WynManager
 		for (listener in moveListener)
 			listener(index, x, y);
 
-		updateTouches(index, x, y);
+		updateTouch(index, x, y);
 
 		// trace("onTouchMove : " + index + " , " + x + " , " + y + " , " + dx + " , " + dy);
 	}
 
-	inline function updateTouches (index:Int, x:Int, y:Int)
+	inline function updateTouch (index:Int, x:Int, y:Int)
 	{
 		if (touches.exists(index))
 		{
@@ -132,24 +124,25 @@ class WynTouch extends WynManager
 				x : Std.int(x / Wyngine.gameScale - Wyngine.screenOffsetX),
 				y : Std.int(y / Wyngine.gameScale - Wyngine.screenOffsetY),
 				dx : 0,
-				dy : 0
+				dy : 0,
+				state : TouchState.NONE
 			});
 		}
 	}
 
 	inline public static function isDown (index:Int=0)
 	{
-		return touchDown.exists(index);
+		return (touches.exists(index)) ? touches[index].state == TouchState.DOWN : false;
 	}
 
 	inline public static function isHeld (index:Int=0)
 	{
-		return touchHeld.exists(index);
+		return (touches.exists(index)) ? touches[index].state == TouchState.HELD : false;
 	}
 
 	inline public static function isUp (index:Int=0)
 	{
-		return touchUp.exists(index);
+		return (touches.exists(index)) ? touches[index].state == TouchState.UP : false;
 	}
 
 	inline public static function isAny ()
