@@ -1,35 +1,54 @@
 package wyn;
 
-import wyn.manager.WynManager;
+import kha.System;
+import kha.Image;
 import kha.Scheduler;
+import kha.Framebuffer;
+import kha.Scaler;
 import kha.graphics2.Graphics;
+import kha.graphics2.ImageScaleQuality;
+import wyn.manager.WynManager;
 
 class Wyngine
 {
+	var backbuffer:Image;
+	var g:Graphics;
+
 	public static var onResize:Void->Void;
-	public static var gameWidth:Int = 0;
-	public static var gameHeight:Int = 0;
-	public static var gameScale:Float = 1; // this value will adjust according to khanvas dimensions
-	public static var dt:Float = 0;
+	public static var gameWidth(default, null):Int = 0;
+	public static var gameHeight(default, null):Int = 0;
+	public static var screenOffsetX(default, null):Int = 0;
+	public static var screenOffsetY(default, null):Int = 0;
+	public static var gameScale(default, null):Float = 1; // this value will adjust according to khanvas dimensions
+	public static var dt(default, null):Float = 0;
+	public static var bgColor:Int = 0xff6495ed; // cornflower
 
 	static var currTime:Float = 0;
 	static var prevTime:Float = 0;
 	static var screens:Array<WynScreen> = [];
+	static var screensToAdd:Array<WynScreen> = [];
 	static var managers:Array<WynManager> = [];
 	static var currScreen:WynScreen;
 	static var screensLen:Int = 0;
 
-	inline public static function setup (width:Int, height:Int)
+
+
+	public function new (width:Int, height:Int)
 	{
+		backbuffer = Image.createRenderTarget(width, height);
+		g = backbuffer.g2;
+		g.imageScaleQuality = ImageScaleQuality.High;
+
 		gameWidth = width;
 		gameHeight = height;
-
 		currTime = Scheduler.time();
 
 		setupHtml();
+
+		setupAndroid();
 	}
 
-	inline static function setupHtml ()
+	function setupHtml ()
 	{
 		#if js
 
@@ -61,24 +80,78 @@ class Wyngine
 		#end
 	}
 
-	public static function refreshGameScale ()
+	function setupAndroid ()
 	{
-		var khanvasW = kha.System.pixelWidth;
-		var khanvasH = kha.System.pixelHeight;
-		var ratioW = gameWidth / khanvasW;
-		var ratioH = gameHeight / khanvasH;
-		var ratio = Math.min(ratioW, ratioH);
-		gameScale = ratio;
-
-		// trace("refresh scale : " + khanvasW + " , " + khanvasH + " , " + gameScale);
+		System.notifyOnApplicationState(function () {
+			// foreground
+			trace("onForeground");
+		}, function () {
+			// resume
+			trace("onResume");
+		}, function () {
+			// pause
+			trace("onPause");
+		}, function () {
+			// background
+			trace("onBackground");
+		}, function () {
+			// shutdown
+			trace("onShutdown");
+		});
 	}
 
-	inline public static function update ()
+	static public function refreshGameScale ()
+	{
+		// always reset before rescaling
+		screenOffsetX = 0;
+		screenOffsetY = 0;
+
+		var khanvasW = System.pixelWidth;
+		var khanvasH = System.pixelHeight;
+		// var ratioW = gameWidth / khanvasW;
+		// var ratioH = gameHeight / khanvasH;
+		// var ratio = Math.min(ratioW, ratioH);
+		// gameScale = ratio;
+
+		var screenRatioW = khanvasW / gameWidth;
+		var screenRatioH = khanvasH / gameHeight;
+		gameScale = Math.min(screenRatioW, screenRatioH);
+		var w = gameWidth * gameScale;
+		var h = gameHeight * gameScale;
+
+		if (screenRatioW > screenRatioH)
+		{
+			screenOffsetX = Math.floor((khanvasW/gameScale - gameWidth)/2);
+			// gameOffsetX = Math.floor((khanvasW - w) / 2 / zoom);
+		}
+		else
+		{
+			screenOffsetY = Math.floor((khanvasH/gameScale - gameHeight)/2);
+			// gameOffsetY = Math.floor((khanvasH - h) / 2 / zoom);
+		}
+
+		// trace("khanvas : " + khanvasW + "," + khanvasH);
+		// trace("game    : " + gameWidth + "," + gameHeight);
+		// trace("ratio : " + screenRatioW + " , " + screenRatioH);
+		// trace("w/h :   " + w + " , " + h);
+		// trace("offset  : " + screenOffsetX + " , " + screenOffsetY);
+		// trace("final scale : " + " , " + gameScale);
+	}
+
+	public function update ()
 	{
 		// Update delta time
 		prevTime = currTime;
 		currTime = Scheduler.time();
 		dt = currTime - prevTime;
+
+		// Add and init any screens that were previously added
+		while (screensToAdd.length > 0)
+		{
+			var nextScreen = screensToAdd.shift();
+			nextScreen.open();
+			screens.push(nextScreen);
+		}
 
 		// Update scene object and their components
 		// render from back to front (index 0 to last)
@@ -117,8 +190,10 @@ class Wyngine
 		}
 	}
 
-	inline public static function render (g:Graphics)
+	public function render (framebuffer:Framebuffer)
 	{
+		g.begin(true, bgColor); // cornflower
+
 		// render from back to front (index 0 to last)
 		screensLen = screens.length;
 		for (i in 0 ... screensLen)
@@ -135,24 +210,24 @@ class Wyngine
 				currScreen.render(g);
 			}
 		}
+
+		g.end();
+
+		framebuffer.g2.begin(true, 0xFFFFFFFF);
+		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
+		framebuffer.g2.end();
 	}
 
-	inline public static function addScreen (screen:WynScreen)
+	static public function addScreen (screen:WynScreen)
 	{
 		if (screens.indexOf(screen) == -1)
 		{
 			// add to list to immediately update/render the screen
-			screens.push(screen);
+			screensToAdd.push(screen);
 		}
-
-		// NOTE: it is possible that within current update, a screen
-		// is closed and re-opened. So, we open it anyway.
-
-		// begin opening
-		screen.open();
 	}
 
-	inline public static function removeScreen (screen:WynScreen)
+	static public function removeScreen (screen:WynScreen)
 	{
 		if (screens.indexOf(screen) != -1)
 		{
@@ -161,10 +236,8 @@ class Wyngine
 		}
 	}
 
-	inline public static function addManager (manager:WynManager)
+	static public function addManager (manager:WynManager)
 	{
-		// trace("add manager : " + Type.getClassName(Type.getClass(manager)));
-
 		managers.push(manager);
 	}
 }

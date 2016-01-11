@@ -10,8 +10,10 @@ class WynScreen
 	public static var ID:Int = 0;
 	public var id:Int;
 	public var name:String = "";
-	public var alive:Bool = false;
-	var children:Array<WynObject>;
+	public var alive:Bool = false; // flags whether this screen can be removed from queue
+
+	// Objects are arranged by layer, followed by array order
+	var children:Array<Array<WynObject>> = [];
 
 	// If true, will continue to update/render even if covered by other screens
 	public var persistentUpdate:Bool = false;
@@ -62,32 +64,47 @@ class WynScreen
 		}
 
 		// handle object updates
-		for (o in children)
+		for (layer in children)
 		{
-			if (o.enabled && o.active)
-				o.update();
+			if (layer == null)
+				continue;
+
+			for (o in layer)
+			{
+				if (o.enabled && o.active)
+					o.update();
+			}
 		}
 	}
 
 	public function render (g:Graphics)
 	{
 		// handle object renders
-		for (o in children)
+		for (layer in children)
 		{
-			if (o.enabled && o.visible)
+			if (layer == null)
+				continue;
+
+			for (o in layer)
 			{
-				for (r in o.renderers)
-					r(g);
+				if (o.enabled && o.visible)
+				{
+					for (r in o.renderers)
+						r(g);
+				}
 			}
 		}
 	}
 
 	public function destroy ()
 	{
-		for (o in children)
-			o.destroy();
+		for (layer in children)
+		{
+			for (o in layer)
+				o.destroy();
+		}
 
-		children = null;
+		children = [];
 
 		openCallbacks = [];
 		closeCallbacks = [];
@@ -95,43 +112,73 @@ class WynScreen
 
 
 
-	inline public function addAt (o:WynObject, index:Int)
+	public function swapLayers (layer1:Int, layer2:Int)
 	{
-		o.screen = this;
-		children.insert(index, o);
+		// UNTESTED
+
+		if (children[layer1] != null && 
+			children[layer2] != null)
+		{
+			var t1 = children[layer1];
+			children[layer1] = children[layer2];
+			children[layer2] = t1;
+		}
 	}
 
-	inline public function addToFront (o:WynObject, offset:Int=0)
+	public function addAt (o:WynObject, layer:Int=0, index:Int)
 	{
+		if (children[layer] == null)
+			children[layer] = [];
+
 		o.screen = this;
+
+		children[layer].insert(index, o);
+	}
+
+	public function addToFront (o:WynObject, layer:Int=0, offset:Int=0)
+	{
+		if (children[layer] == null)
+			children[layer] = [];
+
+		o.screen = this;
+
 		if (offset==0)
-			children.push(o);
+			children[layer].push(o);
 		else
-			children.insert(offset, o);
+			children[layer].insert(offset, o);
 	}
 
-	inline public function addToBack (o:WynObject, offset:Int=0)
+	public function addToBack (o:WynObject, layer:Int=0, offset:Int=0)
 	{
+		if (children[layer] == null)
+			children[layer] = [];
+
 		o.screen = this;
+
 		if (offset==0)
-			children.unshift(o);
+			children[layer].unshift(o);
 		else
-			children.insert(children.length-offset, o);
+			children[layer].insert(children.length-offset, o);
 	}
 
-	inline public function remove (o:WynObject)
+	public function remove (o:WynObject, layer:Int=0)
 	{
+		if (children[layer] == null)
+		{
+			trace("layer not found : " + layer);
+			return;
+		}
+
 		// remove target child from screen
 		o.screen = null;
-		children.remove(o);
+
+		children[layer].remove(o);
 	}
 
 
 
 	public function open ()
 	{
-		alive = true;
-
 		// override this to init or animate the screen before it appears
 		onOpen();
 	}
@@ -139,6 +186,7 @@ class WynScreen
 	function onOpen ()
 	{
 		// override this if necessary
+		alive = true;
 
 		for (f in openCallbacks)
 			f();
