@@ -12,7 +12,7 @@ import wyn.util.WynUtil;
 
 class WynButton extends WynComponent
 {
-	public static var DEBUG:Bool = false;
+	public static var WYN_DEBUG:Bool = false;
 
 	static var MOUSE_ENABLED:Bool = false;
 	static var SURFACE_ENABLED:Bool = false;
@@ -262,7 +262,7 @@ class WynButton extends WynComponent
 		// Finalise the rotation
 		if (angle != 0) g.popTransformation();
 
-		// if (DEBUG)
+		// if (WYN_DEBUG)
 		// {
 		// 	g.color = 0xFFFF0000;
 		// 	g.drawRect(parent.x, parent.y, width, height);

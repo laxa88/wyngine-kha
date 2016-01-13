@@ -5,7 +5,7 @@ import kha.graphics2.GraphicsExtension;
 
 class WynCollider extends WynComponent
 {
-	public static var DEBUG:Bool = false;
+	public static var WYN_DEBUG:Bool = false;
 
 	public static var HITBOX:Int = 0;
 	public static var HITCIRCLE:Int = 1;
@@ -30,7 +30,7 @@ class WynCollider extends WynComponent
 
 	override public function init ()
 	{
-		if (DEBUG)
+		if (WYN_DEBUG)
 			parent.addRenderer(debugRender);
 	}
 
@@ -38,7 +38,7 @@ class WynCollider extends WynComponent
 	{
 		super.destroy();
 
-		if (DEBUG)
+		if (WYN_DEBUG)
 			parent.removeRenderer(debugRender);
 	}
 

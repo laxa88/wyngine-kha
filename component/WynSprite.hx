@@ -7,7 +7,7 @@ import wyn.util.WynUtil;
 
 class WynSprite extends WynComponent
 {
-	public static var DEBUG:Bool = false;
+	public static var WYN_DEBUG:Bool = false;
 
 	public var image:Image;
 	public var region:Region;
@@ -82,7 +82,7 @@ class WynSprite extends WynComponent
 		// Finalise the rotation
 		if (angle != 0) g.popTransformation();
 
-		if (DEBUG)
+		if (WYN_DEBUG)
 			g.drawRect(parent.x + offsetX, parent.y + offsetY, width, height);
 	}
 

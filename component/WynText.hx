@@ -7,7 +7,7 @@ import kha.graphics2.Graphics;
 
 class WynText extends WynComponent
 {
-	public static var DEBUG:Bool = false;
+	public static var WYN_DEBUG:Bool = false;
 
 	// TODO:
 	// process multi-line texts
@@ -138,7 +138,7 @@ class WynText extends WynComponent
 
 			g.drawString(line, nx, ny + lineY);
 
-			if (DEBUG)
+			if (WYN_DEBUG)
 				g.drawRect(nx, ny + lineY, w, h);
 
 			lineY += h;

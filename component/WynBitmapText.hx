@@ -59,7 +59,7 @@ typedef Line = {
 
 class WynBitmapText extends WynComponent
 {
-	public static var DEBUG:Bool = false;
+	public static var WYN_DEBUG:Bool = false;
 
 	// Based on RafaelOliveira's BitmapText for kha:
 	// https://github.com/RafaelOliveira/BitmapText/blob/master/lib/bitmapText/BitmapText.hx
@@ -452,7 +452,7 @@ class WynBitmapText extends WynComponent
 							renderH);
 						g.color = oldColor;
 
-						if (DEBUG)
+						if (WYN_DEBUG)
 							g.drawRect(renderX, renderY, renderW, renderH);
 
 						// Add kerning if it exists. Also, we don't have to
