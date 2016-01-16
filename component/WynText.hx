@@ -153,7 +153,7 @@ class WynText extends WynComponent
 		offsetY = oy;
 	}
 
-	inline public function set_text (val:String) : String
+	public function set_text (val:String) : String
 	{
 		if (text == val)
 			return text;
@@ -161,8 +161,8 @@ class WynText extends WynComponent
 		text = val;
 
 		// split the text by newlines only
-		var reg = ~/[\n\r]/g; // gets ALL occurence of line breaks
-		texts = reg.split(val);
+		// gets ALL occurence of line breaks and splits into array
+		texts = ~/[\n\r]/g.split(val);
 
 		return val;
 	}
