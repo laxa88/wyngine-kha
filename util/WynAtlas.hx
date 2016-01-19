@@ -32,7 +32,7 @@ class WynAtlas
 			subTexturesDict.set(st.att.name, region);
 			subTexturesArr.push(region);
 
-			trace("loaded : " + st.att.name);
+			// trace("loaded : " + st.att.name);
 		}
 
 		var atlasData:AtlasData = {

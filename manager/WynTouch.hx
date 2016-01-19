@@ -10,10 +10,6 @@ class WynTouch extends WynManager
 	static var touchCount:Int = 0;
 	static var touchJustPressed:Bool = false;
 
-	static var startListener:Array<Int->Int->Int->Void> = [];
-	static var endListener:Array<Int->Int->Int->Void> = [];
-	static var moveListener:Array<Int->Int->Int->Void> = [];
-
 	public function new ()
 	{
 		super();
@@ -21,10 +17,6 @@ class WynTouch extends WynManager
 		Surface.get().notify(onTouchStart, onTouchEnd, onTouchMove);
 
 		touches = new Map<Int, TouchData>();
-
-		startListener = [];
-		endListener = [];
-		moveListener = [];
 
 		init = true;
 	}
@@ -54,15 +46,6 @@ class WynTouch extends WynManager
 
 		for (key in touches.keys())
 			touches.remove(key);
-
-		while (startListener.length > 0)
-			startListener.pop();
-
-		while (endListener.length > 0)
-			endListener.pop();
-
-		while (moveListener.length > 0)
-			moveListener.pop();
 	}
 
 
@@ -72,9 +55,6 @@ class WynTouch extends WynManager
 		// Every time a touch is detected, we assume the player is on
 		// mobile, so disable the mouse manager immediately.
 		WynMouse.init = false;
-
-		for (listener in startListener)
-			listener(index, x, y);
 
 		// trace("onTouchStart : " + index + " , " + x + " , " + y);
 
@@ -88,9 +68,6 @@ class WynTouch extends WynManager
 
 	function onTouchEnd (index:Int, x:Int, y:Int)
 	{
-		for (listener in endListener)
-			listener(index, x, y);
-
 		// trace("onTouchEnd : " + index + " , " + x + " , " + y);
 
 		updateTouch(index, x, y);
@@ -101,9 +78,6 @@ class WynTouch extends WynManager
 
 	function onTouchMove (index:Int, x:Int, y:Int)
 	{
-		for (listener in moveListener)
-			listener(index, x, y);
-
 		updateTouch(index, x, y);
 
 		// trace("onTouchMove : " + index + " , " + x + " , " + y + " , " + dx + " , " + dy);
@@ -157,34 +131,31 @@ class WynTouch extends WynManager
 
 	inline public static function notifyStart (func:Int->Int->Int->Void)
 	{
-		if (startListener.indexOf(func) == -1)
-			startListener.push(func);
+		Surface.get().notify(func, null, null);
 	}
 
 	inline public static function notifyEnd (func:Int->Int->Int->Void)
 	{
-		if (endListener.indexOf(func) == -1)
-			endListener.push(func);
+		Surface.get().notify(null, func, null);
 	}
 
 	inline public static function notifyMove (func:Int->Int->Int->Void)
 	{
-		if (moveListener.indexOf(func) == -1)
-			moveListener.push(func);
+		Surface.get().notify(null, null, func);
 	}
 
 	inline public static function removeStart (func:Int->Int->Int->Void)
 	{
-		startListener.remove(func);
+		Surface.get().remove(func, null, null);
 	}
 
 	inline public static function removeEnd (func:Int->Int->Int->Void)
 	{
-		endListener.remove(func);
+		Surface.get().remove(null, func, null);
 	}
 
 	inline public static function removeMove (func:Int->Int->Int->Void)
 	{
-		moveListener.remove(func);
+		Surface.get().remove(null, null, func);
 	}
 }

@@ -19,10 +19,6 @@ class WynMouse extends WynManager
 	static var mouseCount:Int = 0;
 	static var mouseJustPressed:Bool = false;
 
-	static var startListener:Array<Int->Int->Int->Void>;
-	static var endListener:Array<Int->Int->Int->Void>;
-	static var moveListener:Array<Int->Int->Int->Int->Void>;
-
 	public function new ()
 	{
 		super();
@@ -32,10 +28,6 @@ class WynMouse extends WynManager
 		mouseDown = new Map<Int, Bool>();
 		mouseHeld = new Map<Int, Bool>();
 		mouseUp = new Map<Int, Bool>();
-
-		startListener = [];
-		endListener = [];
-		moveListener = [];
 
 		init = true;
 	}
@@ -63,15 +55,6 @@ class WynMouse extends WynManager
 
 		for (key in mouseUp.keys())
 			mouseUp.remove(key);
-
-		while (startListener.length > 0)
-			startListener.pop();
-
-		while (endListener.length > 0)
-			endListener.pop();
-
-		while (moveListener.length > 0)
-			moveListener.pop();
 	}
 
 
@@ -79,9 +62,6 @@ class WynMouse extends WynManager
 	function onMouseStart (index:Int, x:Int, y:Int)
 	{
 		updateMouseData(x, y, 0, 0);
-
-		for (listener in startListener)
-			listener(index, x, y);
 
 		mouseDown.set(index, true);
 		mouseHeld.set(index, true);
@@ -95,9 +75,6 @@ class WynMouse extends WynManager
 	{
 		updateMouseData(x, y, 0, 0);
 
-		for (listener in endListener)
-			listener(index, x, y);
-
 		mouseUp.set(index, true);
 		mouseHeld.remove(index);
 
@@ -107,9 +84,6 @@ class WynMouse extends WynManager
 	function onMouseMove (x:Int, y:Int, dx:Int, dy:Int)
 	{
 		updateMouseData(x, y, dx, dy);
-
-		for (listener in moveListener)
-			listener(x, y, dx, dy);
 	}
 
 	function updateMouseData (x:Int, y:Int, dx:Int, dy:Int)
@@ -157,34 +131,31 @@ class WynMouse extends WynManager
 
 	inline public static function notifyStart (func:Int->Int->Int->Void)
 	{
-		if (startListener.indexOf(func) == -1)
-			startListener.push(func);
+		Mouse.get().notify(func, null, null, null);
 	}
 
 	inline public static function notifyEnd (func:Int->Int->Int->Void)
 	{
-		if (endListener.indexOf(func) == -1)
-			endListener.push(func);
+		Mouse.get().notify(null, func, null, null);
 	}
 
 	inline public static function notifyMove (func:Int->Int->Int->Int->Void)
 	{
-		if (moveListener.indexOf(func) == -1)
-			moveListener.push(func);
+		Mouse.get().notify(null, null, func, null);
 	}
 
 	inline public static function removeStart (func:Int->Int->Int->Void)
 	{
-		startListener.remove(func);
+		Mouse.get().remove(func, null, null, null);
 	}
 
 	inline public static function removeEnd (func:Int->Int->Int->Void)
 	{
-		endListener.remove(func);
+		Mouse.get().remove(null, func, null, null);
 	}
 
 	inline public static function removeMove (func:Int->Int->Int->Int->Void)
 	{
-		moveListener.remove(func);
+		Mouse.get().remove(null, null, func, null);
 	}
 }

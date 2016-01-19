@@ -14,6 +14,7 @@ class Wyngine
 	var backbuffer:Image;
 	var g:Graphics;
 
+	public static var imageQuality:ImageScaleQuality = ImageScaleQuality.High;
 	public static var onResize:Void->Void;
 	public static var gameWidth(default, null):Int = 0;
 	public static var gameHeight(default, null):Int = 0;
@@ -37,7 +38,6 @@ class Wyngine
 	{
 		backbuffer = Image.createRenderTarget(width, height);
 		g = backbuffer.g2;
-		g.imageScaleQuality = ImageScaleQuality.High;
 
 		gameWidth = width;
 		gameHeight = height;
@@ -63,13 +63,14 @@ class Wyngine
 				
 				// NOTE: we need to delay the method call here because we can't get
 				// the updated width/height values immediately.
-				haxe.Timer.delay(function () {
+
+				Scheduler.addTimeTask(function () {
 
 					refreshGameScale();
 					if (onResize != null)
 						onResize();
 
-				}, 100);
+				}, 0, 0, 0.1);
 			});
 
 			var wyn = 'background:#ff69b4;color:#ffffff';
@@ -215,6 +216,7 @@ class Wyngine
 		g.end();
 
 		framebuffer.g2.begin(true, 0xFFFFFFFF);
+		framebuffer.g2.imageScaleQuality = imageQuality;
 		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
 		framebuffer.g2.end();
 	}
