@@ -196,6 +196,8 @@ class Wyngine
 	{
 		g.begin(true, bgColor); // cornflower
 
+		g.imageScaleQuality = imageQuality;
+
 		// render from back to front (index 0 to last)
 		screensLen = screens.length;
 		for (i in 0 ... screensLen)
