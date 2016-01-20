@@ -1,6 +1,8 @@
 package wyn;
 
+import kha.Assets;
 import kha.System;
+import kha.ScreenRotation;
 import kha.Image;
 import kha.Scheduler;
 import kha.Framebuffer;
@@ -13,6 +15,15 @@ class Wyngine
 {
 	var backbuffer:Image;
 	var g:Graphics;
+
+	public static inline var ROTATION_NONE:Int = 0;
+	public static inline var ROTATION_PORTRAIT:Int = 1;
+	public static inline var ROTATION_LANDSCAPE:Int = 2;
+
+	static var isFocused:Bool = true;
+	public static var onLoseFocus:Void->Void;
+	public static var onGainFocus:Void->Void;
+	public static var baseRotation:Int = ROTATION_NONE;
 
 	public static var imageQuality:ImageScaleQuality = ImageScaleQuality.High;
 	public static var onResize:Void->Void;
@@ -46,6 +57,8 @@ class Wyngine
 		setupHtml();
 
 		setupAndroid();
+
+		Assets.images.icon_horizontalLoad(function () {});
 	}
 
 	function setupHtml ()
@@ -70,7 +83,7 @@ class Wyngine
 					if (onResize != null)
 						onResize();
 
-				}, 0, 0, 0.1);
+				}, 0.1);
 			});
 
 			var wyn = 'background:#ff69b4;color:#ffffff';
@@ -141,9 +154,36 @@ class Wyngine
 
 	public function update ()
 	{
-		// Update delta time
+		// Make sure prev/curr time is updated to prevent time skips
 		prevTime = currTime;
 		currTime = Scheduler.time();
+
+		#if js
+
+			if (!isValidCanvasOrientation())
+			{
+				if (isFocused)
+				{
+					isFocused = false;
+					if (onLoseFocus != null)
+						onLoseFocus();
+				}
+
+				return;
+			}
+			else
+			{
+				if (!isFocused)
+				{
+					isFocused = true;
+					if (onGainFocus != null)
+						onGainFocus();
+				}
+			}
+
+		#end
+
+		// Update delta time if we didn't return
 		dt = currTime - prevTime;
 
 		// Add and init any screens that were previously added
@@ -192,8 +232,56 @@ class Wyngine
 		}
 	}
 
+	function isValidCanvasOrientation () : Bool
+	{
+		// HTML5 games usually have a fixed dimension (e.g. portrait), but
+		// the browser size may be different on all devices (e.g. desktop,
+		// mobile-portrait, mobile-landscape). Do a check here -- if the
+		// orientation doesn't match, don't proceed
+
+		// NOTE: don't use this because khanvas might not fit to browser size
+		// var w = System.pixelWidth;
+		// var h = System.pixelHeight;
+
+		var w = js.Browser.window.innerWidth;
+		var h = js.Browser.window.innerHeight;
+
+		if (baseRotation != ROTATION_NONE)
+		{
+			if (baseRotation == ROTATION_PORTRAIT && w > h)
+				return false;
+			else if (baseRotation == ROTATION_LANDSCAPE && h > w)
+				return false;
+		}
+
+		return true;
+	}
+
 	public function render (framebuffer:Framebuffer)
 	{
+		#if js
+
+			if (!isValidCanvasOrientation())
+			{
+				g.begin(true, 0xFFFFFFFF);
+				g.imageScaleQuality = imageQuality;
+
+				// TODO draw an image to tell player to rotate device instead
+				if (Assets.images.icon_horizontal != null)
+					g.drawImage(Assets.images.icon_horizontal, gameWidth/2 - 167/2, gameHeight/2 - 144/2);
+
+				g.end();
+
+				framebuffer.g2.begin(true, 0xFFFFFFFF);
+				framebuffer.g2.imageScaleQuality = imageQuality;
+				Scaler.scale(backbuffer, framebuffer, System.screenRotation);
+				framebuffer.g2.end();
+
+				return;
+			}
+
+		#end
+
 		g.begin(true, bgColor); // cornflower
 
 		g.imageScaleQuality = imageQuality;

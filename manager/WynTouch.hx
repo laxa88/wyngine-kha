@@ -56,7 +56,7 @@ class WynTouch extends WynManager
 		// mobile, so disable the mouse manager immediately.
 		WynMouse.init = false;
 
-		// trace("onTouchStart : " + index + " , " + x + " , " + y);
+		trace("onTouchStart : " + index + " , " + x + " , " + y);
 
 		updateTouch(index, x, y);
 		touches[index].state = TouchState.DOWN;
@@ -68,7 +68,7 @@ class WynTouch extends WynManager
 
 	function onTouchEnd (index:Int, x:Int, y:Int)
 	{
-		// trace("onTouchEnd : " + index + " , " + x + " , " + y);
+		trace("onTouchEnd : " + index + " , " + x + " , " + y);
 
 		updateTouch(index, x, y);
 		touches[index].state = TouchState.UP;
