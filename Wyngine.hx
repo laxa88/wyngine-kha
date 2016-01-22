@@ -16,6 +16,7 @@ class Wyngine
 	var backbuffer:Image;
 	var g:Graphics;
 
+	public static var IS_MOBILE:Bool = false;
 	public static inline var ROTATION_NONE:Int = 0;
 	public static inline var ROTATION_PORTRAIT:Int = 1;
 	public static inline var ROTATION_LANDSCAPE:Int = 2;
@@ -58,6 +59,7 @@ class Wyngine
 
 		setupAndroid();
 
+		// Requires the rotate icon
 		Assets.images.icon_horizontalLoad(function () {});
 	}
 
@@ -86,10 +88,20 @@ class Wyngine
 				}, 0.1);
 			});
 
+			// NOTE: requires detectmobilebrowser.js, which is included in wyngine folder.
+			// Latest version can be found http://detectmobilebrowsers.com/
+			IS_MOBILE = untyped __js__('IS_MOBILE');
+			trace("mobile : " + IS_MOBILE);
+
 			var wyn = 'background:#ff69b4;color:#ffffff';
 			var black = 'background:#ffffff;color:#000000';
 			var kha = 'background:#2073d0;color:#fdff00';
 			js.Browser.console.log('%cMade with %c wyngine %c\nPowered by %c kha ', black, wyn, black, kha);
+
+			// Delay update game scale once upon startup to make sure
+			Scheduler.addTimeTask(function () {
+				refreshGameScale();
+			}, 1);
 
 		#end
 	}
@@ -160,24 +172,27 @@ class Wyngine
 
 		#if js
 
-			if (!isValidCanvasOrientation())
+			if (IS_MOBILE)
 			{
-				if (isFocused)
+				if (!isValidCanvasOrientation())
 				{
-					isFocused = false;
-					if (onLoseFocus != null)
-						onLoseFocus();
-				}
+					if (isFocused)
+					{
+						isFocused = false;
+						if (onLoseFocus != null)
+							onLoseFocus();
+					}
 
-				return;
-			}
-			else
-			{
-				if (!isFocused)
+					return;
+				}
+				else
 				{
-					isFocused = true;
-					if (onGainFocus != null)
-						onGainFocus();
+					if (!isFocused)
+					{
+						isFocused = true;
+						if (onGainFocus != null)
+							onGainFocus();
+					}
 				}
 			}
 
@@ -261,23 +276,25 @@ class Wyngine
 	{
 		#if js
 
-			if (!isValidCanvasOrientation())
+			if (IS_MOBILE)
 			{
-				g.begin(true, 0xFFFFFFFF);
-				g.imageScaleQuality = imageQuality;
+				if (!isValidCanvasOrientation())
+				{
+					g.begin(true, 0xFFFFFFFF);
+					g.imageScaleQuality = imageQuality;
 
-				// TODO draw an image to tell player to rotate device instead
-				if (Assets.images.icon_horizontal != null)
-					g.drawImage(Assets.images.icon_horizontal, gameWidth/2 - 167/2, gameHeight/2 - 144/2);
+					if (Assets.images.icon_horizontal != null)
+						g.drawImage(Assets.images.icon_horizontal, gameWidth/2 - 167/2, gameHeight/2 - 144/2);
 
-				g.end();
+					g.end();
 
-				framebuffer.g2.begin(true, 0xFFFFFFFF);
-				framebuffer.g2.imageScaleQuality = imageQuality;
-				Scaler.scale(backbuffer, framebuffer, System.screenRotation);
-				framebuffer.g2.end();
+					framebuffer.g2.begin(true, 0xFFFFFFFF);
+					framebuffer.g2.imageScaleQuality = imageQuality;
+					Scaler.scale(backbuffer, framebuffer, System.screenRotation);
+					framebuffer.g2.end();
 
-				return;
+					return;
+				}
 			}
 
 		#end
