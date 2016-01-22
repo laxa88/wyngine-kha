@@ -27,13 +27,13 @@ class WynTouch extends WynManager
 		{
 			var touch = touches[key];
 
-			if (touch.state == TouchState.DOWN)
+			if (touch.state == InputState.DOWN)
 			{
-				touch.state = TouchState.HELD;
+				touch.state = InputState.HELD;
 			}
-			else if (touch.state == TouchState.UP)
+			else if (touch.state == InputState.UP)
 			{
-				touch.state = TouchState.NONE;
+				touch.state = InputState.NONE;
 			}
 		}
 
@@ -59,7 +59,7 @@ class WynTouch extends WynManager
 		trace("onTouchStart : " + index + " , " + x + " , " + y);
 
 		updateTouch(index, x, y);
-		touches[index].state = TouchState.DOWN;
+		touches[index].state = InputState.DOWN;
 
 		touchCount++;
 
@@ -71,7 +71,7 @@ class WynTouch extends WynManager
 		trace("onTouchEnd : " + index + " , " + x + " , " + y);
 
 		updateTouch(index, x, y);
-		touches[index].state = TouchState.UP;
+		touches[index].state = InputState.UP;
 
 		touchCount--;
 	}
@@ -99,24 +99,24 @@ class WynTouch extends WynManager
 				y : Std.int(y / Wyngine.gameScale - Wyngine.screenOffsetY),
 				dx : 0,
 				dy : 0,
-				state : TouchState.NONE
+				state : InputState.NONE
 			});
 		}
 	}
 
 	inline public static function isDown (index:Int=0)
 	{
-		return (touches.exists(index)) ? touches[index].state == TouchState.DOWN : false;
+		return (touches.exists(index)) ? touches[index].state == InputState.DOWN : false;
 	}
 
 	inline public static function isHeld (index:Int=0)
 	{
-		return (touches.exists(index)) ? touches[index].state == TouchState.HELD : false;
+		return (touches.exists(index)) ? touches[index].state == InputState.HELD : false;
 	}
 
 	inline public static function isUp (index:Int=0)
 	{
-		return (touches.exists(index)) ? touches[index].state == TouchState.UP : false;
+		return (touches.exists(index)) ? touches[index].state == InputState.UP : false;
 	}
 
 	inline public static function isAny ()

@@ -1,6 +1,6 @@
 package wyn.manager;
 
-enum TouchState {
+enum InputState {
 	NONE;
 	DOWN;
 	HELD;
