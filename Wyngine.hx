@@ -17,14 +17,14 @@ class Wyngine
 	var g:Graphics;
 
 	public static var IS_MOBILE:Bool = false;
-	public static inline var ROTATION_NONE:Int = 0;
+	public static inline var ROTATION_DEVICE:Int = 0;
 	public static inline var ROTATION_PORTRAIT:Int = 1;
 	public static inline var ROTATION_LANDSCAPE:Int = 2;
 
 	static var isFocused:Bool = true;
 	public static var onLoseFocus:Void->Void;
 	public static var onGainFocus:Void->Void;
-	public static var baseRotation:Int = ROTATION_NONE;
+	public static var baseRotation:Int = ROTATION_DEVICE;
 
 	public static var imageQuality:ImageScaleQuality = ImageScaleQuality.High;
 	public static var onResize:Void->Void;
@@ -35,6 +35,7 @@ class Wyngine
 	public static var gameScale(default, null):Float = 1; // this value will adjust according to khanvas dimensions
 	public static var dt(default, null):Float = 0;
 	public static var bgColor:Int = 0xff6495ed; // cornflower
+	public static var frameBgColor:Int = 0xFFFFFFFF;
 
 	static var currTime:Float = 0;
 	static var prevTime:Float = 0;
@@ -58,6 +59,11 @@ class Wyngine
 		setupHtml();
 
 		setupAndroid();
+
+		// Delay update game scale once upon startup to make sure
+		Scheduler.addTimeTask(function () {
+			refreshGameScale();
+		}, 1);
 
 		// Requires the rotate icon
 		Assets.images.icon_horizontalLoad(function () {});
@@ -97,11 +103,6 @@ class Wyngine
 			var black = 'background:#ffffff;color:#000000';
 			var kha = 'background:#2073d0;color:#fdff00';
 			js.Browser.console.log('%cMade with %c wyngine %c\nPowered by %c kha ', black, wyn, black, kha);
-
-			// Delay update game scale once upon startup to make sure
-			Scheduler.addTimeTask(function () {
-				refreshGameScale();
-			}, 1);
 
 		#end
 	}
@@ -155,6 +156,8 @@ class Wyngine
 			screenOffsetY = Math.floor((khanvasH/gameScale - gameHeight)/2);
 			// gameOffsetY = Math.floor((khanvasH - h) / 2 / zoom);
 		}
+
+		// trace("refresh game scale : " + khanvasW + "," + khanvasH + " / " + gameWidth + "," + gameHeight + " / " + screenOffsetX + "," + screenOffsetY + " / " + gameScale);
 
 		// trace("khanvas : " + khanvasW + "," + khanvasH);
 		// trace("game    : " + gameWidth + "," + gameHeight);
@@ -258,10 +261,15 @@ class Wyngine
 		// var w = System.pixelWidth;
 		// var h = System.pixelHeight;
 
-		var w = js.Browser.window.innerWidth;
-		var h = js.Browser.window.innerHeight;
+		#if js
+			var w = js.Browser.window.innerWidth;
+			var h = js.Browser.window.innerHeight;
+		#else
+			var w = System.pixelWidth;
+			var h = System.pixelHeight;
+		#end
 
-		if (baseRotation != ROTATION_NONE)
+		if (baseRotation != ROTATION_DEVICE)
 		{
 			if (baseRotation == ROTATION_PORTRAIT && w > h)
 				return false;
@@ -290,7 +298,14 @@ class Wyngine
 
 					framebuffer.g2.begin(true, 0xFFFFFFFF);
 					framebuffer.g2.imageScaleQuality = imageQuality;
-					Scaler.scale(backbuffer, framebuffer, System.screenRotation);
+
+					if (baseRotation == ROTATION_DEVICE)
+						Scaler.scale(backbuffer, framebuffer, System.screenRotation);
+					else if (baseRotation == ROTATION_PORTRAIT)
+						Scaler.scale(backbuffer, framebuffer, ScreenRotation.RotationNone);
+					else
+						Scaler.scale(backbuffer, framebuffer, ScreenRotation.Rotation90);
+
 					framebuffer.g2.end();
 
 					return;
@@ -322,9 +337,16 @@ class Wyngine
 
 		g.end();
 
-		framebuffer.g2.begin(true, 0xFFFFFFFF);
+		framebuffer.g2.begin(true, frameBgColor);
 		framebuffer.g2.imageScaleQuality = imageQuality;
-		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
+		
+		if (baseRotation == ROTATION_DEVICE)
+			Scaler.scale(backbuffer, framebuffer, System.screenRotation);
+		else if (baseRotation == ROTATION_PORTRAIT)
+			Scaler.scale(backbuffer, framebuffer, ScreenRotation.RotationNone);
+		else
+			Scaler.scale(backbuffer, framebuffer, ScreenRotation.Rotation90);
+
 		framebuffer.g2.end();
 	}
 
