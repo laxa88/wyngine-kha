@@ -27,6 +27,9 @@ class WynTouch extends WynManager
 		{
 			var touch = touches[key];
 
+			if (touch == null)
+				continue;
+
 			if (touch.state == InputState.DOWN)
 			{
 				touch.state = InputState.HELD;
