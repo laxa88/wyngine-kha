@@ -97,7 +97,7 @@ class Wyngine
 			// NOTE: requires detectmobilebrowser.js, which is included in wyngine folder.
 			// Latest version can be found http://detectmobilebrowsers.com/
 			IS_MOBILE = untyped __js__('IS_MOBILE');
-			trace("mobile : " + IS_MOBILE);
+			// trace("mobile : " + IS_MOBILE);
 
 			var wyn = 'background:#ff69b4;color:#ffffff';
 			var black = 'background:#ffffff;color:#000000';
@@ -110,20 +110,15 @@ class Wyngine
 	function setupAndroid ()
 	{
 		System.notifyOnApplicationState(function () {
-			// foreground
-			trace("onForeground");
+			// trace("onForeground");
 		}, function () {
-			// resume
-			trace("onResume");
+			// trace("onResume");
 		}, function () {
-			// pause
-			trace("onPause");
+			// trace("onPause");
 		}, function () {
-			// background
-			trace("onBackground");
+			// trace("onBackground");
 		}, function () {
-			// shutdown
-			trace("onShutdown");
+			// trace("onShutdown");
 		});
 	}
 
