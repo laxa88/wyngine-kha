@@ -24,8 +24,6 @@ class WynText extends WynRenderable
 	// public var height:Int = 0; // not needed
 	// public var alpha:Float = 1; // TODO
 	// public var scale:Float = 1; // TODO
-	public var offsetX:Float = 0;
-	public var offsetY:Float = 0;
 	public var color:Color = 0xFFFFFFFF; // default white
 	static var oldColor:Color; // for reusability
 
