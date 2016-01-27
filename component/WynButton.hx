@@ -8,7 +8,7 @@ import kha.math.FastMatrix3;
 import wyn.Wyngine;
 import wyn.util.WynUtil;
 
-class WynButton extends WynComponent
+class WynButton extends WynRenderable
 {
 	public static var WYN_DEBUG:Bool = false;
 
@@ -22,18 +22,9 @@ class WynButton extends WynComponent
 	public var currState:Int = STATE_NONE;
 	public var prevState:Int = STATE_NONE;
 
-	public var image:Image;
-	public var region:Region;
 	public var regionDataUp:Region;
 	public var regionDataOver:Region;
 	public var regionDataDown:Region;
-	public var width:Int = 0;
-	public var height:Int = 0;
-	public var alpha:Float = 1;
-	public var angle:Float = 0; // 0 ~ 360
-	public var scale:Float = 1;
-	public var offsetX:Float = 0;
-	public var offsetY:Float = 0;
 
 	var hitTouches:Map<Int, Bool>; // map of whether each touch is within the button
 	var isTouchDowns:Map<Int, Bool>; // map of whether each touch is down or up
@@ -53,10 +44,7 @@ class WynButton extends WynComponent
 
 	public function new (w:Int, h:Int)
 	{
-		super();
-
-		width = w;
-		height = h;
+		super(w, h);
 
 		hitTouches = new Map<Int, Bool>();
 		isTouchDowns = new Map<Int, Bool>();
@@ -275,7 +263,7 @@ class WynButton extends WynComponent
 
 	override public function init ()
 	{
-		parent.addRenderer(render);
+		super.init();
 
 		setState(STATE_UP);
 	}
@@ -286,10 +274,6 @@ class WynButton extends WynComponent
 
 		denotify();
 
-		parent.removeRenderer(render);
-
-		image = null;
-		region = null;
 		regionDataUp = null;
 		regionDataOver = null;
 		regionDataDown = null;
@@ -308,7 +292,7 @@ class WynButton extends WynComponent
 
 
 
-	public function render (g:Graphics)
+	override public function render (g:Graphics)
 	{
 		if (!visible)
 			return;
@@ -354,7 +338,7 @@ class WynButton extends WynComponent
 		// }
 	}
 
-	inline public function setImage (img:Image, upData:Region, overData:Region, downData:Region)
+	inline public function setButtonImage (img:Image, upData:Region, overData:Region, downData:Region)
 	{
 		image = img;
 
@@ -365,10 +349,15 @@ class WynButton extends WynComponent
 		setState(STATE_UP);
 	}
 
-	inline public function setOffset (ox:Float, oy:Float)
+	inline override public function setImage (img:Image, data:Region)
 	{
-		offsetX = ox;
-		offsetY = oy;
+		image = img;
+
+		regionDataUp = data;
+		regionDataOver = data;
+		regionDataDown = data;
+
+		setState(STATE_UP);
 	}
 
 	function setState (state:Int)
@@ -483,12 +472,6 @@ class WynButton extends WynComponent
 	inline public function removeExit (func:WynButton->Void)
 	{
 		exitListeners.remove(func);
-	}
-
-	inline public function setSize (w:Int, h:Int)
-	{
-		width = w;
-		height = h;
 	}
 
 	override private function set_active (val:Bool) : Bool

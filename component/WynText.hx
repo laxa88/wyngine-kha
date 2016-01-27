@@ -2,10 +2,9 @@ package wyn.component;
 
 import kha.Font;
 import kha.Color;
-import kha.Image;
 import kha.graphics2.Graphics;
 
-class WynText extends WynComponent
+class WynText extends WynRenderable
 {
 	public static var WYN_DEBUG:Bool = false;
 
@@ -34,13 +33,13 @@ class WynText extends WynComponent
 
 	public function new (t:String, f:Font, s:Int, ?option:TextOptions)
 	{
-		super();
+		super(0, 0);
 
 		text = t;
 
-		setFont(f);
+		font = f;
 
-		setSize(s);
+		fontSize = s;
 
 		if (option != null)
 		{
@@ -55,33 +54,16 @@ class WynText extends WynComponent
 		}
 	}
 
-	override public function init ()
-	{
-		parent.addRenderer(render);
-	}
-
 	override public function destroy ()
 	{
 		super.destroy();
-
-		parent.removeRenderer(render);
 
 		font = null;
 	}
 
 
 
-	inline public function setFont (f:Font)
-	{
-		font = f;
-	}
-
-	inline public function setSize (fs:Int)
-	{
-		fontSize = fs;
-	}
-
-	public function render (g:Graphics)
+	override public function render (g:Graphics)
 	{
 		if (!visible)
 			return;
@@ -145,12 +127,6 @@ class WynText extends WynComponent
 		}
 
 		g.color = oldColor;
-	}
-
-	inline public function setOffset (ox:Float, oy:Float)
-	{
-		offsetX = ox;
-		offsetY = oy;
 	}
 
 	public function set_text (val:String) : String

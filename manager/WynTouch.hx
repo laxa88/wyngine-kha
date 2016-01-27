@@ -27,6 +27,7 @@ class WynTouch extends WynManager
 		{
 			var touch = touches[key];
 
+			// bugfix for safari, otherwise will break everything
 			if (touch == null)
 				continue;
 

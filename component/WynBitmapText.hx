@@ -57,7 +57,7 @@ typedef Line = {
 	var width:Int;
 }
 
-class WynBitmapText extends WynComponent
+class WynBitmapText extends WynRenderable
 {
 	public static var WYN_DEBUG:Bool = false;
 
@@ -80,13 +80,6 @@ class WynBitmapText extends WynComponent
 	public var trimEnds:Bool = true; // trims trailing space characters
 	public var trimAll:Bool = true; // trims ALL space characters (including mid-sentence)
 
-	public var width:Int = 0;
-	public var height:Int = 0;
-	public var alpha:Float = 1;
-	public var angle:Float = 0; // 0 ~ 360
-	public var scale:Float = 1;
-	public var offsetX:Float = 0;
-	public var offsetY:Float = 0;
 	public var color:Color = 0xFFFFFFFF; // default white
 	static var oldColor:Color; // for reusability
 
@@ -98,10 +91,7 @@ class WynBitmapText extends WynComponent
 	 */
 	public function new (str:String, fontName:String, w:Int, h:Int, ?option:TextOptions)
 	{
-		super();
-
-		width = w;
-		height = h;
+		super(w, h);
 
 		_cursor = new FastVector2();
 		_lines = [];
@@ -129,11 +119,6 @@ class WynBitmapText extends WynComponent
 			// If the fontCache or fontName doesn't exist, fail silently!
 			trace('Failed to init WynBitmapText with "${fontName}"');
 		}
-	}
-
-	override public function init ()
-	{
-		parent.addRenderer(render);
 	}
 
 	override public function update ()
@@ -359,15 +344,13 @@ class WynBitmapText extends WynComponent
 	{
 		super.destroy();
 
-		parent.removeRenderer(render);
-
 		font = null;
 		_cursor = null;
 	}
 
 
 
-	public function render (g:Graphics)
+	override public function render (g:Graphics)
 	{
 		if (!visible)
 			return;
@@ -589,12 +572,6 @@ class WynBitmapText extends WynComponent
 
 		// Add this font data to dictionary, finally.
 		fontCache.set(fontName, font);
-	}
-
-	inline public function setOffset (ox:Float, oy:Float)
-	{
-		offsetX = ox;
-		offsetY = oy;
 	}
 
 	private function get_lineHeight () : Int
