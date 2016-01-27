@@ -16,22 +16,8 @@ class Wyngine
 	var backbuffer:Image;
 	var g:Graphics;
 
-	public static var IS_MOBILE:Bool = false;
-	public static inline var ROTATION_DEVICE:Int = 0;
-	public static inline var ROTATION_PORTRAIT:Int = 1;
-	public static inline var ROTATION_LANDSCAPE:Int = 2;
-
-	static var requireCorrectRotation:Bool = false;
-	public static var baseRotation:Int = ROTATION_DEVICE;
-	public static var onRequireCorrectRotation:Void->Void;
-	public static var onCorrectedRotation:Void->Void;
-
-	static var isFocused:Bool = true;
-	public static var onPause:Void->Void;
-	public static var onResume:Void->Void;
-	public static var onBackground:Void->Void;
-	public static var onForeground:Void->Void;
-	public static var onShutdown:Void->Void;
+	static var active:Bool = true;
+	static var visible:Bool = true;
 
 	public static var imageQuality:ImageScaleQuality = ImageScaleQuality.High;
 	public static var onResize:Void->Void;
@@ -63,22 +49,6 @@ class Wyngine
 		gameHeight = height;
 		currTime = Scheduler.time();
 
-
-
-		System.notifyOnApplicationState(function () {
-			isFocused = true;
-			if (onForeground != null) onForeground();
-		}, function () {
-			if (onResume != null) onResume();
-		}, function () {
-			if (onPause != null) onPause();
-		}, function () {
-			isFocused = false;
-			if (onBackground != null) onBackground();
-		}, function () {
-			if (onShutdown != null) onShutdown();
-		});
-
 		#if js
 
 			setupHtml();
@@ -88,8 +58,6 @@ class Wyngine
 			setupAndroid();
 
 		#end
-
-
 
 		// Delay update game scale once upon startup to make sure
 		Scheduler.addTimeTask(function () {
@@ -124,10 +92,6 @@ class Wyngine
 
 				}, 0.1);
 			});
-
-			// NOTE: requires detectmobilebrowser.js, which is included in wyngine folder.
-			// Latest version can be found http://detectmobilebrowsers.com/
-			IS_MOBILE = untyped __js__('IS_MOBILE');
 
 			var wyn = 'background:#ff69b4;color:#ffffff';
 			var black = 'background:#ffffff;color:#000000';
@@ -188,36 +152,8 @@ class Wyngine
 		prevTime = currTime;
 		currTime = Scheduler.time();
 
-		if (!isFocused)
+		if (!active)
 			return;
-
-		#if js
-
-			if (IS_MOBILE)
-			{
-				if (!isValidCanvasOrientation())
-				{
-					if (!requireCorrectRotation)
-					{
-						requireCorrectRotation = true;
-						if (onRequireCorrectRotation != null)
-							onRequireCorrectRotation();
-					}
-
-					return;
-				}
-				else
-				{
-					if (requireCorrectRotation)
-					{
-						requireCorrectRotation = false;
-						if (onCorrectedRotation != null)
-							onCorrectedRotation();
-					}
-				}
-			}
-
-		#end
 
 		// Update delta time if we didn't return
 		dt = currTime - prevTime;
@@ -268,69 +204,10 @@ class Wyngine
 		}
 	}
 
-	function isValidCanvasOrientation () : Bool
-	{
-		// HTML5 games usually have a fixed dimension (e.g. portrait), but
-		// the browser size may be different on all devices (e.g. desktop,
-		// mobile-portrait, mobile-landscape). Do a check here -- if the
-		// orientation doesn't match, don't proceed
-
-		// NOTE: don't use this because khanvas might not fit to browser size
-		// var w = System.pixelWidth;
-		// var h = System.pixelHeight;
-
-		#if js
-			var w = js.Browser.window.innerWidth;
-			var h = js.Browser.window.innerHeight;
-		#else
-			var w = System.pixelWidth;
-			var h = System.pixelHeight;
-		#end
-
-		if (baseRotation != ROTATION_DEVICE)
-		{
-			if (baseRotation == ROTATION_PORTRAIT && w > h)
-				return false;
-			else if (baseRotation == ROTATION_LANDSCAPE && h > w)
-				return false;
-		}
-
-		return true;
-	}
-
 	public function render (framebuffer:Framebuffer)
 	{
-		#if js
-
-			if (IS_MOBILE)
-			{
-				if (!isValidCanvasOrientation())
-				{
-					g.begin(true, 0xFFFFFFFF);
-					g.imageScaleQuality = imageQuality;
-
-					if (Assets.images.icon_horizontal != null)
-						g.drawImage(Assets.images.icon_horizontal, gameWidth/2 - 167/2, gameHeight/2 - 144/2);
-
-					g.end();
-
-					framebuffer.g2.begin(true, 0xFFFFFFFF);
-					framebuffer.g2.imageScaleQuality = imageQuality;
-
-					if (baseRotation == ROTATION_DEVICE)
-						Scaler.scale(backbuffer, framebuffer, System.screenRotation);
-					else if (baseRotation == ROTATION_PORTRAIT)
-						Scaler.scale(backbuffer, framebuffer, ScreenRotation.RotationNone);
-					else
-						Scaler.scale(backbuffer, framebuffer, ScreenRotation.Rotation90);
-
-					framebuffer.g2.end();
-
-					return;
-				}
-			}
-
-		#end
+		if (!visible)
+			return;
 
 		g.begin(true, bgColor); // cornflower
 
@@ -357,14 +234,7 @@ class Wyngine
 
 		framebuffer.g2.begin(true, frameBgColor);
 		framebuffer.g2.imageScaleQuality = imageQuality;
-		
-		if (baseRotation == ROTATION_DEVICE)
-			Scaler.scale(backbuffer, framebuffer, System.screenRotation);
-		else if (baseRotation == ROTATION_PORTRAIT)
-			Scaler.scale(backbuffer, framebuffer, ScreenRotation.RotationNone);
-		else
-			Scaler.scale(backbuffer, framebuffer, ScreenRotation.Rotation90);
-
+		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
 		framebuffer.g2.end();
 	}
 
