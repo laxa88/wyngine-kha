@@ -21,10 +21,17 @@ class Wyngine
 	public static inline var ROTATION_PORTRAIT:Int = 1;
 	public static inline var ROTATION_LANDSCAPE:Int = 2;
 
-	static var isFocused:Bool = true;
-	public static var onLoseFocus:Void->Void;
-	public static var onGainFocus:Void->Void;
+	static var requireCorrectRotation:Bool = false;
 	public static var baseRotation:Int = ROTATION_DEVICE;
+	public static var onRequireCorrectRotation:Void->Void;
+	public static var onCorrectedRotation:Void->Void;
+
+	static var isFocused:Bool = true;
+	public static var onPause:Void->Void;
+	public static var onResume:Void->Void;
+	public static var onBackground:Void->Void;
+	public static var onForeground:Void->Void;
+	public static var onShutdown:Void->Void;
 
 	public static var imageQuality:ImageScaleQuality = ImageScaleQuality.High;
 	public static var onResize:Void->Void;
@@ -56,9 +63,33 @@ class Wyngine
 		gameHeight = height;
 		currTime = Scheduler.time();
 
-		setupHtml();
 
-		setupAndroid();
+
+		System.notifyOnApplicationState(function () {
+			isFocused = true;
+			if (onForeground != null) onForeground();
+		}, function () {
+			if (onResume != null) onResume();
+		}, function () {
+			if (onPause != null) onPause();
+		}, function () {
+			isFocused = false;
+			if (onBackground != null) onBackground();
+		}, function () {
+			if (onShutdown != null) onShutdown();
+		});
+
+		#if js
+
+			setupHtml();
+
+		#else if sys_android_native
+
+			setupAndroid();
+
+		#end
+
+
 
 		// Delay update game scale once upon startup to make sure
 		Scheduler.addTimeTask(function () {
@@ -97,7 +128,6 @@ class Wyngine
 			// NOTE: requires detectmobilebrowser.js, which is included in wyngine folder.
 			// Latest version can be found http://detectmobilebrowsers.com/
 			IS_MOBILE = untyped __js__('IS_MOBILE');
-			// trace("mobile : " + IS_MOBILE);
 
 			var wyn = 'background:#ff69b4;color:#ffffff';
 			var black = 'background:#ffffff;color:#000000';
@@ -109,17 +139,7 @@ class Wyngine
 
 	function setupAndroid ()
 	{
-		System.notifyOnApplicationState(function () {
-			// trace("onForeground");
-		}, function () {
-			// trace("onResume");
-		}, function () {
-			// trace("onPause");
-		}, function () {
-			// trace("onBackground");
-		}, function () {
-			// trace("onShutdown");
-		});
+		// TODO
 	}
 
 	static public function refreshGameScale ()
@@ -168,28 +188,31 @@ class Wyngine
 		prevTime = currTime;
 		currTime = Scheduler.time();
 
+		if (!isFocused)
+			return;
+
 		#if js
 
 			if (IS_MOBILE)
 			{
 				if (!isValidCanvasOrientation())
 				{
-					if (isFocused)
+					if (!requireCorrectRotation)
 					{
-						isFocused = false;
-						if (onLoseFocus != null)
-							onLoseFocus();
+						requireCorrectRotation = true;
+						if (onRequireCorrectRotation != null)
+							onRequireCorrectRotation();
 					}
 
 					return;
 				}
 				else
 				{
-					if (!isFocused)
+					if (requireCorrectRotation)
 					{
-						isFocused = true;
-						if (onGainFocus != null)
-							onGainFocus();
+						requireCorrectRotation = false;
+						if (onCorrectedRotation != null)
+							onCorrectedRotation();
 					}
 				}
 			}

@@ -254,6 +254,8 @@ class WynButton extends WynRenderable
 		if (screenX > parent.x + offsetX) hitHoriz = (screenX < parent.x + offsetX + width);
 		if (screenY > parent.y + offsetY) hitVert = (screenY < parent.y + offsetY + height);
 
+		// trace("isWithinButton : " + rawX + "," + rawY + " / " + screenX + "," + screenY + " / " + parent.x + "," + parent.y);
+
 		return (hitHoriz && hitVert);
 	}
 

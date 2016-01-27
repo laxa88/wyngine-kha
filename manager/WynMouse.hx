@@ -61,6 +61,8 @@ class WynMouse extends WynManager
 
 	function onMouseStart (index:Int, x:Int, y:Int)
 	{
+		// trace("onMouseStart : " + index + " , " + x + " , " + y);
+		
 		updateMouseData(x, y, 0, 0);
 
 		mouseDown.set(index, true);
@@ -73,6 +75,8 @@ class WynMouse extends WynManager
 
 	function onMouseEnd (index:Int, x:Int, y:Int)
 	{
+		// trace("onMouseEnd : " + index + " , " + x + " , " + y);
+
 		updateMouseData(x, y, 0, 0);
 
 		mouseUp.set(index, true);
