@@ -110,56 +110,58 @@ class WynTouch extends WynManager
 
 	inline public static function isDown (index:Int=0)
 	{
-		return (touches.exists(index)) ? touches[index].state == InputState.DOWN : false;
+		return init && (touches.exists(index)) ? touches[index].state == InputState.DOWN : false;
 	}
 
 	inline public static function isHeld (index:Int=0)
 	{
-		return (touches.exists(index)) ? touches[index].state == InputState.HELD : false;
+		return init && (touches.exists(index)) ? touches[index].state == InputState.HELD : false;
 	}
 
 	inline public static function isUp (index:Int=0)
 	{
-		return (touches.exists(index)) ? touches[index].state == InputState.UP : false;
+		return init && (touches.exists(index)) ? touches[index].state == InputState.UP : false;
 	}
 
 	inline public static function isAny ()
 	{
-		return (touchCount > 0);
+		return init && (touchCount > 0);
 	}
 
 	inline public static function isAnyDown ()
 	{
-		return touchJustPressed;
+		return init && touchJustPressed;
 	}
 
-	inline public static function notifyStart (func:Int->Int->Int->Void)
+
+
+	public static function notifyStart (func:Int->Int->Int->Void)
 	{
-		Surface.get().notify(func, null, null);
+		if (init) Surface.get().notify(func, null, null);
 	}
 
-	inline public static function notifyEnd (func:Int->Int->Int->Void)
+	public static function notifyEnd (func:Int->Int->Int->Void)
 	{
-		Surface.get().notify(null, func, null);
+		if (init) Surface.get().notify(null, func, null);
 	}
 
-	inline public static function notifyMove (func:Int->Int->Int->Void)
+	public static function notifyMove (func:Int->Int->Int->Void)
 	{
-		Surface.get().notify(null, null, func);
+		if (init) Surface.get().notify(null, null, func);
 	}
 
-	inline public static function removeStart (func:Int->Int->Int->Void)
+	public static function removeStart (func:Int->Int->Int->Void)
 	{
-		Surface.get().remove(func, null, null);
+		if (init) Surface.get().remove(func, null, null);
 	}
 
-	inline public static function removeEnd (func:Int->Int->Int->Void)
+	public static function removeEnd (func:Int->Int->Int->Void)
 	{
-		Surface.get().remove(null, func, null);
+		if (init) Surface.get().remove(null, func, null);
 	}
 
-	inline public static function removeMove (func:Int->Int->Int->Void)
+	public static function removeMove (func:Int->Int->Int->Void)
 	{
-		Surface.get().remove(null, null, func);
+		if (init) Surface.get().remove(null, null, func);
 	}
 }

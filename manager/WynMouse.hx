@@ -110,56 +110,58 @@ class WynMouse extends WynManager
 
 	inline public static function isDown (index:Int=0) : Bool
 	{
-		return mouseDown.exists(index);
+		return init && mouseDown.exists(index);
 	}
 
 	inline public static function isHeld (index:Int=0) : Bool
 	{
-		return mouseHeld.exists(index);
+		return init && mouseHeld.exists(index);
 	}
 
 	inline public static function isUp (index:Int=0) : Bool
 	{
-		return mouseUp.exists(index);
+		return init && mouseUp.exists(index);
 	}
 
 	inline public static function isAny () : Bool
 	{
-		return (mouseCount > 0);
+		return init && (mouseCount > 0);
 	}
 
 	inline public static function isAnyDown () : Bool
 	{
-		return mouseJustPressed;
+		return init && mouseJustPressed;
 	}
 
-	inline public static function notifyStart (func:Int->Int->Int->Void)
+
+
+	public static function notifyStart (func:Int->Int->Int->Void)
 	{
-		Mouse.get().notify(func, null, null, null);
+		if (init) Mouse.get().notify(func, null, null, null);
 	}
 
-	inline public static function notifyEnd (func:Int->Int->Int->Void)
+	public static function notifyEnd (func:Int->Int->Int->Void)
 	{
-		Mouse.get().notify(null, func, null, null);
+		if (init) Mouse.get().notify(null, func, null, null);
 	}
 
-	inline public static function notifyMove (func:Int->Int->Int->Int->Void)
+	public static function notifyMove (func:Int->Int->Int->Int->Void)
 	{
-		Mouse.get().notify(null, null, func, null);
+		if (init) Mouse.get().notify(null, null, func, null);
 	}
 
-	inline public static function removeStart (func:Int->Int->Int->Void)
+	public static function removeStart (func:Int->Int->Int->Void)
 	{
-		Mouse.get().remove(func, null, null, null);
+		if (init) Mouse.get().remove(func, null, null, null);
 	}
 
-	inline public static function removeEnd (func:Int->Int->Int->Void)
+	public static function removeEnd (func:Int->Int->Int->Void)
 	{
-		Mouse.get().remove(null, func, null, null);
+		if (init) Mouse.get().remove(null, func, null, null);
 	}
 
-	inline public static function removeMove (func:Int->Int->Int->Int->Void)
+	public static function removeMove (func:Int->Int->Int->Int->Void)
 	{
-		Mouse.get().remove(null, null, func, null);
+		if (init) Mouse.get().remove(null, null, func, null);
 	}
 }
