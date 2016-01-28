@@ -10,6 +10,18 @@ import wyn.util.WynUtil;
 
 class WynButton extends WynRenderable
 {
+	// NOTE:
+	// - WynButton only handles visual state changes. The
+	// actual down/up/over/exit events need to be manually
+	// handled by your game.
+	//
+	// - The reason for this is, HTML5 events need to be triggered
+	// from the first callback function in order to maintain trustedSource. If
+	// the callback calls another function (e.g. custom listener arrays),
+	// then it will be flagged as insecure and blocked by pop-up blockers.
+	// 
+	// - Use stateChanged to check if an event needs to be triggered.
+
 	public static var WYN_DEBUG:Bool = false;
 
 	static var MOUSE_ENABLED:Bool = false;
@@ -31,14 +43,12 @@ class WynButton extends WynRenderable
 	var hitMouse:Bool = false; // whether the mouse is within the button
 	var isMouseDown:Bool = false; // whether the mouse state is down or up
 
-	var downListeners:Array<WynButton->Void> = [];
-	var upListeners:Array<WynButton->Void> = [];
-	var enterListeners:Array<WynButton->Void> = [];
-	var exitListeners:Array<WynButton->Void> = [];
-
 	var processedDown = false;
 	var processedMove = false;
 	var processedUp = false;
+
+	// Use this flag on events to check if this button needs to be triggered
+	public var stateChanged = false;
 
 
 
@@ -49,7 +59,6 @@ class WynButton extends WynRenderable
 		hitTouches = new Map<Int, Bool>();
 		isTouchDowns = new Map<Int, Bool>();
 
-		// add listeners
 		Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, null);
 		Surface.get().notify(onTouchStart, onTouchEnd, onTouchMove);
 	}
@@ -61,6 +70,16 @@ class WynButton extends WynRenderable
 		processedDown = false;
 		processedMove = false;
 		processedUp = false;
+
+		if (currState == prevState)
+		{
+			stateChanged = false;
+		}
+		else
+		{
+			stateChanged = true;
+			prevState = currState;
+		}
 	}
 
 
@@ -77,10 +96,6 @@ class WynButton extends WynRenderable
 
 		if (isWithinButton(x, y))
 		{
-			// if current mouse is within button, call event
-			for (listener in downListeners)
-				listener(this);
-
 			// update flag
 			setState(STATE_DOWN);
 		}
@@ -98,10 +113,6 @@ class WynButton extends WynRenderable
 
 		if (isWithinButton(x, y))
 		{
-			// if current mouse is within button, call event
-			for (listener in upListeners)
-				listener(this);
-
 			// update flag
 			setState(STATE_OVER);
 		}
@@ -126,9 +137,6 @@ class WynButton extends WynRenderable
 					setState(STATE_DOWN);
 				else
 					setState(STATE_OVER);
-
-				for (listener in enterListeners)
-					listener(this);
 			}
 		}
 		else
@@ -139,9 +147,6 @@ class WynButton extends WynRenderable
 			if (prevHitMouse)
 			{
 				setState(STATE_UP);
-
-				for (listener in exitListeners)
-					listener(this);
 			}
 		}
 	}
@@ -161,9 +166,6 @@ class WynButton extends WynRenderable
 
 		if (isWithinButton(x, y))
 		{
-			for (listener in downListeners)
-				listener(this);
-
 			setState(STATE_DOWN);
 		}
 	}
@@ -181,10 +183,6 @@ class WynButton extends WynRenderable
 
 		if (isWithinButton(x, y))
 		{
-			// if current mouse is within button, call event
-			for (listener in upListeners)
-				listener(this);
-
 			// update flag
 			setState(STATE_OVER);
 		}
@@ -212,9 +210,6 @@ class WynButton extends WynRenderable
 					setState(STATE_DOWN);
 				else
 					setState(STATE_UP);
-
-				for (listener in enterListeners)
-					listener(this);
 			}
 		}
 		else
@@ -224,9 +219,6 @@ class WynButton extends WynRenderable
 			if (prevHitTouch)
 			{
 				setState(STATE_UP);
-
-				for (listener in exitListeners)
-					listener(this);
 			}
 		}
 	}
@@ -243,8 +235,19 @@ class WynButton extends WynRenderable
 			return true;
 	}
 
-	function isWithinButton (rawX:Int, rawY:Int) : Bool
+	public function isWithinButton (rawX:Int, rawY:Int) : Bool
 	{
+		if (!enabled || !active)
+			return false;
+		else if (parent == null)
+			return false;
+		else if (!parent.enabled || !parent.active)
+			return false;
+		else if (parent.screen == null)
+			return false;
+		else if (!parent.screen.alive)
+			return false;
+
 		var hitHoriz = false;
 		var hitVert = false;
 
@@ -274,19 +277,12 @@ class WynButton extends WynRenderable
 	{
 		super.destroy();
 
-		denotify();
-
 		regionDataUp = null;
 		regionDataOver = null;
 		regionDataDown = null;
 
 		hitTouches = null;
 		isTouchDowns = null;
-
-		downListeners = null;
-		upListeners = null;
-		enterListeners = null;
-		exitListeners = null;
 
 		Mouse.get().remove(onMouseDown, onMouseUp, onMouseMove, null);
 		Surface.get().remove(onTouchStart, onTouchEnd, onTouchMove);
@@ -395,85 +391,6 @@ class WynButton extends WynRenderable
 
 		// update region
 		region = regionData;
-	}
-
-	inline public function notify (onDown:WynButton->Void, onUp:WynButton->Void, onEnter:WynButton->Void, onExit:WynButton->Void)
-	{
-		notifyDown(onDown);
-		notifyUp(onUp);
-		notifyEnter(onEnter);
-		notifyExit(onExit);
-	}
-
-	inline public function denotify ()
-	{
-		while (downListeners.length > 0)
-			downListeners.pop();
-
-		while (upListeners.length > 0)
-			upListeners.pop();
-
-		while (enterListeners.length > 0)
-			enterListeners.pop();
-
-		while (exitListeners.length > 0)
-			exitListeners.pop();
-	}
-
-	inline public function notifyDown (func:WynButton->Void)
-	{
-		if (func == null)
-			return;
-
-		if (downListeners.indexOf(func) == -1)
-			downListeners.push(func);
-	}
-
-	inline public function notifyUp (func:WynButton->Void)
-	{
-		if (func == null)
-			return;
-
-		if (upListeners.indexOf(func) == -1)
-			upListeners.push(func);
-	}
-
-	inline public function notifyEnter (func:WynButton->Void)
-	{
-		if (func == null)
-			return;
-
-		if (enterListeners.indexOf(func) == -1)
-			enterListeners.push(func);
-	}
-
-	inline public function notifyExit (func:WynButton->Void)
-	{
-		if (func == null)
-			return;
-
-		if (exitListeners.indexOf(func) == -1)
-			exitListeners.push(func);
-	}
-
-	inline public function removeDown (func:WynButton->Void)
-	{
-		downListeners.remove(func);
-	}
-
-	inline public function removeUp (func:WynButton->Void)
-	{
-		upListeners.remove(func);
-	}
-
-	inline public function removeEnter (func:WynButton->Void)
-	{
-		enterListeners.remove(func);
-	}
-
-	inline public function removeExit (func:WynButton->Void)
-	{
-		exitListeners.remove(func);
 	}
 
 	override private function set_active (val:Bool) : Bool
