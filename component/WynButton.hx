@@ -6,6 +6,8 @@ import kha.Image;
 import kha.graphics2.Graphics;
 import kha.math.FastMatrix3;
 import wyn.Wyngine;
+import wyn.manager.WynMouse;
+import wyn.manager.WynTouch;
 import wyn.util.WynUtil;
 
 class WynButton extends WynRenderable
@@ -42,6 +44,11 @@ class WynButton extends WynRenderable
 	var isTouchDowns:Map<Int, Bool>; // map of whether each touch is down or up
 	var hitMouse:Bool = false; // whether the mouse is within the button
 	var isMouseDown:Bool = false; // whether the mouse state is down or up
+
+	var downListeners:Array<WynButton->Void> = [];
+	var upListeners:Array<WynButton->Void> = [];
+	var enterListeners:Array<WynButton->Void> = [];
+	var exitListeners:Array<WynButton->Void> = [];
 
 	var processedDown = false;
 	var processedMove = false;
@@ -88,7 +95,7 @@ class WynButton extends WynRenderable
 
 	function onMouseDown (index:Int, x:Int, y:Int)
 	{
-		if (!isButtonActive())
+		if (!isButtonActive() || !WynMouse.init)
 			return;
 
 		isMouseDown = true;
@@ -96,6 +103,10 @@ class WynButton extends WynRenderable
 
 		if (isWithinButton(x, y))
 		{
+			// if current mouse is within button, call event
+			for (listener in downListeners)
+				listener(this);
+
 			// update flag
 			setState(STATE_DOWN);
 		}
@@ -105,7 +116,7 @@ class WynButton extends WynRenderable
 
 	function onMouseUp (index:Int, x:Int, y:Int)
 	{
-		if (!isButtonActive())
+		if (!isButtonActive() || !WynMouse.init)
 			return;
 
 		isMouseDown = false;
@@ -113,6 +124,10 @@ class WynButton extends WynRenderable
 
 		if (isWithinButton(x, y))
 		{
+			// if current mouse is within button, call event
+			for (listener in upListeners)
+				listener(this);
+
 			// update flag
 			setState(STATE_OVER);
 		}
@@ -120,7 +135,7 @@ class WynButton extends WynRenderable
 
 	function onMouseMove (x:Int, y:Int, _, _)
 	{
-		if (!isButtonActive())
+		if (!isButtonActive() || !WynMouse.init)
 			return;
 
 		var prevHitMouse = hitMouse;
@@ -137,6 +152,9 @@ class WynButton extends WynRenderable
 					setState(STATE_DOWN);
 				else
 					setState(STATE_OVER);
+
+				for (listener in enterListeners)
+					listener(this);
 			}
 		}
 		else
@@ -147,6 +165,9 @@ class WynButton extends WynRenderable
 			if (prevHitMouse)
 			{
 				setState(STATE_UP);
+
+				for (listener in exitListeners)
+					listener(this);
 			}
 		}
 	}
@@ -158,7 +179,7 @@ class WynButton extends WynRenderable
 		if (index == 0 && processedDown)
 			return;
 
-		if (!isButtonActive())
+		if (!isButtonActive() || !WynTouch.init)
 			return;
 
 		isTouchDowns.set(index, true);
@@ -166,6 +187,9 @@ class WynButton extends WynRenderable
 
 		if (isWithinButton(x, y))
 		{
+			for (listener in downListeners)
+				listener(this);
+
 			setState(STATE_DOWN);
 		}
 	}
@@ -175,7 +199,7 @@ class WynButton extends WynRenderable
 		if (index == 0 && processedUp)
 			return;
 
-		if (!isButtonActive())
+		if (!isButtonActive() || !WynTouch.init)
 			return;
 
 		isTouchDowns.remove(index);
@@ -183,6 +207,10 @@ class WynButton extends WynRenderable
 
 		if (isWithinButton(x, y))
 		{
+			// if current mouse is within button, call event
+			for (listener in upListeners)
+				listener(this);
+
 			// update flag
 			setState(STATE_OVER);
 		}
@@ -193,7 +221,7 @@ class WynButton extends WynRenderable
 		if (index == 0 && processedMove)
 			return;
 
-		if (!isButtonActive())
+		if (!isButtonActive() || !WynTouch.init)
 			return;
 
 		var prevHitTouch = hitTouches.exists(index);
@@ -210,6 +238,9 @@ class WynButton extends WynRenderable
 					setState(STATE_DOWN);
 				else
 					setState(STATE_UP);
+
+				for (listener in enterListeners)
+					listener(this);
 			}
 		}
 		else
@@ -219,6 +250,9 @@ class WynButton extends WynRenderable
 			if (prevHitTouch)
 			{
 				setState(STATE_UP);
+
+				for (listener in exitListeners)
+					listener(this);
 			}
 		}
 	}
@@ -235,7 +269,7 @@ class WynButton extends WynRenderable
 			return true;
 	}
 
-	public function isWithinButton (rawX:Int, rawY:Int) : Bool
+	function isWithinButton (rawX:Int, rawY:Int) : Bool
 	{
 		if (!enabled || !active)
 			return false;
@@ -283,6 +317,11 @@ class WynButton extends WynRenderable
 
 		hitTouches = null;
 		isTouchDowns = null;
+
+		downListeners = null;
+		upListeners = null;
+		enterListeners = null;
+		exitListeners = null;
 
 		Mouse.get().remove(onMouseDown, onMouseUp, onMouseMove, null);
 		Surface.get().remove(onTouchStart, onTouchEnd, onTouchMove);
@@ -336,7 +375,7 @@ class WynButton extends WynRenderable
 		// }
 	}
 
-	inline public function setButtonImage (img:Image, upData:Region, overData:Region, downData:Region)
+	public function setButtonImage (img:Image, upData:Region, overData:Region, downData:Region)
 	{
 		image = img;
 
@@ -347,7 +386,7 @@ class WynButton extends WynRenderable
 		setState(STATE_UP);
 	}
 
-	inline override public function setImage (img:Image, data:Region)
+	override public function setImage (img:Image, data:Region)
 	{
 		image = img;
 
@@ -360,13 +399,15 @@ class WynButton extends WynRenderable
 
 	function setState (state:Int)
 	{
-		// don't update if inactive
 		if (!active)
+		{
 			return;
-
-		// don't repeatedly reassign state
-		if (currState == state)
+		}
+		else if (currState == state)
+		{
+			// don't repeatedly reassign state
 			return;
+		}
 
 		prevState = currState;
 		currState = state;
@@ -391,6 +432,85 @@ class WynButton extends WynRenderable
 
 		// update region
 		region = regionData;
+	}
+
+	public function notify (onDown:WynButton->Void, onUp:WynButton->Void, onEnter:WynButton->Void, onExit:WynButton->Void)
+	{
+		notifyDown(onDown);
+		notifyUp(onUp);
+		notifyEnter(onEnter);
+		notifyExit(onExit);
+	}
+
+	public function denotify ()
+	{
+		while (downListeners.length > 0)
+			downListeners.pop();
+
+		while (upListeners.length > 0)
+			upListeners.pop();
+
+		while (enterListeners.length > 0)
+			enterListeners.pop();
+
+		while (exitListeners.length > 0)
+			exitListeners.pop();
+	}
+
+	public function notifyDown (func:WynButton->Void)
+	{
+		if (func == null)
+			return;
+
+		if (downListeners.indexOf(func) == -1)
+			downListeners.push(func);
+	}
+
+	public function notifyUp (func:WynButton->Void)
+	{
+		if (func == null)
+			return;
+
+		if (upListeners.indexOf(func) == -1)
+			upListeners.push(func);
+	}
+
+	public function notifyEnter (func:WynButton->Void)
+	{
+		if (func == null)
+			return;
+
+		if (enterListeners.indexOf(func) == -1)
+			enterListeners.push(func);
+	}
+
+	public function notifyExit (func:WynButton->Void)
+	{
+		if (func == null)
+			return;
+
+		if (exitListeners.indexOf(func) == -1)
+			exitListeners.push(func);
+	}
+
+	public function removeDown (func:WynButton->Void)
+	{
+		downListeners.remove(func);
+	}
+
+	public function removeUp (func:WynButton->Void)
+	{
+		upListeners.remove(func);
+	}
+
+	public function removeEnter (func:WynButton->Void)
+	{
+		enterListeners.remove(func);
+	}
+
+	public function removeExit (func:WynButton->Void)
+	{
+		exitListeners.remove(func);
 	}
 
 	override private function set_active (val:Bool) : Bool
