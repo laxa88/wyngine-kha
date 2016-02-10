@@ -149,10 +149,15 @@ class Wyngine
 
 		if (fitMode != FIT_NONE)
 		{
+			#if js
 			// var windowW = kha.SystemImpl.khanvas.width;
 			// var windowH = kha.SystemImpl.khanvas.height;
 			var windowW = js.Browser.window.innerWidth;
 			var windowH = js.Browser.window.innerHeight;
+			#else
+			var windowW = System.pixelWidth;
+			var windowH = System.pixelHeight;
+			#end
 
 			if (fitMode == FIT_WIDTH)
 			{
