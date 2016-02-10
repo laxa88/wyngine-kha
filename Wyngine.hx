@@ -147,20 +147,20 @@ class Wyngine
 		// target ratio is 16:9, so game screen is resized to 320x180.
 		// This means game's height is shrunk by ~25%.
 
-		if (mobileFitMode != FIT_NONE)
+		if (fitMode != FIT_NONE)
 		{
 			// var windowW = kha.SystemImpl.khanvas.width;
 			// var windowH = kha.SystemImpl.khanvas.height;
 			var windowW = js.Browser.window.innerWidth;
 			var windowH = js.Browser.window.innerHeight;
 
-			if (mobileFitMode == FIT_WIDTH)
+			if (fitMode == FIT_WIDTH)
 			{
 				// landscape
 				var ratioH = width / windowW;
 				height = Math.floor(windowH * ratioH);
 			}
-			else if (mobileFitMode == FIT_HEIGHT)
+			else if (fitMode == FIT_HEIGHT)
 			{
 				// portrait
 				var ratioW = height / windowH;
