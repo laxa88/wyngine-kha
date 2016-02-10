@@ -19,9 +19,15 @@ class Wyngine
 	static var active:Bool = true;
 	static var visible:Bool = true;
 
+	public static inline var FIT_NONE:Int = 0;
+	public static inline var FIT_WIDTH:Int = 1;
+	public static inline var FIT_HEIGHT:Int = 2;
+
 	public static var IS_MOBILE:Bool = false;
 	public static var imageQuality:ImageScaleQuality = ImageScaleQuality.High;
 	public static var onResize:Void->Void;
+	public static var oriWidth(default, null):Int = 0;
+	public static var oriHeight(default, null):Int = 0;
 	public static var gameWidth(default, null):Int = 0;
 	public static var gameHeight(default, null):Int = 0;
 	public static var screenOffsetX(default, null):Int = 0;
@@ -41,28 +47,54 @@ class Wyngine
 
 
 
-	public function new (width:Int, height:Int)
+	public function new (width:Int, height:Int, fitMode:Int=FIT_NONE)
 	{
-		backbuffer = Image.createRenderTarget(width, height);
-		g = backbuffer.g2;
+		// NOTE:
+		// oriWidth/oriHeight are the original size of the game (without stretching to fit the mobile screens)
+		// gameWidth/gameHeight is the actual screen size of the game (after applying fitMode)
 
-		gameWidth = width;
-		gameHeight = height;
-		currTime = Scheduler.time();
+		oriWidth = width;
+		oriHeight = height;
 
 		#if js
 
 			setupHtml();
 
-		#elseif sys_android_native
+			if (IS_MOBILE)
+			{
+				// Due to varying mobile screen sizes, we usually 
+				// would stretch the screen.
+				setupScreen(width, height, fitMode);
+			}
+			else
+			{
+				// Don't fit to desktop browsers
+				setupScreen(width, height, FIT_NONE);
+			}
 
-			setupAndroid();
+		#elseif (sys_ios || sys_android_native || sys_android)
+
+			// Due to varying mobile screen sizes, we usually 
+			// would stretch the screen.
+			setupScreen(width, height, fitMode);
+
+		#else
+
+			// For desktop games, there's no need to stretch
+			setupScreen(width, height, FIT_NONE);
 
 		#end
 
-		// Delay update game scale once upon startup to make sure
+		backbuffer = Image.createRenderTarget(gameWidth, gameHeight);
+		g = backbuffer.g2;
+
+		currTime = Scheduler.time();
+
+		// Delay initialisation
 		Scheduler.addTimeTask(function () {
+
 			refreshGameScale();
+
 		}, 1);
 	}
 
@@ -101,23 +133,64 @@ class Wyngine
 		#end
 	}
 
-	function setupAndroid ()
+	function setupScreen (width:Int, height:Int, fitMode:Int)
 	{
-		// TODO
+		// NOTE:
+		// Assume game screen is portrait, 420x940, but mobile screen is 768x1024.
+		// Since target ratio is 3:4, the game screen will be resized to 705x940.
+		// (940 / 4 * 3 = 705)
+		// This means the game's width is stretched by ~68%, so you will have to
+		// accomodate the extra dead space.
+
+		// Another example:
+		// Game screen is landscape, 320x240, mobile screen is 640x360.
+		// target ratio is 16:9, so game screen is resized to 320x180.
+		// This means game's height is shrunk by ~25%.
+
+		if (mobileFitMode != FIT_NONE)
+		{
+			// var windowW = kha.SystemImpl.khanvas.width;
+			// var windowH = kha.SystemImpl.khanvas.height;
+			var windowW = js.Browser.window.innerWidth;
+			var windowH = js.Browser.window.innerHeight;
+
+			if (mobileFitMode == FIT_WIDTH)
+			{
+				// landscape
+				var ratioH = width / windowW;
+				height = Math.floor(windowH * ratioH);
+			}
+			else if (mobileFitMode == FIT_HEIGHT)
+			{
+				// portrait
+				var ratioW = height / windowH;
+				width = Math.floor(windowW * ratioW);
+			}
+		}
+
+		// this is the final size which can be used for your game.
+		gameWidth = width;
+		gameHeight = height;
 	}
 
 	static public function refreshGameScale ()
 	{
+		// This function ensures that when the game screen's buffer size does
+		// not fit the actual screen size, we calculate the offset so that the
+		// world position stays in sync.
+
+		// Example:
+		// Assume original screen size is 400x200, but screen size is 100x100
+		// the buffer image will be 400x200 but scaled to fit into the 100x100,
+		// causing a letterbox effect (top and bottom has 50px empty space),
+		// and thus screenOffsetY will be 50.
+
 		// always reset before rescaling
 		screenOffsetX = 0;
 		screenOffsetY = 0;
 
 		var khanvasW = System.pixelWidth;
 		var khanvasH = System.pixelHeight;
-		// var ratioW = gameWidth / khanvasW;
-		// var ratioH = gameHeight / khanvasH;
-		// var ratio = Math.min(ratioW, ratioH);
-		// gameScale = ratio;
 
 		var screenRatioW = khanvasW / gameWidth;
 		var screenRatioH = khanvasH / gameHeight;
@@ -128,22 +201,11 @@ class Wyngine
 		if (screenRatioW > screenRatioH)
 		{
 			screenOffsetX = Math.floor((khanvasW/gameScale - gameWidth)/2);
-			// gameOffsetX = Math.floor((khanvasW - w) / 2 / zoom);
 		}
 		else
 		{
 			screenOffsetY = Math.floor((khanvasH/gameScale - gameHeight)/2);
-			// gameOffsetY = Math.floor((khanvasH - h) / 2 / zoom);
 		}
-
-		// trace("refresh game scale : " + khanvasW + "," + khanvasH + " / " + gameWidth + "," + gameHeight + " / " + screenOffsetX + "," + screenOffsetY + " / " + gameScale);
-
-		// trace("khanvas : " + khanvasW + "," + khanvasH);
-		// trace("game    : " + gameWidth + "," + gameHeight);
-		// trace("ratio : " + screenRatioW + " , " + screenRatioH);
-		// trace("w/h :   " + w + " , " + h);
-		// trace("offset  : " + screenOffsetX + " , " + screenOffsetY);
-		// trace("final scale : " + " , " + gameScale);
 	}
 
 	public function update ()
