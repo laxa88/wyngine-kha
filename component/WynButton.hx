@@ -211,8 +211,7 @@ class WynButton extends WynRenderable
 			for (listener in upListeners)
 				listener(this);
 
-			// update flag
-			setState(STATE_OVER);
+			setState(STATE_UP);
 		}
 	}
 
