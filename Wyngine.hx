@@ -155,8 +155,8 @@ class Wyngine
 			var windowW = js.Browser.window.innerWidth;
 			var windowH = js.Browser.window.innerHeight;
 			#else
-			var windowW = System.pixelWidth;
-			var windowH = System.pixelHeight;
+			var windowW = System.windowWidth();
+			var windowH = System.windowHeight();
 			#end
 
 			if (fitMode == FIT_WIDTH)
@@ -194,8 +194,8 @@ class Wyngine
 		screenOffsetX = 0;
 		screenOffsetY = 0;
 
-		var khanvasW = System.pixelWidth;
-		var khanvasH = System.pixelHeight;
+		var khanvasW = System.windowWidth();
+		var khanvasH = System.windowHeight();
 
 		var screenRatioW = khanvasW / gameWidth;
 		var screenRatioH = khanvasH / gameHeight;
