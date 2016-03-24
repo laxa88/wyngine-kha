@@ -250,11 +250,13 @@ class Wyngine
 			{
 				if (i < screensLen-1)
 				{
+					currScreen.isMostFront = false;
 					if (currScreen.persistentUpdate)
 						currScreen.update();
 				}
 				else
 				{
+					currScreen.isMostFront = true;
 					currScreen.update();
 				}
 			}

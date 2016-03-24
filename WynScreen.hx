@@ -8,6 +8,7 @@ class WynScreen
 {
 	// For debuggings
 	public static var ID:Int = 0;
+	public var isMostFront:Bool = false;
 	public var id:Int;
 	public var name:String = "";
 	public var alive:Bool = false; // flags whether this screen can be removed from queue
