@@ -4,6 +4,7 @@ import kha.Image;
 import kha.Color;
 import kha.math.FastVector2;
 import kha.math.Random;
+import kha.graphics2.GraphicsExtension;
 
 class WynUtil
 {
@@ -193,6 +194,26 @@ class WynUtil
 		img.g2.begin(true, 0x00000000);
 		img.g2.color = c;
 		img.g2.fillRect(0, 0, w, h);
+		img.g2.end();
+		return img;
+	}
+
+	inline public static function createCircleImage (r:Float, c:Color) : Image
+	{
+		var img = Image.createRenderTarget(cast r*2, cast r*2);
+		img.g2.begin(true, 0x00000000);
+		img.g2.color = c;
+		GraphicsExtension.drawCircle(img.g2, r, r, r);
+		img.g2.end();
+		return img;
+	}
+
+	inline public static function createCircleImageFilled (r:Float, c:Color) : Image
+	{
+		var img = Image.createRenderTarget(cast r*2, cast r*2);
+		img.g2.begin(true, 0x00000000);
+		img.g2.color = c;
+		GraphicsExtension.fillCircle(img.g2, r, r, r);
 		img.g2.end();
 		return img;
 	}
