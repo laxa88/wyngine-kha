@@ -21,7 +21,8 @@ class WynKeyboard extends WynManager
 	{
 		super();
 
-		Keyboard.get().notify(onKeyDown, onKeyUp);
+		if (Keyboard.get() != null)
+			Keyboard.get().notify(onKeyDown, onKeyUp);
 
 		keysDown = new Map<String, Bool>();
 		keysHeld = new Map<String, Bool>();

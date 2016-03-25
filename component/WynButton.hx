@@ -66,8 +66,11 @@ class WynButton extends WynRenderable
 		hitTouches = new Map<Int, Bool>();
 		isTouchDowns = new Map<Int, Bool>();
 
-		Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, null);
-		Surface.get().notify(onTouchStart, onTouchEnd, onTouchMove);
+		if (Mouse.get() != null)
+			Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, null);
+
+		if (Surface.get() != null)
+			Surface.get().notify(onTouchStart, onTouchEnd, onTouchMove);
 	}
 
 	override public function update ()

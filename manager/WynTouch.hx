@@ -14,7 +14,8 @@ class WynTouch extends WynManager
 	{
 		super();
 
-		Surface.get().notify(onTouchStart, onTouchEnd, onTouchMove);
+		if (Surface.get() != null)
+			Surface.get().notify(onTouchStart, onTouchEnd, onTouchMove);
 
 		touches = new Map<Int, TouchData>();
 

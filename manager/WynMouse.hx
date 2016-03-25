@@ -23,7 +23,8 @@ class WynMouse extends WynManager
 	{
 		super();
 
-		Mouse.get().notify(onMouseStart, onMouseEnd, onMouseMove, onMouseWheel);
+		if (Mouse.get() != null)
+			Mouse.get().notify(onMouseStart, onMouseEnd, onMouseMove, onMouseWheel);
 
 		mouseDown = new Map<Int, Bool>();
 		mouseHeld = new Map<Int, Bool>();
