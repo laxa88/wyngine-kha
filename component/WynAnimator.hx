@@ -12,8 +12,8 @@ class WynAnimator extends WynComponent
 
 	public var sprite:WynSprite;
 
+	public var speed:Float = 1; // positive = forward, negative = backwards
 	var playing:Bool = false;
-	var speed:Float = 1; // positive = forward, negative = backwards
 	var animations:Map<String, AnimData>;
 
 	var fps:Float = 1; // frames per second
@@ -26,10 +26,11 @@ class WynAnimator extends WynComponent
 
 
 
-	public function new ()
+	public function new (tSprite:WynSprite)
 	{
 		super();
 
+		sprite = tSprite;
 		animations = new Map<String, AnimData>();
 	}
 
