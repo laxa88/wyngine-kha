@@ -87,13 +87,19 @@ class WynScreen
 				continue;
 
 			for (o in layer)
-			{
-				if (o.enabled && o.visible)
-				{
-					for (r in o.renderers)
-						r(g);
-				}
-			}
+				tryRender(o, g);
+		}
+	}
+
+	function tryRender (o:WynObject, g:Graphics)
+	{
+		if (o.enabled && o.visible)
+		{
+			for (child in o.children)
+				tryRender(child, g);
+
+			for (r in o.renderers)
+				r(g);
 		}
 	}
 
