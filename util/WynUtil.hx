@@ -53,25 +53,25 @@ class WynUtil
 	 * Kha only has Int version, so get a float one
 	 * Note: min and max are inclusive.
 	 */
-	inline public static function randomFloat (min:Float, max:Float) : Float
+	inline public static function randomFloat (minInclusive:Float, maxInclusive:Float) : Float
 	{
-		if (min == max)
+		if (minInclusive == maxInclusive)
 		{
-			return min;
+			return minInclusive;
 		}
 		else
 		{
 			var r = 0.0;
-			if (min > max)
+			if (minInclusive > maxInclusive)
 			{
-				// If min is larger than max, revert the calculation
-				r = Math.random() * (min - max);
-				return (max + r);
+				// If minInclusive is larger than maxInclusive, revert the calculation
+				r = Math.random() * (minInclusive - maxInclusive);
+				return (maxInclusive + r);
 			}
 			else
 			{
-				r = Math.random() * (max - min);
-				return (min + r);
+				r = Math.random() * (maxInclusive - minInclusive);
+				return (minInclusive + r);
 			}
 		}
 	}
@@ -80,25 +80,25 @@ class WynUtil
 	 * Great for getting random array index.
 	 * Note: min and max are inclusive.
 	 */
-	inline public static function randomInt (min:Int, max:Int) : Int
+	inline public static function randomInt (minInclusive:Int, maxInclusive:Int) : Int
 	{
-		if (min == max)
+		if (minInclusive == maxInclusive)
 		{
-			return min;
+			return minInclusive;
 		}
 		else
 		{
 			var r = 0;
-			if (min > max)
+			if (minInclusive > maxInclusive)
 			{
-				// If min is larger than max, revert the calculation
-				r = Math.round(Math.random() * (min - max));
-				return (max + r);
+				// If minInclusive is larger than maxInclusive, revert the calculation
+				r = Math.round(Math.random() * (minInclusive - maxInclusive));
+				return (maxInclusive + r);
 			}
 			else
 			{
-				r = Math.round(Math.random() * (max - min));
-				return (min + r);
+				r = Math.round(Math.random() * (maxInclusive - minInclusive));
+				return (minInclusive + r);
 			}
 		}
 	}
