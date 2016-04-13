@@ -8,6 +8,7 @@ class WynKeyboard extends WynManager
 	// Taken from:
 	// https://github.com/RafaelOliveira/LD34
 
+	public static var init:Bool = false;
 	static var keysDown:Map<String, Bool>;
 	static var keysHeld:Map<String, Bool>;
 	static var keysUp:Map<String, Bool>;
@@ -30,6 +31,8 @@ class WynKeyboard extends WynManager
 
 		downListener = [];
 		upListener = [];
+
+		init = true;
 	}
 
 	override public function update ()
@@ -111,48 +114,60 @@ class WynKeyboard extends WynManager
 
 	inline public static function isDown (key:String) : Bool
 	{
-		return keysDown.exists(key);
+		return init && keysDown.exists(key);
 	}
 
 	inline public static function isHeld (key:String) : Bool
 	{
-		return keysHeld.get(key);
+		return init && keysHeld.get(key);
 	}
 
 	inline public static function isUp (key:String) : Bool
 	{
-		return keysUp.exists(key);
+		return init && keysUp.exists(key);
 	}
 
 	inline public static function isAny () : Bool
 	{
-		return (keysCount > 0);
+		return init && (keysCount > 0);
 	}
 
 	inline public static function isAnyDown () : Bool
 	{
-		return keysJustPressed;
+		return init && keysJustPressed;
 	}
 
 	inline public static function notifyDown (func:String->Void)
 	{
+		if (!init)
+			return;
+
 		if (downListener.indexOf(func) == -1)
 			downListener.push(func);
 	}
 
 	inline public static function notifyUp (func:String->Void)
 	{
+		if (!init)
+			return;
+
 		if (upListener.indexOf(func) == -1)
 			upListener.push(func);
 	}
 
 	inline public static function removeDown (func:String->Void)
 	{
+		if (!init)
+			return;
+
 		downListener.remove(func);
 	}
 
 	inline public static function removeUp (func:String->Void)
 	{
+		if (!init)
+			return;
+		
 		upListener.remove(func);
 	}
 }
