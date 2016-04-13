@@ -15,7 +15,8 @@ class WynObject
 	// NOTE:
 	// parent/children are only references for getting x/y/localX/localY.
 	// They do not affect each other's update() and render() methods.
-	public var screen:WynScreen;
+	public var screen(get, set):WynScreen;
+	var _screen:WynScreen;
 	public var parent:WynObject;
 	public var children:Array<WynObject> = [];
 
@@ -151,6 +152,25 @@ class WynObject
 	inline public function addTo (_parent:WynObject)
 	{
 		_parent.add(this);
+	}
+
+	private function get_screen () : WynScreen
+	{
+		if (_screen == null) {
+			if (parent != null)
+				return parent.screen;
+			else
+				return null;
+		}
+		else
+			return _screen;
+	}
+
+	private function set_screen (val:WynScreen) : WynScreen
+	{
+		_screen = val;
+
+		return val;
 	}
 
 	private function get_x () : Float
