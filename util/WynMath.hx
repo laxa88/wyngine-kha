@@ -246,4 +246,19 @@ class WynMath
 		if (n < 0.5) return easeInBounce(n * 2) * .5;
 		return easeOutBounce((n * 2) - 1) * .5 + .5;
 	}
+	public static function lerp (n:Float) : Float
+	{
+		// lerp is aka linear!
+		return linear(n);
+	}
+	public static function smoothstep (n:Float) : Float
+	{
+		// https://en.wikipedia.org/wiki/Smoothstep
+		return n*n*(3-2*n);
+	}
+	public static function smootherstep (n:Float) : Float
+	{
+		// https://en.wikipedia.org/wiki/Smoothstep
+		return n*n*n*(n*(n*6-15)+10);
+	}
 }
