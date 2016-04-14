@@ -52,11 +52,11 @@ class WynCollider extends WynComponent
 		// color is default white
 
 		// rect is drawn from top-left
-		g.drawRect(parent.x + offsetX, parent.y + offsetY, width, height);
+		g.drawRect(getPosX(), getPosY(), width, height);
 
 		// circle is drawn from top-left, but in logic, x/y position
 		// is actually centered, so we need to adjust via (offset + radius)
-		GraphicsExtension.drawCircle(g, parent.x+radius+offsetX, parent.y+radius+offsetY, radius);
+		GraphicsExtension.drawCircle(g, getPosX()+radius, getPosY()+radius, radius);
 	}
 
 	public function collide (other:WynCollider) : Bool
@@ -107,10 +107,10 @@ class WynCollider extends WynComponent
 
 		var hitHoriz:Bool = false;
 		var hitVert:Bool = false;
-		var thisX:Float = parent.x + offsetX;
-		var thisY:Float = parent.y + offsetY;
-		var otherX:Float = other.parent.x + other.offsetX;
-		var otherY:Float = other.parent.y + other.offsetY;
+		var thisX:Float = getPosX();
+		var thisY:Float = getPosY();
+		var otherX:Float = other.getPosX();
+		var otherY:Float = other.getPosY();
 
 		if (thisX < otherX)
 			hitHoriz = otherX < (thisX + width);
@@ -136,11 +136,11 @@ class WynCollider extends WynComponent
 		var _otherHalfHeight:Float = other.height * 0.5;
 		var _squaredRadius:Float = other.radius * other.radius;
 
-		var px:Float = other.parent.x + other.offsetX,
-			py:Float = other.parent.y + other.offsetY;
+		var px:Float = other.getPosX(),
+			py:Float = other.getPosY();
 
-		var ox:Float = parent.x + offsetX,
-			oy:Float = parent.y + offsetY;
+		var ox:Float = getPosX(),
+			oy:Float = getPosY();
 
 		var distanceX:Float = Math.abs(px - ox - _otherHalfWidth),
 			distanceY:Float = Math.abs(py - oy - _otherHalfHeight);
@@ -167,8 +167,8 @@ class WynCollider extends WynComponent
 		// https://github.com/HaxePunk/HaxePunk/blob/306f7cc50356a698859434641613b7c95bfbba4f/com/haxepunk/masks/Circle.hx
 
 		// TODO - check if we need to include offsets
-		var dx:Float = parent.x - other.parent.x;
-		var dy:Float = parent.y - other.parent.y;
+		var dx:Float = getPosX();
+		var dy:Float = getPosY();
 
 		return (dx * dx + dy * dy) < Math.pow(radius + other.radius, 2);
 	}
@@ -186,5 +186,15 @@ class WynCollider extends WynComponent
 		setOffset(-_radius, -_radius);
 
 		colliderType = HITCIRCLE;
+	}
+
+	inline public function getPosX ()
+	{
+		return parent.x + offsetX + (parent.screen.scrollX - parent.screen.shakeX) * parent.scrollFactorX;
+	}
+
+	inline public function getPosY ()
+	{
+		return parent.y + offsetY + (parent.screen.scrollY - parent.screen.shakeY) * parent.scrollFactorY;
 	}
 }
