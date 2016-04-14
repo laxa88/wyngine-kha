@@ -24,10 +24,8 @@ class WynObject
 	public var active:Bool = true; // affects update
 	public var visible:Bool = true; // affects render
 
-	public var x(get, set):Float;
-	public var y(get, set):Float;
-	var _x:Float = 0;
-	var _y:Float = 0;
+	public var x(default, set):Float;
+	public var y(default, set):Float;
 	public var localX(default, null):Float = 0;
 	public var localY(default, null):Float = 0;
 	public var scrollFactorX:Float = 1;
@@ -173,49 +171,33 @@ class WynObject
 		return val;
 	}
 
-	private function get_x () : Float
-	{
-		if (screen != null)
-			return _x + (screen.scrollX - screen.shakeX) * scrollFactorX;
-		else
-			return _x;
-	}
-
-	private function get_y () : Float
-	{
-		if (screen != null)
-			return _y + (screen.scrollY - screen.shakeY) * scrollFactorY;
-		else
-			return _y;
-	}
-
 	private function set_x (val:Float) : Float
 	{
-		delta = val - _x;
+		delta = val - x;
 
 		for (c in children)
 			c.x += delta;
 
 		if (parent != null)
-			localX = _x - parent.x;
+			localX = x - parent.x;
 		else
-			localX = _x;
+			localX = x;
 
-		return _x = val;
+		return x = val;
 	}
 
 	private function set_y (val:Float) : Float
 	{
-		delta = val - _y;
+		delta = val - y;
 
 		for (c in children)
 			c.y += delta;
 
 		if (parent != null)
-			localY = _y - parent.y;
+			localY = y - parent.y;
 		else
-			localY = _y;
+			localY = y;
 
-		return _y = val;
+		return y = val;
 	}
 }

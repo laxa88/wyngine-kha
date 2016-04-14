@@ -5,8 +5,10 @@ import kha.graphics2.GraphicsExtension;
 
 class WynCollider extends WynComponent
 {
-	public static var WYN_DEBUG:Bool = false;
+	// NOTE
+	// collisions do not consider screen's scroll/shake and object's scrollFactor values
 
+	public static var WYN_DEBUG:Bool = false;
 	public static var HITBOX:Int = 0;
 	public static var HITCIRCLE:Int = 1;
 	public var colliderType:Int = HITBOX;

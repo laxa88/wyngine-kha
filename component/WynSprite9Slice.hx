@@ -57,8 +57,8 @@ class WynSprite9Slice extends WynSprite
 		var sy = region.y;
 		var sw = region.w - region.borderLeft - region.borderRight;
 		var sh = region.h - region.borderTop - region.borderBottom;
-		var dx = parent.x + offsetX;
-		var dy = parent.y + offsetY;
+		var dx = getPosX(); //parent.x + offsetX;
+		var dy = getPosY(); //parent.y + offsetY;
 		var dw = destW - region.borderLeft - region.borderRight;
 		var dh = destH - region.borderTop - region.borderBottom;
 		// Width and height cannot be less than zero.

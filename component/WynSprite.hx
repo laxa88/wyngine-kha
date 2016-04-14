@@ -38,7 +38,7 @@ class WynSprite extends WynRenderable
 		g.drawScaledSubImage(image,
 			region.x, region.y,
 			region.w, region.h,
-			parent.x + offsetX, parent.y + offsetY,
+			getPosX(), getPosY(), //parent.x + offsetX, parent.y + offsetY,
 			width * scale, height * scale);
 
 		// Finalise opacity
@@ -49,5 +49,15 @@ class WynSprite extends WynRenderable
 
 		if (WYN_DEBUG)
 			g.drawRect(parent.x + offsetX, parent.y + offsetY, width, height);
+	}
+
+	inline function getPosX ()
+	{
+		return parent.x + offsetX + (parent.screen.scrollX - parent.screen.shakeX) * parent.scrollFactorX;
+	}
+
+	inline function getPosY ()
+	{
+		return parent.y + offsetY + (parent.screen.scrollY - parent.screen.shakeY) * parent.scrollFactorY;
 	}
 }
