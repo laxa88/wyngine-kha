@@ -124,6 +124,14 @@ class WynObject
 		renderers.remove(renderer);
 	}
 
+	inline public function getScreenPosition () : FastVector2
+	{
+		if (screen != null)
+			return new FastVector2(screen.scrollX + x, screen.scrollY + y);
+		else
+			return getPosition();
+	}
+
 	inline public function getPosition () : FastVector2
 	{
 		return new FastVector2(x, y);
