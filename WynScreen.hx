@@ -95,11 +95,11 @@ class WynScreen
 	{
 		if (o.enabled && o.visible)
 		{
-			for (child in o.children)
-				tryRender(child, g);
-
 			for (r in o.renderers)
 				r(g);
+
+			for (child in o.children)
+				tryRender(child, g);
 		}
 	}
 
