@@ -53,11 +53,12 @@ class WynSprite extends WynRenderable
 
 	inline function getPosX ()
 	{
-		return parent.x + offsetX + (parent.screen.scrollX - parent.screen.shakeX) * parent.scrollFactorX;
+		// http://stackoverflow.com/questions/9942209/unwanted-lines-apearing-in-html5-canvas-using-tiles
+		return Math.round(parent.x + offsetX + (parent.screen.scrollX - parent.screen.shakeX) * parent.scrollFactorX);
 	}
 
 	inline function getPosY ()
 	{
-		return parent.y + offsetY + (parent.screen.scrollY - parent.screen.shakeY) * parent.scrollFactorY;
+		return Math.round(parent.y + offsetY + (parent.screen.scrollY - parent.screen.shakeY) * parent.scrollFactorY);
 	}
 }
