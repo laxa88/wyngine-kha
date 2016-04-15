@@ -24,10 +24,14 @@ class WynObject
 	public var active:Bool = true; // affects update
 	public var visible:Bool = true; // affects render
 
-	public var x(default, set):Float;
-	public var y(default, set):Float;
-	public var localX(default, null):Float = 0;
-	public var localY(default, null):Float = 0;
+	public var x(get, set):Float;
+	public var y(get, set):Float;
+	var _x:Float = 0;
+	var _y:Float = 0;
+	public var localX(get, set):Float;
+	public var localY(get, set):Float;
+	var _localX:Float = 0;
+	var _localY:Float = 0;
 	public var scrollFactorX:Float = 1;
 	public var scrollFactorY:Float = 1;
 	public var renderers:Array<Graphics->Void> = [];
@@ -179,33 +183,69 @@ class WynObject
 		return val;
 	}
 
+	private function get_x () : Float
+	{
+		return _x;
+	}
+
+	private function get_y () : Float
+	{
+		return _y;
+	}
+
 	private function set_x (val:Float) : Float
 	{
-		delta = val - x;
+		delta = val - _x;
 
 		for (c in children)
 			c.x += delta;
 
-		if (parent != null)
-			localX = x - parent.x;
-		else
-			localX = x;
-
-		return x = val;
+		return _x = val;
 	}
 
 	private function set_y (val:Float) : Float
 	{
-		delta = val - y;
+		delta = val - _y;
 
 		for (c in children)
 			c.y += delta;
 
-		if (parent != null)
-			localY = y - parent.y;
-		else
-			localY = y;
+		return _y = val;
+	}
 
-		return y = val;
+	private function get_localX () : Float
+	{
+		if (parent != null)
+			return x - parent.x;
+		else
+			return x;
+	}
+
+	private function get_localY () : Float
+	{
+		if (parent != null)
+			return y - parent.y;
+		else
+			return y;
+	}
+
+	private function set_localX (val:Float) : Float
+	{
+		if (parent != null)
+			x = parent.x + val;
+		else
+			x = val;
+
+		return _localX = val;
+	}
+
+	private function set_localY (val:Float) : Float
+	{
+		if (parent != null)
+			y = parent.y + val;
+		else
+			y = val;
+
+		return _localX = val;
 	}
 }
