@@ -107,6 +107,10 @@ class WynAnimator extends WynComponent
 		{
 			currIndex = 0;
 			elapsed = 0;
+
+			// immediately update the sprite
+			if (sprite != null)
+				sprite.region = currAnimationArr[currIndex];
 		}
 		this.loop = loop;
 
