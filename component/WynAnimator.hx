@@ -38,6 +38,9 @@ class WynAnimator extends WynComponent
 	{
 		super.update();
 
+		if (!enabled || !active)
+			return;
+
 		if (playing)
 		{
 			elapsed += Wyngine.dt * Math.abs(speed);
