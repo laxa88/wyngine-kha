@@ -61,11 +61,11 @@ class WynCollider extends WynComponent
 
 	public function collide (other:WynCollider) : Bool
 	{
-		if (!active)
+		if (!enabled)
 			return false;
-
-		// don't compare with self...
-		if (other == this)
+		else if (!active)
+			return false;
+		else if (other == this) // don't compare with self...
 			return false;
 
 		// no need to check if there's no size
