@@ -15,6 +15,8 @@ class WynRenderable extends WynComponent
 	public var scale:Float = 1;
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
+	public var flipX:Bool = false;
+	public var flipY:Bool = false;
 
 	public function new (w:Int, h:Int)
 	{
