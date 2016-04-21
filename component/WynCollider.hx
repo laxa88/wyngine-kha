@@ -59,6 +59,29 @@ class WynCollider extends WynComponent
 		GraphicsExtension.drawCircle(g, getPosX()+radius, getPosY()+radius, radius);
 	}
 
+	public function hit (ox:Float, oy:Float) : Bool
+	{
+		if (!enabled || !active || parent == null)
+			return false;
+
+		var hitHoriz:Bool = false;
+		var hitVert:Bool = false;
+		var thisX:Float = getPosX();
+		var thisY:Float = getPosY();
+
+		if (thisX < ox)
+			hitHoriz = ox < (thisX + width);
+		else
+			hitHoriz = thisX < ox;
+
+		if (thisY < oy)
+			hitVert = oy < (thisY + height);
+		else
+			hitVert = thisY < oy;
+
+		return (hitHoriz && hitVert);
+	}
+
 	public function collide (other:WynCollider) : Bool
 	{
 		if (!enabled || !active || other == this)
