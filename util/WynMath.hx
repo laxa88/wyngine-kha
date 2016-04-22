@@ -261,4 +261,31 @@ class WynMath
 		// https://en.wikipedia.org/wiki/Smoothstep
 		return n*n*n*(n*(n*6-15)+10);
 	}
+
+	/*
+		Supply two points (x1,y1) and (x2,y2) to get a linear equation.
+		Returns value y at given position x along with equation.
+		Example scenario:
+			A enemy is spawned at random movespeed of x = (50 to 200)
+			when x = 50, spawn intervals should be longer, e.g. 2 seconds
+			when x = 200, spawn intervals should be shorter, e.g. 0.5 seconds
+		thus to use this function:
+			var spawnInterval = getLinearY(50, 2.0, 200, 0.5, randomSpeed);
+	*/
+	public static function getLinearY (x1:Float,y1:Float,x2:Float,y2:Float,x:Float) : Float
+	{
+		var m = (y2-y1)/(x2-x1);
+		var b = y1 - (m*x1);
+		return (m*x)+b;
+	}
+	/*
+		Supply two points (x1,y1) and (x2,y2) to get a linear equation.
+		Returns value x at given position y along with equation.
+	*/
+	public static function getLinearX (x1:Float,y1:Float,x2:Float,y2:Float,y:Float) : Float
+	{
+		var m = (y2-y1)/(x2-x1);
+		var b = y1 - (m*x1);
+		return (y-b)+m;
+	}
 }
