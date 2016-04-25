@@ -399,7 +399,7 @@ class WynButton extends WynRenderable
 		setState(STATE_UP);
 	}
 
-	function setState (state:Int)
+	public function setState (state:Int)
 	{
 		if (!active)
 		{
