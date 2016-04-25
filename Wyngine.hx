@@ -301,7 +301,8 @@ class Wyngine
 
 		g.end();
 
-		framebuffer.g2.begin(true, frameBgColor);
+		// framebuffer.g2.begin(true, frameBgColor);
+		framebuffer.g2.begin(true); // due to a bug, frameBgColor isn't used for now
 		framebuffer.g2.imageScaleQuality = imageQuality;
 		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
 		framebuffer.g2.end();
