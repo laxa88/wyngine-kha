@@ -50,10 +50,6 @@ class WynButton extends WynRenderable
 	var enterListeners:Array<WynButton->Void> = [];
 	var exitListeners:Array<WynButton->Void> = [];
 
-	var processedDown = false;
-	var processedMove = false;
-	var processedUp = false;
-
 	// Use this flag on events to check if this button needs to be triggered
 	public var stateChanged = false;
 
@@ -77,10 +73,6 @@ class WynButton extends WynRenderable
 	{
 		super.update();
 
-		processedDown = false;
-		processedMove = false;
-		processedUp = false;
-
 		if (currState == prevState)
 		{
 			stateChanged = false;
@@ -102,7 +94,6 @@ class WynButton extends WynRenderable
 			return;
 
 		isMouseDown = true;
-		processedDown = true;
 
 		if (isWithinButton(x, y))
 		{
@@ -123,7 +114,6 @@ class WynButton extends WynRenderable
 			return;
 
 		isMouseDown = false;
-		processedUp = true;
 
 		if (isWithinButton(x, y))
 		{
@@ -142,7 +132,6 @@ class WynButton extends WynRenderable
 			return;
 
 		var prevHitMouse = hitMouse;
-		processedMove = true;
 
 		if (isWithinButton(x, y))
 		{
@@ -179,14 +168,10 @@ class WynButton extends WynRenderable
 
 	function onTouchStart (index:Int, x:Int, y:Int)
 	{
-		if (index == 0 && processedDown)
-			return;
-
 		if (!isButtonActive() || !WynTouch.init)
 			return;
 
 		isTouchDowns.set(index, true);
-		processedDown = true;
 
 		if (isWithinButton(x, y))
 		{
@@ -199,14 +184,10 @@ class WynButton extends WynRenderable
 
 	function onTouchEnd (index:Int, x:Int, y:Int)
 	{
-		if (index == 0 && processedUp)
-			return;
-
 		if (!isButtonActive() || !WynTouch.init)
 			return;
 
 		isTouchDowns.remove(index);
-		processedUp = true;
 
 		if (isWithinButton(x, y))
 		{
@@ -220,15 +201,11 @@ class WynButton extends WynRenderable
 
 	function onTouchMove (index:Int, x:Int, y:Int)
 	{
-		if (index == 0 && processedMove)
-			return;
-
 		if (!isButtonActive() || !WynTouch.init)
 			return;
 
 		var prevHitTouch = hitTouches.exists(index);
 		var isTouchDown = isTouchDowns.exists(index);
-		processedMove = true;
 
 		if (isWithinButton(x, y))
 		{
