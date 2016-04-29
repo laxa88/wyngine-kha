@@ -397,8 +397,8 @@ class WynBitmapText extends WynRenderable
 			switch (halign)
 			{
 				case HAlign.LEFT: _cursor.x = 0;
-				case HAlign.RIGHT: _cursor.x = width - line.width;
-				case HAlign.MIDDLE: _cursor.x = (width/2) - (line.width/2);
+				case HAlign.RIGHT: _cursor.x = width - (line.width*scale);
+				case HAlign.MIDDLE: _cursor.x = (width/2) - (line.width/2*scale);
 			}
 
 			var lineText:String = line.text;
