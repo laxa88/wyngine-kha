@@ -1,7 +1,6 @@
 package wyn.component;
 
 import kha.Image;
-import kha.graphics2.Graphics;
 import wyn.WynObject;
 
 class WynRenderable extends WynComponent
@@ -10,9 +9,6 @@ class WynRenderable extends WynComponent
 	public var region:Region;
 	public var width:Int = 0;
 	public var height:Int = 0;
-	public var alpha:Float = 1;
-	public var angle:Float = 0; // 0 ~ 360
-	public var scale:Float = 1;
 	public var offsetX:Float = 0;
 	public var offsetY:Float = 0;
 	public var flipX:Bool = false;
@@ -40,8 +36,6 @@ class WynRenderable extends WynComponent
 		image = null;
 		region = null;
 	}
-
-	public function render (g:Graphics) {}
 
 	public function setImage (img:Image, data:Region)
 	{
