@@ -2,21 +2,6 @@ package wyn.manager;
 
 import wyn.util.WynMath;
 
-typedef TweenData = {
-	var target:Dynamic;
-	var props:Dynamic;
-	var elapsed:Float;
-	var duration:Float;
-	var ease:Int;
-	var callback:Void->Void;
-	var paused:Bool;
-}
-
-typedef PropData = {
-	@:optional var from:Float;
-	@:optional var to:Float;
-}
-
 class WynTween extends WynManager
 {
 	// props example:
