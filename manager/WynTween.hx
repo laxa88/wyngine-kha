@@ -213,9 +213,39 @@ class WynTween extends WynManager
 				queueData.callback = data.callback;
 				queueData.paused = false;
 
-				// Update tween properties for this target
-				var queueFields:Array<String> = Reflect.fields(data.props);
+
+
+				// For existing tween data:
+				var queueFields:Array<String> = Reflect.fields(queueData.props);
 				for (field in queueFields)
+				{
+					var prevFieldProps:PropData = Reflect.getProperty(queueData.props, field);
+					var currFieldProps:PropData = Reflect.getProperty(data.props, field);
+
+					if (currFieldProps == null)
+						currFieldProps = prevFieldProps;
+
+					switch (playbackMode)
+					{
+						case PLAYDEFAULT:
+							currFieldProps.from = Reflect.getProperty(data.target, field);
+
+						case PLAYRESET:
+							currFieldProps.from = prevFieldProps.from;
+
+						case PLAYSKIP:
+							currFieldProps.from = prevFieldProps.to;
+					}
+
+					// Set the {from, to} values to field of prop, e.g. "x", "width"...
+					Reflect.setProperty(data.props, field, currFieldProps);
+				}
+
+
+
+				// For new tween data:
+				var dataFields:Array<String> = Reflect.fields(data.props);
+				for (field in dataFields)
 				{
 					// e.g. field = "x", "width", etc.
 					var prevFieldProps:PropData = Reflect.getProperty(queueData.props, field);
