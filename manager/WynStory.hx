@@ -19,45 +19,60 @@ class WynStory extends WynManager
 	{
 		for (story in stories)
 		{
+			if (story.paused)
+				continue;
+
 			story.elapsed += Wyngine.dt;
-			var delay = story.events[story.eventIndex].delay;
 
-			// If reached delay time, execute next event and loop if necessary
-			if (story.elapsed >= delay)
+			if (!story.firedEvent)
 			{
-				var event = story.events[story.eventIndex];
-
-				event.event(); // run the event
-				story.elapsed -= delay; // reset the elapsed counter
-				story.eventIndex++; // move to next event
-
-				if (story.eventIndex >= story.events.length)
+				var sDelay = story.events[story.eventIndex].startDelay;
+				if (story.elapsed >= sDelay)
 				{
-					if (story.loop < 0) {
-						story.eventIndex = 0; // negative = infinite loop, repeat from first event
-					}
-					else if (story.loop == 0) {
-						toRemove.push(story.name); // no repeat; remove this story
-					}
-					else {
-						story.loopCounter++;
-						if (story.loopCounter > story.loop) {
-							toRemove.push(story.name); // only remove if loopCounter reached max loop
+					var event = story.events[story.eventIndex];
+
+					event.event(); // run the event
+					story.elapsed -= sDelay; // reset the elapsed counter
+					story.firedEvent = true;
+				}
+			}
+			else
+			{
+				var eDelay = story.events[story.eventIndex].endDelay;
+				if (story.elapsed >= eDelay)
+				{
+					story.eventIndex++; // move to next event
+					story.elapsed -= eDelay;
+					story.firedEvent = false;
+
+					if (story.eventIndex >= story.events.length)
+					{
+						if (story.loop < 0) {
+							story.eventIndex = 0; // negative = infinite loop, repeat from first event
+						}
+						else if (story.loop == 0) {
+							toRemove.push(story.name); // no repeat; remove this story
 						}
 						else {
-							story.eventIndex = 0;
+							story.loopCounter++;
+							if (story.loopCounter > story.loop) {
+								toRemove.push(story.name); // only remove if loopCounter reached max loop
+							}
+							else {
+								story.eventIndex = 0;
+							}
 						}
 					}
 				}
-			}
-		}
 
-		if (toRemove.length > 0)
-		{
-			for (name in toRemove) {
-				stories.remove(name);
+				if (toRemove.length > 0)
+				{
+					for (name in toRemove) {
+						stories.remove(name);
+					}
+					toRemove = [];
+				}
 			}
-			toRemove = [];
 		}
 	}
 
@@ -79,9 +94,21 @@ class WynStory extends WynManager
 			events: events,
 			elapsed: 0,
 			loopCounter : 0,
-			loop: loop // default = -1, infinite loop
+			loop: loop, // default = -1, infinite loop
+			paused: false,
+			firedEvent: false
 		};
 
 		instance.stories.set(uniqueName, story);
+	}
+
+	public static function pause (uniqueName:String)
+	{
+		instance.stories.get(uniqueName).paused = true;
+	}
+
+	public static function resume (uniqueName:String)
+	{
+		instance.stories.get(uniqueName).paused = false;
 	}
 }
