@@ -214,26 +214,29 @@ class WynTween extends WynManager
 				queueData.paused = false;
 
 				// Update tween properties for this target
-				var queueFields:Array<String> = Reflect.fields(queueData.props);
+				var queueFields:Array<String> = Reflect.fields(data.props);
 				for (field in queueFields)
 				{
 					// e.g. field = "x", "width", etc.
-
 					var prevFieldProps:PropData = Reflect.getProperty(queueData.props, field);
 					var currFieldProps:PropData = Reflect.getProperty(data.props, field);
 
-					if (currFieldProps.from == null)
+					// Only update if the field exists. Otherwise, we just overwrite.
+					if (prevFieldProps != null)
 					{
-						switch (playbackMode)
+						if (currFieldProps.from == null)
 						{
-							case PLAYDEFAULT:
-								currFieldProps.from = Reflect.getProperty(data.target, field);
+							switch (playbackMode)
+							{
+								case PLAYDEFAULT:
+									currFieldProps.from = Reflect.getProperty(data.target, field);
 
-							case PLAYRESET:
-								currFieldProps.from = prevFieldProps.from;
+								case PLAYRESET:
+									currFieldProps.from = prevFieldProps.from;
 
-							case PLAYSKIP:
-								currFieldProps.from = prevFieldProps.to;
+								case PLAYSKIP:
+									currFieldProps.from = prevFieldProps.to;
+							}
 						}
 					}
 
