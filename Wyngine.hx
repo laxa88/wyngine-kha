@@ -16,8 +16,8 @@ class Wyngine
 	var backbuffer:Image;
 	var g:Graphics;
 
-	static var active:Bool = true;
-	static var visible:Bool = true;
+	public static var active:Bool = true;
+	public static var visible:Bool = true;
 
 	public static inline var FIT_NONE:Int = 0;
 	public static inline var FIT_WIDTH:Int = 1;
