@@ -16,7 +16,7 @@ class WynPhysics extends WynComponent
 	public var angularAcceleration:Float = 0; // acceleration for angle
 	public var angularDrag:Float = 0;
 	public var angularMaxVelocity:Float = 0;
-	public var angle:Float = 0; // 0 ~ 360
+	// public var angle:Float = 0; // 0 ~ 360
 
 	// NOTE:
 	// The value of WynPhysics.angle is only for internal use, it doesn't affect anything visually.
