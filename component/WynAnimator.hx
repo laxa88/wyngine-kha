@@ -23,6 +23,7 @@ class WynAnimator extends WynComponent
 	var currIndex:Int = 0;
 	var loop:Bool = false;
 	var elapsed:Float = 0;
+	var onComplete:Void->Void;
 
 
 
@@ -52,10 +53,34 @@ class WynAnimator extends WynComponent
 
 				currIndex += (speed >= 0) ? 1 : -1;
 
+				var ended:Bool = false;
 				if (currIndex >= currAnimationMaxIndex)
-					currIndex = 0;
-				if (currIndex < 0)
-					currIndex = currAnimationMaxIndex-1;
+				{
+					if (loop)
+						currIndex = 0;
+					else
+						currIndex = currAnimationMaxIndex-1;
+
+					ended = true;
+				}
+				else if (currIndex < 0)
+				{
+					if (loop)
+						currIndex = currAnimationMaxIndex-1;
+					else
+						currIndex = 0;
+
+					ended = true;
+				}
+
+				if (ended)
+				{
+					if (!loop)
+						playing = false;
+
+					if (onComplete != null)
+						onComplete();
+				}
 			}
 
 			// update region
@@ -71,6 +96,7 @@ class WynAnimator extends WynComponent
 		sprite = null;
 		animations = null;
 		currAnimationArr = [];
+		onComplete = null;
 	}
 
 
@@ -92,7 +118,7 @@ class WynAnimator extends WynComponent
 		animations.remove(name);
 	}
 
-	public function playAnimation (name:String, loop:Bool=true, restart:Bool=true)
+	public function playAnimation (name:String, loop:Bool=true, restart:Bool=true, onComplete:Void->Void=null)
 	{
 		if (!animations.exists(name))
 		{
@@ -116,6 +142,7 @@ class WynAnimator extends WynComponent
 				sprite.region = currAnimationArr[currIndex];
 		}
 		this.loop = loop;
+		this.onComplete = onComplete;
 
 		playing = true;
 	}
