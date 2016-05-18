@@ -58,6 +58,8 @@ class WynAudio extends WynManager
 	public static function playSound (file:Sound, volume:Float=1.0) : AudioChannel
 	{
 		var channel = Audio.play(file, false);
+		channel.stop();
+		channel.play();
 		channel.volume = volume;
 
 		// Sounds are fire-and-forget
