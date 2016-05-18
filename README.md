@@ -39,9 +39,11 @@ Overhauled; Wyngine is now component-based, similar to Unity. Existing classes a
 
 ### Demos/games made with this version:
 
-* [Pollen (v3)](http://www.funfe.com/m/play/8/Challenge-It-)
-* [Hurdles (v5)](http://coinflipstudios.com/hurdles5)
+* [Pollen](https://wyleong.itch.io/pollen)
+* [Hurdles](https://wyleong.itch.io/hurdles)
+* [Adventuroads](https://wyleong.itch.io/adventuroads)
+* FlappySoot (coming soon)
 
-# Roadmap
+# Roadmap (outdated)
 
 https://trello.com/b/LAOdvBzt/wyngine
